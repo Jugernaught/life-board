@@ -127,6 +127,17 @@ These are deliberately **not** simulated. Each needs an outside service and some
 
 `npm run build` produces static files in `dist/` that any static host can serve (Netlify, Vercel, Cloudflare Pages, GitHub Pages…). Because LIFE OS uses normal URLs like `/finance`, the host must send unknown paths to `index.html`, and `/m/...` paths to `m/index.html` — `public/_redirects` + `public/_headers` (Netlify) and `vercel.json` (Vercel) already do this, and keep the iPhone app's service worker (`/m/sw.js`) uncached so updates arrive. Data still lives in each visitor's own browser; nothing is shared between visitors.
 
+### GitHub Pages
+
+`.github/workflows/deploy-pages.yml` runs the checks, builds and publishes the app on every push to `main` (or on demand from the Actions tab).
+
+1. Repo **Settings → Pages → Source: GitHub Actions** (one-time).
+2. Push to `main`. The site appears at `https://<username>.github.io/<repo-name>/`.
+
+How it works: Pages serves the app under `/<repo-name>/`, so the workflow builds with `BASE_PATH=/<repo-name>/`. Vite uses that for asset URLs and the router uses it as its `basename`. Pages has no rewrite rules, so the workflow copies `index.html` to `404.html` and deep links like `/finance` still load the app. Without `BASE_PATH` the build targets `/` as before, so Vercel, Netlify and local dev are unchanged. To try the Pages build locally: `BASE_PATH=/life-board/ npm run build && npx vite preview`.
+
+Pages on a private repo needs a paid GitHub plan (Pro, Team or Enterprise). On a free plan, make the repo public or use Vercel or Netlify instead. Data lives in IndexedDB per origin, so the Pages copy starts empty. Use Settings → Data to export from one copy and import into the other.
+
 ## Testing
 
 - **80 unit & component tests** (`npm test`) cover dates and money maths, streaks, budgets, grades, agenda building, analytics ranges, search ranking, schema validation and migration, all storage adapters, persistence (including crash recovery and never overwriting unreadable data), backups, imports, forms, delete/undo and the iPhone navigator.

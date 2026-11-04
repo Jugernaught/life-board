@@ -39,7 +39,7 @@ export function MobileBanner() {
       <p className="min-w-0 flex-1 text-ink">
         On a phone? <span className="text-ink-muted">The iPhone version is built for touch, with the same data.</span>
       </p>
-      <a href="/m/" className="shrink-0 rounded-md bg-accent px-3 py-1.5 font-medium text-on-accent" data-testid="mobile-banner-open">
+      <a href={`${import.meta.env.BASE_URL}m/`} className="shrink-0 rounded-md bg-accent px-3 py-1.5 font-medium text-on-accent" data-testid="mobile-banner-open">
         Open
       </a>
       <button type="button" onClick={dismiss} aria-label="Dismiss" className="-mr-1 flex size-9 shrink-0 items-center justify-center rounded-md text-ink-subtle hover:text-ink">

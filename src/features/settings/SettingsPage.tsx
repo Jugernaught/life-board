@@ -151,7 +151,7 @@ export default function SettingsPage() {
                 <Segmented value={String(s.weekStartsOn) as '0' | '1'} onChange={(v) => set({ weekStartsOn: Number(v) as 0 | 1 })} fullWidth ariaLabel="Week start" options={[{ value: '1', label: 'Monday' }, { value: '0', label: 'Sunday' }]} />
               </Row>
               <Row label="iPhone version" description="A separate touch-first version for iPhone at /m/ — same data on the same device and browser. Open it in Safari on your iPhone, then Share → Add to Home Screen.">
-                <a href="/m/" className="inline-flex h-9 items-center gap-2 rounded-lg border border-line bg-panel-2 px-3 text-[13px] text-ink hover:border-line-strong" data-testid="settings-open-mobile">
+                <a href={`${import.meta.env.BASE_URL}m/`} className="inline-flex h-9 items-center gap-2 rounded-lg border border-line bg-panel-2 px-3 text-[13px] text-ink hover:border-line-strong" data-testid="settings-open-mobile">
                   <Smartphone size={15} className="text-accent" aria-hidden />
                   Open iPhone version
                 </a>

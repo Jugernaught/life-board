@@ -60,6 +60,7 @@ These need a native iOS app or a server, and are **not** pretended:
 
 ## For developers
 
+- Hosting under a sub-path (e.g. GitHub Pages `/life-board/`): the iPhone app reads `import.meta.env.BASE_URL` for its links, service worker and icons, and its manifest uses relative URLs, so it installs from `…/m/` wherever the site is served.
 - Entry: `m/index.html` → `src/mobile/main.tsx`. Code: `src/mobile/` (shell, navigator, UI kit, screens). Shared with desktop: `src/data`, `src/lib`, `src/selectors`, `src/store`, `src/storage`, `src/forms`.
 - `npm run dev` serves both: desktop at `/`, iPhone at `/m/`. Use your browser's device toolbar (iPhone 15 Pro, touch on) to work on it.
 - Offline support: `vite.config.ts` generates `/m/sw.js` at build time, precaching every file the iPhone app can load (screens are lazy-loaded, then cached). It only runs in production builds.

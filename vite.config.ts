@@ -4,6 +4,10 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { type Plugin, defineConfig } from 'vite'
 
+// BASE_PATH lets the same build run at a domain root (Vercel, Netlify, local)
+// or under a sub-path such as GitHub Pages' /<repo-name>/. Defaults to '/'.
+const base = process.env.BASE_PATH ?? '/'
+
 const r = (p: string) => fileURLToPath(new URL(p, import.meta.url))
 
 /**
@@ -34,17 +38,18 @@ function mobileServiceWorker(): Plugin {
         }
       }
       visit(entry.fileName)
-      const precache = ['/m/', '/m/manifest.webmanifest', '/m/apple-touch-icon.png', '/m/icon-192.png', '/favicon.svg', ...[...files].sort().map((f) => `/${f}`)]
+      const precache = [`${base}m/`, `${base}m/manifest.webmanifest`, `${base}m/apple-touch-icon.png`, `${base}m/icon-192.png`, `${base}favicon.svg`, ...[...files].sort().map((f) => `${base}${f}`)]
       const version = createHash('sha256').update(precache.join('\n')).digest('hex').slice(0, 12)
-      this.emitFile({ type: 'asset', fileName: 'm/sw.js', source: serviceWorkerSource(version, precache) })
+      this.emitFile({ type: 'asset', fileName: 'm/sw.js', source: serviceWorkerSource(version, precache, base) })
     },
   }
 }
 
-function serviceWorkerSource(version: string, precache: string[]) {
+function serviceWorkerSource(version: string, precache: string[], base: string) {
   return `/* LIFE OS for iPhone — service worker (generated at build time) */
 const CACHE = 'life-os-m-${version}'
 const PRECACHE = ${JSON.stringify(precache)}
+const BASE = ${JSON.stringify(base)}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)).then(() => self.skipWaiting()))
@@ -71,10 +76,10 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       Promise.race([fetch(request), timeout(4000)])
         .then((response) => {
-          if (response.ok) caches.open(CACHE).then((cache) => cache.put('/m/', response.clone()))
+          if (response.ok) caches.open(CACHE).then((cache) => cache.put(BASE + 'm/', response.clone()))
           return response
         })
-        .catch(() => caches.match('/m/', { ignoreVary: true }).then((hit) => hit || Response.error())),
+        .catch(() => caches.match(BASE + 'm/', { ignoreVary: true }).then((hit) => hit || Response.error())),
     )
     return
   }
@@ -83,7 +88,7 @@ self.addEventListener('fetch', (event) => {
   // scripts are requested with an Origin header the precache request didn't
   // have, and servers commonly send "Vary: Origin" — without it, lazily loaded
   // screens would miss the cache and fail offline.
-  if (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/m/') || url.pathname === '/favicon.svg') {
+  if (url.pathname.startsWith(BASE + 'assets/') || url.pathname.startsWith(BASE + 'm/') || url.pathname === BASE + 'favicon.svg') {
     event.respondWith(
       caches.match(request, { ignoreVary: true }).then(
         (hit) =>
@@ -104,6 +109,7 @@ self.addEventListener('fetch', (event) => {
 
 // Vite builds and serves both apps: the desktop app at / and the iPhone app at /m/.
 export default defineConfig({
+  base,
   plugins: [react(), tailwindcss(), mobileServiceWorker()],
   resolve: {
     alias: { '@': r('./src') },

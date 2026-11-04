@@ -26,7 +26,7 @@ export function MobileOnboarding() {
           <motion.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
             {step === 0 && (
               <div className="px-6 pt-10">
-                <img src="/m/icon-192.png" alt="" className="size-20 rounded-[18px] shadow-lg" />
+                <img src={`${import.meta.env.BASE_URL}m/icon-192.png`} alt="" className="size-20 rounded-[18px] shadow-lg" />
                 <h1 className="ios-large-title mt-6 text-ink">Welcome to LIFE OS</h1>
                 <p className="ios-body mt-2 text-ink-subtle">Your goals, plans, habits, money, health, learning and journal — in one private place.</p>
                 <ul className="mt-8 space-y-5">

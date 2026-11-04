@@ -58,7 +58,7 @@ export function MoreScreen() {
           </Section>
           <Section footer="The full desktop version shows the same data when used in the same browser.">
             <Cell icon={Settings} iconTone="muted" title="Settings" chevron onClick={() => nav.push('more/settings')} testId="more-settings" />
-            <Cell icon={Laptop} iconTone="muted" title="Open Desktop Version" chevron onClick={() => window.location.assign('/')} />
+            <Cell icon={Laptop} iconTone="muted" title="Open Desktop Version" chevron onClick={() => window.location.assign(import.meta.env.BASE_URL)} />
           </Section>
         </>
       )}

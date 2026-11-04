@@ -8,7 +8,7 @@ export function registerServiceWorker() {
   if (!import.meta.env.PROD || !('serviceWorker' in navigator)) return
   const hadController = !!navigator.serviceWorker.controller
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/m/sw.js', { scope: '/m/' }).catch(() => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}m/sw.js`, { scope: `${import.meta.env.BASE_URL}m/` }).catch(() => {
       // Offline support is optional; the app works without it.
     })
   })

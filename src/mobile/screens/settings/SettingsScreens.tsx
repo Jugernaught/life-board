@@ -183,7 +183,7 @@ export function SettingsScreen() {
             }
           />
         )}
-        <a href="/" className="ios-press flex min-h-11 items-center gap-3 px-4 py-2" data-testid="settings-desktop">
+        <a href={import.meta.env.BASE_URL} className="ios-press flex min-h-11 items-center gap-3 px-4 py-2" data-testid="settings-desktop">
           <span className="flex size-[29px] items-center justify-center rounded-[7px] bg-[var(--color-ink-subtle)] text-white" aria-hidden>
             <Laptop size={17} />
           </span>
