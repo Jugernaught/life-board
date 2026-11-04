@@ -4,7 +4,6 @@ import {
   ChartSpline,
   Dumbbell,
   FolderKanban,
-  BookOpenText,
   Library,
   NotebookPen,
   Radar,
@@ -47,4 +46,3 @@ export const NAV_ITEMS: NavItem[] = [
 
 export const navItem = (id: SectionId) => NAV_ITEMS.find((n) => n.id === id) as NavItem
 export const navIndex = (id: SectionId) => String(NAV_ITEMS.findIndex((n) => n.id === id) + 1).padStart(2, '0')
-export { BookOpenText }
