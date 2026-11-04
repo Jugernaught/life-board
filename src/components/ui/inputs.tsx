@@ -237,6 +237,7 @@ export function Segmented<T extends string>({
             type="button"
             role="radio"
             aria-checked={active}
+            aria-label={o.title}
             title={o.title}
             onClick={() => onChange(o.value)}
             className={cn(
