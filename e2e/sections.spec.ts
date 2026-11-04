@@ -148,6 +148,7 @@ test.describe('with sample data', () => {
     await expect(page.getByText('Progress against targets')).toBeVisible()
     await page.getByLabel('Date range').selectOption('this_year')
     await expect(page.getByText('Task completion')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Goal completion' })).toBeVisible()
     await page.getByRole('tab', { name: 'Reports' }).click()
     await expect(page.getByRole('heading', { name: /Weekly report/ })).toBeVisible()
     await page.getByRole('radio', { name: 'Monthly' }).click()

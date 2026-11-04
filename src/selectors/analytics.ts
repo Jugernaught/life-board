@@ -210,6 +210,8 @@ export function trendSeries(db: Db, range: DateRange, unit: BucketUnit, today: s
       ...b,
       tasksCompleted: s.tasksCompleted,
       tasksCreated: s.tasksCreated,
+      goalsCompleted: s.goalsCompleted,
+      milestonesDone: s.milestonesDone + s.careerMilestonesDone,
       habitRate: s.habitRate === null ? null : Math.round(s.habitRate * 100),
       habitCheckIns: s.habitCheckIns,
       learningMinutes: s.learningMinutes,

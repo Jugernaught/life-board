@@ -199,6 +199,29 @@ function TrendsTab({ range, today }: { range: DateRange; today: string }) {
           </ResponsiveContainer>
         </ChartCard>
         <ChartCard
+          title="Goal completion"
+          description={`Goals completed and milestones reached ${unitLabel}`}
+          legend={[
+            { label: 'Goals completed', color: series(2) },
+            { label: 'Milestones reached', color: series(4) },
+          ]}
+          rows={data}
+          columns={[bucketCol, { label: 'Goals completed', value: (r) => r.goalsCompleted, align: 'right' }, { label: 'Milestones', value: (r) => r.milestonesDone, align: 'right' }]}
+          empty={!any('goalsCompleted') && !any('milestonesDone')}
+          emptyHint="Complete goals or tick off project, goal or career milestones to see this chart."
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} barGap={2} margin={{ top: 8, right: 8, left: -20, bottom: 0 }}>
+              <CartesianGrid {...gridProps} />
+              <XAxis dataKey="label" {...axisProps} minTickGap={16} />
+              <YAxis allowDecimals={false} {...axisProps} />
+              <Tooltip cursor={{ fill: 'var(--color-line)' }} content={tip()} />
+              <Bar dataKey="goalsCompleted" name="Goals completed" fill={series(2)} radius={[4, 4, 0, 0]} maxBarSize={16} />
+              <Bar dataKey="milestonesDone" name="Milestones reached" fill={series(4)} radius={[4, 4, 0, 0]} maxBarSize={16} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+        <ChartCard
           title="Habit consistency"
           description={`% of scheduled habits completed ${unitLabel}`}
           rows={data}
