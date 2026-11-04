@@ -1,0 +1,93 @@
+import { describe, expect, it } from 'vitest'
+import { createEmptyDatabase } from '@/data/defaults'
+import { ValidationError, createAppStore } from './store'
+
+const fresh = () => createAppStore(createEmptyDatabase()).getState
+
+describe('store CRUD', () => {
+  it('creates records with ids, timestamps and defaults, and logs activity', () => {
+    const get = fresh()
+    const task = get().create('tasks', { title: 'Write report' })
+    expect(task.id).toBeTruthy()
+    expect(task.status).toBe('todo')
+    expect(task.priority).toBe('medium')
+    expect(get().db.tasks).toHaveLength(1)
+    expect(get().db.activity[0]).toMatchObject({ action: 'created', collection: 'tasks', entityId: task.id, label: 'Write report' })
+  })
+
+  it('rejects invalid input with a ValidationError and leaves data unchanged', () => {
+    const get = fresh()
+    expect(() => get().create('tasks', { title: '   ' })).toThrow(ValidationError)
+    expect(() => get().create('transactions', { kind: 'expense', amount: -5, date: '2026-01-01', category: 'Food' })).toThrow(ValidationError)
+    expect(get().db.tasks).toHaveLength(0)
+    expect(get().db.transactions).toHaveLength(0)
+  })
+
+  it('stamps completedAt when a task is completed and clears it when reopened', () => {
+    const get = fresh()
+    const t = get().create('tasks', { title: 'A' })
+    const done = get().update('tasks', t.id, { status: 'done' })!
+    expect(done.completedAt).toBeTruthy()
+    expect(get().db.activity[0].action).toBe('completed')
+    const reopened = get().update('tasks', t.id, { status: 'todo' })!
+    expect(reopened.completedAt).toBeUndefined()
+    expect(get().db.activity[0].action).toBe('reopened')
+  })
+
+  it('records application status history', () => {
+    const get = fresh()
+    const a = get().create('applications', { company: 'Acme', role: 'Engineer', status: 'applied' })
+    expect(a.statusHistory.map((h) => h.status)).toEqual(['applied'])
+    const b = get().update('applications', a.id, { status: 'interviewing' })!
+    expect(b.statusHistory.map((h) => h.status)).toEqual(['applied', 'interviewing'])
+  })
+
+  it('records goal progress history', () => {
+    const get = fresh()
+    const g = get().create('goals', { title: 'Run 5k', progress: 10 })
+    expect(g.history).toHaveLength(1)
+    const g2 = get().update('goals', g.id, { progress: 40 })!
+    // same day edits collapse into one point
+    expect(g2.history[g2.history.length - 1].progress).toBe(40)
+  })
+
+  it('unlinks (never deletes) related records and undo restores both', () => {
+    const get = fresh()
+    const p = get().create('projects', { name: 'Side project' })
+    const t = get().create('tasks', { title: 'Task in project', projectId: p.id })
+    const token = get().remove('projects', p.id)!
+    expect(get().db.projects).toHaveLength(0)
+    expect(get().db.tasks).toHaveLength(1)
+    expect(get().db.tasks[0].projectId).toBeUndefined()
+    expect(token.unlinked).toEqual([{ key: 'tasks', id: t.id, field: 'projectId', value: p.id }])
+    get().undo(token)
+    expect(get().db.projects).toHaveLength(1)
+    expect(get().db.tasks[0].projectId).toBe(p.id)
+    expect(get().db.activity[0].action).toBe('restored')
+  })
+
+  it('updates via a function patch and ignores unknown ids', () => {
+    const get = fresh()
+    const h = get().create('habits', { name: 'Read', startDate: '2026-01-01' })
+    get().update('habits', h.id, (cur) => ({ log: [...cur.log, '2026-01-02'] }))
+    expect(get().db.habits[0].log).toEqual(['2026-01-02'])
+    expect(get().update('habits', 'missing', { name: 'x' })).toBeUndefined()
+  })
+
+  it('collapses rapid repeated updates of the same record into one activity entry', () => {
+    const get = fresh()
+    const t = get().create('tasks', { title: 'A' })
+    get().update('tasks', t.id, { title: 'B' })
+    get().update('tasks', t.id, { title: 'C' })
+    const updates = get().db.activity.filter((a) => a.action === 'updated')
+    expect(updates).toHaveLength(1)
+    expect(updates[0].label).toBe('C')
+  })
+
+  it('normalises settings on update', () => {
+    const get = fresh()
+    get().updateSettings({ displayName: 'Sam' })
+    expect(get().db.settings.displayName).toBe('Sam')
+    expect(get().db.settings.dashboard.length).toBeGreaterThan(5)
+  })
+})
