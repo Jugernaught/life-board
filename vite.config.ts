@@ -5,7 +5,12 @@ import { defineConfig } from 'vite'
 
 // Vite builds and serves the app. Tailwind runs as a Vite plugin, so there
 // is no separate PostCSS config to maintain.
+// BASE_PATH lets the same build run at a domain root (Vercel, Netlify, local)
+// or under a sub-path such as GitHub Pages' /<repo-name>/. Defaults to '/'.
+const base = process.env.BASE_PATH ?? '/'
+
 export default defineConfig({
+  base,
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
