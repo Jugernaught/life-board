@@ -106,6 +106,58 @@ More detail: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 - **Export / import:** a single JSON file containing everything. Imports are fully validated and previewed (with counts and any invalid records listed) before anything changes; choose *merge* or *replace*.
 - **If stored data can't be read** (for example, it was written by a newer version), LIFE OS shows a recovery screen and does not overwrite anything; you can download the raw data.
 
+## Preloading your own data
+
+You can describe your life once in a JSON profile and turn it into an ordinary LIFE OS backup file to import. The app itself never loads it on its own: a new install still starts empty.
+
+1. **Keep it private.** `private/` is git-ignored. Put your profile there and nowhere else:
+   ```bash
+   mkdir -p private && $EDITOR private/profile.json
+   ```
+2. **Write the profile.** Every section is optional. Amounts are in major units (e.g. `12.50`); the script converts them to pence. Each record needs a `key` (lower-case letters, digits and dashes). It becomes a stable id (`seed-<collection>-<key>`), so importing an updated seed changes records instead of duplicating them.
+   ```json
+   {
+     "settings": { "displayName": "Alex", "currency": "GBP", "dateFormat": "dd/MM/yyyy", "weekStartsOn": 1 },
+     "education": {
+       "course": { "key": "degree", "name": "BSc Example", "institution": "Example University", "level": "Year 1" },
+       "qualifications": [{ "key": "cert", "title": "Example Certificate", "kind": "other", "status": "completed", "grade": "A" }],
+       "modules": [{ "key": "stats", "name": "Statistics" }],
+       "assessments": [{ "key": "stats-exam", "title": "Statistics exam", "kind": "exam", "moduleKey": "stats", "dueDate": "2030-01-15" }],
+       "term": { "teachingStart": "2030-01-06", "teachingEnd": "2030-03-28",
+                 "breaks": [{ "key": "break", "title": "Reading week", "start": "2030-02-17", "end": "2030-02-21", "excludeFromTimetable": true }] },
+       "timetable": [{ "key": "mon-stats", "weekday": "mon", "moduleKey": "stats", "start": "10:00", "end": "11:00", "cancelled": false }]
+     },
+     "finance": {
+       "recurring": [
+         { "key": "rent", "name": "Rent", "amount": 500, "category": "Housing", "frequency": "monthly", "dayOfMonth": 1 },
+         { "key": "plan", "name": "Payment plan", "amount": 20, "category": "Other", "dayOfMonth": 15, "remainingPayments": 3 },
+         { "key": "pay", "name": "Wages", "kind": "income", "amount": 80, "category": "Salary", "frequency": "weekly", "nextDate": "2030-01-03", "endDate": "2030-03-28" }
+       ],
+       "monthlyBudget": { "fromRecurring": true, "expectedTotal": 520 },
+       "savingsGoals": [{ "key": "isa", "name": "ISA", "target": 1000 }]
+     },
+     "goals": [{ "key": "run", "title": "Run a 10k", "area": "health" }],
+     "habits": [{ "key": "read", "name": "Read 20 minutes", "area": "learning" }],
+     "careerPaths": [{ "key": "path", "name": "Data science" }]
+   }
+   ```
+   A few things to know, because the data model has limits:
+   - **Timetable:** calendar events have no repeat rule, so each slot is written out as one dated event per week between `teachingStart` and `teachingEnd`.
+   - **End dates:** recurring items have no end date, so `endDate` / `remainingPayments` is worked out and written into the item's notes ("3 payments remaining, last on …"). Switch the item off when it ends.
+   - **Next payment:** `dayOfMonth` picks the next matching date on or after today. With neither `dayOfMonth` nor `nextDate`, the first date is the build date.
+   - **Budget:** `monthlyBudget.fromRecurring` totals your active recurring expenses into a total-spending budget. `expectedTotal` is an optional cross-check; the build fails if the sum differs.
+   - **Assessments:** these need a date; a missing `dueDate` becomes the build date, marked as a placeholder in the notes.
+   - **Amounts:** they must be above zero, so leave out anything whose amount you don't know yet.
+3. **Build and validate:**
+   ```bash
+   npm run seed:build      # private/profile.json → private/life-os-seed.json (use --today YYYY-MM-DD to pin dates)
+   npm run seed:validate   # runs the app's own import validator in strict mode: must report 0 rejected records
+   ```
+4. **Import it:** Settings → Data & backups → Import → choose `private/life-os-seed.json`.
+   - On a **fresh install**, choose **Replace everything**. Your records *and* settings (name, currency, date format, week start) are applied.
+   - With existing data, choose **Merge**. Records are added or updated, but **your current settings are kept**, so set name, currency and so on in Settings → General afterwards.
+5. **Optional end-to-end check:** `npx playwright test e2e/private-seed.spec.ts --project=desktop` imports the seed with Merge in a real browser, applies its settings, and saves screenshots to `private/screenshots/`. It skips itself when there is no private seed.
+
 ## Features that need external services (not active)
 
 These are deliberately **not** simulated. Each needs an outside service and some configuration:
