@@ -100,7 +100,7 @@ export default function SettingsPage() {
   const [tab, setTab] = useTabParam(TABS, 'general')
   return (
     <div>
-      <PageHeader section="settings" description="Personalise LIFE OS and manage your data. Changes save instantly." />
+      <PageHeader section="settings" description="Personalise Atlas and manage your data. Changes save instantly." />
       <div className="grid gap-5 lg:grid-cols-[220px_minmax(0,1fr)]">
         <nav aria-label="Settings sections" className="hidden lg:block">
           <ul className="sticky top-20 space-y-0.5">
@@ -250,7 +250,7 @@ export default function SettingsPage() {
                 <ul className="mt-2 list-disc space-y-1 pl-5">
                   <li>Everything is stored locally in this browser (IndexedDB). No account, no server, no analytics, no tracking.</li>
                   <li>Fonts are bundled with the app, so no third-party requests are made when you use it.</li>
-                  <li>Anyone with access to this browser profile can open LIFE OS and read your data. Use your device’s lock screen and a separate browser profile if you share the device.</li>
+                  <li>Anyone with access to this browser profile can open Atlas and read your data. Use your device’s lock screen and a separate browser profile if you share the device.</li>
                   <li>Backups you export are plain JSON files — store them somewhere private.</li>
                 </ul>
               </div>
@@ -260,13 +260,13 @@ export default function SettingsPage() {
           {tab === 'integrations' && (
             <Panel title="Integrations" icon={Plug}>
               <div className="space-y-4 text-[13.5px] text-ink-muted">
-                <p>LIFE OS currently works entirely offline with local storage. These integrations would need external services and are <span className="text-ink">not active</span>:</p>
+                <p>Atlas currently works entirely offline with local storage. These integrations would need external services and are <span className="text-ink">not active</span>:</p>
                 <ul className="space-y-3">
                   {[
                     ['Cloud sync (Supabase)', 'Sync between devices. The storage layer is ready for a Supabase adapter — needs a Supabase project, authentication and the steps in docs/SUPABASE.md.'],
                     ['Calendar sync (Google / Outlook)', 'Two-way calendar sync needs OAuth credentials and a small server to hold tokens securely.'],
                     ['Bank connections (Open Banking)', 'Automatic transactions need a regulated provider (e.g. TrueLayer, GoCardless) and a server. All finance data is entered manually today.'],
-                    ['Notifications & reminders', 'Background reminders need push notifications (a service worker plus a push server). LIFE OS does not send notifications today.'],
+                    ['Notifications & reminders', 'Background reminders need push notifications (a service worker plus a push server). Atlas does not send notifications today.'],
                     ['Fitness trackers', 'Importing steps/sleep from Apple Health, Google Fit or Fitbit needs their APIs or a mobile app.'],
                   ].map(([title, text]) => (
                     <li key={title} className="rounded-lg border border-line bg-panel-2/30 p-3">

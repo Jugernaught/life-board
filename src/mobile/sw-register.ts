@@ -14,6 +14,6 @@ export function registerServiceWorker() {
   })
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!hadController) return
-    toast({ title: 'LIFE OS was updated', description: 'Reload to use the latest version.', tone: 'info', duration: 15000, action: { label: 'Reload', onClick: () => window.location.reload() } })
+    toast({ title: 'Atlas was updated', description: 'Reload to use the latest version.', tone: 'info', duration: 15000, action: { label: 'Reload', onClick: () => window.location.reload() } })
   })
 }

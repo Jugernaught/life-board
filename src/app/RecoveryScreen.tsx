@@ -19,11 +19,11 @@ export function RecoveryScreen() {
           <AlertOctagon className="text-bad" />
           <h1 className="font-display text-xl font-semibold">Your data couldn’t be loaded</h1>
         </div>
-        <p className="mt-3 text-sm text-ink-muted">LIFE OS found saved data but couldn’t read it. To protect it, nothing has been changed or overwritten.</p>
+        <p className="mt-3 text-sm text-ink-muted">Atlas found saved data but couldn’t read it. To protect it, nothing has been changed or overwritten.</p>
         <pre className="mt-4 max-h-40 overflow-auto rounded-lg border border-line bg-panel-2 p-3 font-mono text-[12px] whitespace-pre-wrap text-bad">{error?.message}</pre>
         <div className="mt-5 flex flex-wrap gap-2">
           {error?.raw !== undefined && (
-            <Button variant="primary" icon={Download} onClick={() => downloadJson(`life-os-raw-data-${todayISO()}.json`, error.raw)}>
+            <Button variant="primary" icon={Download} onClick={() => downloadJson(`atlas-raw-data-${todayISO()}.json`, error.raw)}>
               Download raw data
             </Button>
           )}

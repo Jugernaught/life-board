@@ -175,8 +175,8 @@ export function SettingsScreen() {
             chevron
             onClick={() =>
               actionSheet({
-                title: 'Install LIFE OS',
-                message: 'In Safari, tap the Share button (square with an arrow), then “Add to Home Screen”, then Add. Open LIFE OS from its icon from then on. Note: the Home Screen app and Safari keep separate data — export from one and import into the other to move it.',
+                title: 'Install Atlas',
+                message: 'In Safari, tap the Share button (square with an arrow), then “Add to Home Screen”, then Add. Open Atlas from its icon from then on. Note: the Home Screen app and Safari keep separate data — export from one and import into the other to move it.',
                 options: [],
                 cancelLabel: 'Done',
               })
@@ -450,7 +450,7 @@ export function DataScreen() {
         footer={
           <>
             Data stays on this iPhone, in this {standalone ? 'Home Screen app' : 'browser'}.{' '}
-            {standalone ? 'Safari keeps its own separate copy — use Export and Import to move data between them.' : 'If you use LIFE OS in Safari without adding it to your Home Screen, Safari may clear its data after about a week without a visit. Add it to your Home Screen, and export backups regularly.'}
+            {standalone ? 'Safari keeps its own separate copy — use Export and Import to move data between them.' : 'If you use Atlas in Safari without adding it to your Home Screen, Safari may clear its data after about a week without a visit. Add it to your Home Screen, and export backups regularly.'}
           </>
         }
       >
@@ -467,7 +467,7 @@ export function DataScreen() {
             estimate.persisted === false
               ? async () => {
                   const granted = await requestPersistentStorage()
-                  toast(granted ? { title: 'Storage protected' } : { title: 'Not granted yet', description: 'iOS decides this itself — it’s more likely once LIFE OS is on your Home Screen and used regularly.', tone: 'info' })
+                  toast(granted ? { title: 'Storage protected' } : { title: 'Not granted yet', description: 'iOS decides this itself — it’s more likely once Atlas is on your Home Screen and used regularly.', tone: 'info' })
                   void refresh()
                 }
               : undefined
@@ -497,7 +497,7 @@ export function DataScreen() {
       </Section>
 
       <Section header="Backups on this iPhone" footer="Manual and safety backups are never removed automatically. Tap a backup to restore, share or delete it.">
-        <Row label="Daily Automatic Backup" sub="When you open LIFE OS, at most once a day">
+        <Row label="Daily Automatic Backup" sub="When you open Atlas, at most once a day">
           <IosSwitch checked={settings.autoBackup} onChange={(autoBackup) => actions.updateSettings({ autoBackup })} label="Daily automatic backup" />
         </Row>
         <SelectRow

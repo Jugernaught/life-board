@@ -1,6 +1,6 @@
 # Syncing with Supabase (optional, not active)
 
-LIFE OS works fully offline. If you want your data on several devices, you can add a cloud backend. This guide describes how to do it with [Supabase](https://supabase.com) without changing any screens.
+Atlas works fully offline. If you want your data on several devices, you can add a cloud backend. This guide describes how to do it with [Supabase](https://supabase.com) without changing any screens.
 
 > **This requires external configuration** — a Supabase project, user sign-in, and a small amount of code. Nothing here runs until you build it.
 
@@ -37,7 +37,7 @@ create policy "Owner manages backups" on public.life_os_backups
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 ```
 
-Storing the whole database as one JSON document matches how LIFE OS already saves locally and keeps the adapter simple. (A normalised table per collection is possible later if you need server-side queries.)
+Storing the whole database as one JSON document matches how Atlas already saves locally and keeps the adapter simple. (A normalised table per collection is possible later if you need server-side queries.)
 
 ## 3. Configure the app
 

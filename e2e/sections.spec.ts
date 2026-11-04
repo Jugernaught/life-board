@@ -109,10 +109,10 @@ test.describe('with sample data', () => {
 
   test('journal autosaves entries and supports search', async ({ page }) => {
     await page.goto('/journal')
-    await page.getByTestId('journal-body').fill('Today I tested LIFE OS end to end.')
+    await page.getByTestId('journal-body').fill('Today I tested Atlas end to end.')
     await expect(page.getByTestId('journal-status')).toContainText('Saved ✓')
     await page.reload()
-    await expect(page.getByTestId('journal-body')).toHaveValue('Today I tested LIFE OS end to end.')
+    await expect(page.getByTestId('journal-body')).toHaveValue('Today I tested Atlas end to end.')
     await page.getByRole('tab', { name: /History/ }).click()
     await page.getByPlaceholder("Search everything you've written…").fill('customer call')
     await expect(page.getByText('Momentum')).toBeVisible()
@@ -188,7 +188,7 @@ test('data: export, backup and restore', async ({ page }, info) => {
   await expect(page.getByTestId('project-card')).toHaveCount(3)
 })
 
-test('import rejects files that are not LIFE OS backups', async ({ page }, info) => {
+test('import rejects files that are not Atlas backups', async ({ page }, info) => {
   await skipOnboarding(page)
   const path = info.outputPath('bad.json')
   await import('node:fs').then((fs) => fs.writeFileSync(path, JSON.stringify({ hello: 'world' })))

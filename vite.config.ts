@@ -46,7 +46,7 @@ function mobileServiceWorker(): Plugin {
 }
 
 function serviceWorkerSource(version: string, precache: string[], base: string) {
-  return `/* LIFE OS for iPhone — service worker (generated at build time) */
+  return `/* Atlas for iPhone — service worker (generated at build time) */
 const CACHE = 'life-os-m-${version}'
 const PRECACHE = ${JSON.stringify(precache)}
 const BASE = ${JSON.stringify(base)}

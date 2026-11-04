@@ -182,7 +182,7 @@ export function FinanceScreen() {
         ))}
       </Section>
 
-      <Section footer="Amounts are entered by you. LIFE OS doesn’t connect to your bank.">
+      <Section footer="Amounts are entered by you. Atlas doesn’t connect to your bank.">
         <Cell title="Financial Targets" detail={db.financialTargets.length || undefined} chevron onClick={() => nav.push('more/finance/targets')} />
       </Section>
     </Screen>

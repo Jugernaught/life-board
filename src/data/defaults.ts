@@ -1,5 +1,5 @@
 /**
- * Defaults for a brand-new LIFE OS. Note what is NOT here: no sample tasks,
+ * Defaults for a brand-new Atlas. Note what is NOT here: no sample tasks,
  * no fake transactions, no invented progress. A new install starts empty.
  */
 import { DEFAULT_EXPENSE_CATEGORIES, DEFAULT_INCOME_CATEGORIES } from './constants'

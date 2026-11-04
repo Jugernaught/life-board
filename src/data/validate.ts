@@ -6,6 +6,11 @@ import { normaliseSettings } from './defaults'
 import { COLLECTION_KEYS, SCHEMA_VERSION, activityEntry, collectionSchemas, databaseSchema } from './schema'
 import type { Database } from './types'
 
+/**
+ * Identifies Atlas backup files. Kept as 'life-os' (the app's original name)
+ * on purpose: every existing backup carries it, so changing it would stop
+ * them importing.
+ */
 export const BACKUP_APP_ID = 'life-os'
 
 export interface BackupFile {
@@ -42,7 +47,7 @@ export function migrate(input: Record<string, unknown>): Record<string, unknown>
   let version = typeof db.schemaVersion === 'number' ? db.schemaVersion : 1
   if (version > SCHEMA_VERSION) {
     throw new Error(
-      `This data was created by a newer version of LIFE OS (schema v${version}; this app understands v${SCHEMA_VERSION}). Update the app before loading it so nothing is lost.`,
+      `This data was created by a newer version of Atlas (schema v${version}; this app understands v${SCHEMA_VERSION}). Update the app before loading it so nothing is lost.`,
     )
   }
   while (version < SCHEMA_VERSION) {
@@ -55,13 +60,13 @@ export function migrate(input: Record<string, unknown>): Record<string, unknown>
   return db
 }
 
-/** Accept either a LIFE OS backup file or a bare database object. */
+/** Accept either an Atlas backup file or a bare database object. */
 export function unwrapBackup(json: unknown): Record<string, unknown> {
-  if (!json || typeof json !== 'object' || Array.isArray(json)) throw new Error('The file does not contain a LIFE OS backup (expected a JSON object).')
+  if (!json || typeof json !== 'object' || Array.isArray(json)) throw new Error('The file does not contain an Atlas backup (expected a JSON object).')
   const obj = json as Record<string, unknown>
   if (obj.app === BACKUP_APP_ID && obj.data && typeof obj.data === 'object') return obj.data as Record<string, unknown>
   if ('settings' in obj || COLLECTION_KEYS.some((k) => k in obj)) return obj
-  throw new Error('This JSON file does not look like a LIFE OS backup.')
+  throw new Error('This JSON file does not look like an Atlas backup.')
 }
 
 function describeIssues(issues: { path: PropertyKey[]; message: string }[]): string[] {

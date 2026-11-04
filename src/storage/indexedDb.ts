@@ -40,7 +40,7 @@ function openDatabase(timeoutMs = 4000): Promise<IDBDatabase> {
     }
     request.onblocked = () => {
       clearTimeout(timer)
-      reject(new Error('IndexedDB is blocked by another open tab. Close other LIFE OS tabs and reload.'))
+      reject(new Error('IndexedDB is blocked by another open tab. Close other Atlas tabs and reload.'))
     }
   })
 }

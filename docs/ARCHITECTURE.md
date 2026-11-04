@@ -1,6 +1,6 @@
 # Architecture
 
-This document explains how LIFE OS is put together, so you (or a future contributor) can change it with confidence.
+This document explains how Atlas is put together, so you (or a future contributor) can change it with confidence.
 
 ## Data flow
 

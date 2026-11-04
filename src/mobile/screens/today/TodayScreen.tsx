@@ -44,7 +44,7 @@ function InstallHint() {
         <Share size={20} />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="ios-subhead font-semibold text-ink">Add LIFE OS to your Home Screen</p>
+        <p className="ios-subhead font-semibold text-ink">Add Atlas to your Home Screen</p>
         <p className="ios-footnote mt-0.5 text-ink-subtle">Tap Share, then “Add to Home Screen”. It opens full-screen, works offline, and keeps your data from being cleared by Safari.</p>
       </div>
       <button

@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "LIFE OS",
-  "short_name": "LIFE OS",
+  "name": "Atlas",
+  "short_name": "Atlas",
   "description": "Your private personal operating system — goals, habits, plans, money, health, learning and journal in one place.",
   "start_url": "./",
   "scope": "./",
