@@ -207,7 +207,7 @@ describe('date and money helpers', () => {
 describe('CLI', () => {
   let dir: string
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), 'life-os-seed-'))
+    dir = mkdtempSync(join(tmpdir(), 'atlas-seed-'))
     vi.spyOn(console, 'log').mockImplementation(() => {})
     vi.spyOn(console, 'warn').mockImplementation(() => {})
     vi.spyOn(console, 'error').mockImplementation(() => {})

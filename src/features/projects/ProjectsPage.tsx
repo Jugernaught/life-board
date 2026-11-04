@@ -67,7 +67,7 @@ export default function ProjectsPage() {
           <EmptyState
             icon={FolderKanban}
             title="No projects yet"
-            description="Create a project for a business idea, side project or experiment. Add tasks and milestones and LIFE OS will track progress for you."
+            description="Create a project for a business idea, side project or experiment. Add tasks and milestones and Atlas will track progress for you."
             action={
               <Button variant="primary" icon={Plus} onClick={() => editor.create('projects')}>
                 Create your first project

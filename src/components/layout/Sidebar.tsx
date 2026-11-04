@@ -20,15 +20,15 @@ export function Logo({ collapsed }: { collapsed?: boolean }) {
             </linearGradient>
           </defs>
           <path d="M8 2h20l6 6v20l-6 6H8l-6-6V8z" fill="none" stroke="url(#logo-g)" strokeWidth="1.5" />
-          <path d="M11 9v18h14" fill="none" stroke="var(--color-accent)" strokeWidth="2.4" strokeLinecap="square" />
-          <circle cx="25" cy="11" r="2.2" fill="var(--color-accent-3)" />
+          <path d="M10.5 27 L18 9 L25.5 27 M13.6 20.5h8.8" fill="none" stroke="var(--color-accent)" strokeWidth="2.4" strokeLinecap="square" strokeLinejoin="miter" />
+          <circle cx="27" cy="10" r="2.2" fill="var(--color-accent-3)" />
         </svg>
         <div className="absolute inset-1 rounded-md bg-accent/10 blur-md" />
       </div>
       {!collapsed && (
         <div className="min-w-0 leading-none">
           <p className="font-display text-[17px] font-bold tracking-[0.12em] text-ink">
-            LIFE<span className="text-accent">//</span>OS
+            <span className="text-accent">A</span>TLAS
           </p>
           <p className="mt-1 font-mono text-[9.5px] tracking-[0.2em] text-ink-subtle">PERSONAL SYSTEM</p>
         </div>

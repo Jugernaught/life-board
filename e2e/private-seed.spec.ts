@@ -1,5 +1,5 @@
 /**
- * Loads YOUR seed (private/life-os-seed.json, git-ignored) through the real
+ * Loads YOUR seed (private/atlas-seed.json, git-ignored) through the real
  * Settings → Data & backups → Import flow in Merge mode, applies the seed's
  * settings through the Settings screen (Merge keeps existing settings), and
  * saves screenshots to private/screenshots/.
@@ -14,7 +14,7 @@ import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { skipOnboarding, trackErrors, waitForSave } from './helpers'
 
-const SEED = resolve(process.env.LIFE_OS_SEED ?? 'private/life-os-seed.json')
+const SEED = resolve(process.env.ATLAS_SEED ?? process.env.LIFE_OS_SEED ?? 'private/atlas-seed.json')
 const SHOTS = resolve('private/screenshots')
 
 test.skip(!existsSync(SEED), `No private seed at ${SEED} — run npm run seed:build first`)

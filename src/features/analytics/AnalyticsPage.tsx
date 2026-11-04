@@ -447,7 +447,7 @@ function ReportsTab({ today }: { today: string }) {
         </Button>
       </div>
       <article className="panel p-5 sm:p-7" aria-label={report.title}>
-        <p className="eyebrow text-accent/80">LIFE//OS report · generated {new Date().toLocaleDateString()}</p>
+        <p className="eyebrow text-accent/80">ATLAS report · generated {new Date().toLocaleDateString()}</p>
         <h2 className="mt-2 font-display text-[22px] font-semibold text-ink">{report.title}</h2>
         <p className="mt-1 text-[13px] text-ink-subtle">Compared with the previous {kind === 'week' ? 'week' : 'month'}. Every figure comes from records you entered.</p>
         <div className="mt-6 grid gap-x-8 gap-y-6 md:grid-cols-2">

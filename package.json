@@ -1,8 +1,8 @@
 {
-  "name": "life-os",
+  "name": "atlas",
   "private": true,
   "version": "1.0.0",
-  "description": "LIFE OS \u2014 a private, local-first personal operating system.",
+  "description": "Atlas \u2014 a private, local-first personal operating system.",
   "type": "module",
   "scripts": {
     "dev": "vite",

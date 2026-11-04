@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Build a LIFE OS backup file from a hand-written profile.
+ * Build an Atlas backup file from a hand-written profile.
  *
- *   node scripts/build-seed.mjs [--in private/profile.json] [--out private/life-os-seed.json] [--today YYYY-MM-DD]
+ *   node scripts/build-seed.mjs [--in private/profile.json] [--out private/atlas-seed.json] [--today YYYY-MM-DD]
  *
- * The output is an ordinary LIFE OS backup, so it is loaded through the app's
+ * The output is an ordinary Atlas backup, so it is loaded through the app's
  * normal Settings → Data & backups → Import flow, which validates every record
  * first. Nothing here runs inside the app, and the app never loads it on its
  * own: a new install still starts empty.
@@ -251,7 +251,7 @@ function money(minor, currency) {
 const joinNotes = (...parts) => parts.filter(Boolean).join('\n') || undefined
 
 /**
- * Turn a profile object into a LIFE OS backup file.
+ * Turn a profile object into an Atlas backup file.
  *
  * @param {object} profile  Parsed profile JSON (see README → "Preloading your own data").
  * @param {{ now?: Date, today?: string }} [options]  `now` sets record timestamps; `today` (YYYY-MM-DD) anchors "next payment" dates. Both default to the current time.
@@ -690,7 +690,7 @@ export function buildSeed(profile, options = {}) {
 // --------------------------------------------------------------------- CLI --
 
 function parseArgs(argv) {
-  const out = { in: 'private/profile.json', out: 'private/life-os-seed.json' }
+  const out = { in: 'private/profile.json', out: 'private/atlas-seed.json' }
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]
     const [flag, inline] = a.split('=', 2)
@@ -707,7 +707,7 @@ function parseArgs(argv) {
 export function main(argv = process.argv.slice(2)) {
   const args = parseArgs(argv)
   if (args.help) {
-    console.log('Usage: node scripts/build-seed.mjs [--in private/profile.json] [--out private/life-os-seed.json] [--today YYYY-MM-DD]')
+    console.log('Usage: node scripts/build-seed.mjs [--in private/profile.json] [--out private/atlas-seed.json] [--today YYYY-MM-DD]')
     return 0
   }
   const inPath = resolve(args.in)

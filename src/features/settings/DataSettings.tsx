@@ -215,7 +215,7 @@ export function DataSettings() {
           </Button>
         </Panel>
         <Panel title="Import" icon={Upload}>
-          <p className="mb-3 text-[13px] text-ink-muted">Import a LIFE OS JSON backup. It’s fully validated and previewed before anything changes, and a safety backup is taken first.</p>
+          <p className="mb-3 text-[13px] text-ink-muted">Import an Atlas JSON backup. It’s fully validated and previewed before anything changes, and a safety backup is taken first.</p>
           <input
             ref={fileInput}
             type="file"
@@ -245,7 +245,7 @@ export function DataSettings() {
       >
         <div className="mb-4 grid gap-3 sm:grid-cols-2">
           <div className="rounded-lg border border-line bg-panel-2/40 px-3 py-2.5">
-            <Switch checked={settings.autoBackup} onChange={(autoBackup) => actions.updateSettings({ autoBackup })} label="Daily automatic backup" description="Taken when you open LIFE OS, at most once a day" />
+            <Switch checked={settings.autoBackup} onChange={(autoBackup) => actions.updateSettings({ autoBackup })} label="Daily automatic backup" description="Taken when you open Atlas, at most once a day" />
           </div>
           <div className="flex items-center justify-between gap-3 rounded-lg border border-line bg-panel-2/40 px-3 py-2.5">
             <div>

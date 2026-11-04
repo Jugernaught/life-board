@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { make } from '@/test/factories'
 import { createEmptyDatabase, normaliseSettings } from './defaults'
 import { SCHEMA_VERSION, WIDGET_IDS } from './schema'
-import { makeBackupFile, mergeDatabases, unwrapBackup, validateDatabase } from './validate'
+import { BACKUP_APP_ID, makeBackupFile, mergeDatabases, unwrapBackup, validateDatabase } from './validate'
 
 describe('validateDatabase', () => {
   it('accepts an empty database and a wrapped backup file', () => {
@@ -50,7 +50,7 @@ describe('validateDatabase', () => {
     expect(r.ok && (r.db.tasks[0] as Record<string, unknown>).futureField).toBe(42)
   })
 
-  it('rejects things that are not LIFE OS backups', () => {
+  it('rejects things that are not Atlas backups', () => {
     expect(() => unwrapBackup([])).toThrow()
     expect(() => unwrapBackup({ hello: 'world' })).toThrow(/does not look like/)
     expect(validateDatabase('nope').ok).toBe(false)
@@ -85,5 +85,16 @@ describe('normaliseSettings robustness', () => {
     expect(s.currency).toBe('GBP')
     expect(s.theme).toBe('dark')
     expect(s.displayName).toBe('Kai')
+  })
+})
+
+describe('backward compatibility after the rename to Atlas', () => {
+  it('still writes and accepts the original "life-os" backup id', () => {
+    const file = makeBackupFile(createEmptyDatabase())
+    expect(file.app).toBe('life-os')
+    expect(BACKUP_APP_ID).toBe('life-os')
+    // A backup exported before the rename imports unchanged.
+    const legacy = { app: 'life-os', kind: 'backup', exportedAt: '2026-01-01T00:00:00Z', schemaVersion: 1, data: createEmptyDatabase() }
+    expect(validateDatabase(legacy, { strict: true }).ok).toBe(true)
   })
 })

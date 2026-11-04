@@ -1,4 +1,4 @@
-# LIFE//OS
+# ATLAS
 
 A private, local-first **personal operating system**: one command centre for your goals, studies, career, projects, money, health, learning, writing, reading and relationships — with analytics calculated only from what you record.
 
@@ -19,7 +19,7 @@ npm run dev        # start the app
 
 Open **http://localhost:5173**. The first-time setup asks for your name and preferences (all optional — you can skip it).
 
-> Your data lives in the browser profile you use. Opening LIFE OS in a different browser, or clearing site data, starts fresh — so **export a backup regularly** (Settings → Data & backups).
+> Your data lives in the browser profile you use. Opening Atlas in a different browser, or clearing site data, starts fresh — so **export a backup regularly** (Settings → Data & backups).
 
 ### Useful commands
 
@@ -104,11 +104,11 @@ More detail: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 - **Several tabs:** open tabs tell each other about saves and reload, so they don't overwrite each other.
 - **Backups:** one automatic backup per day (configurable), plus safety backups before any import, restore or reset. Restore, download or delete them in Settings → Data & backups.
 - **Export / import:** a single JSON file containing everything. Imports are fully validated and previewed (with counts and any invalid records listed) before anything changes; choose *merge* or *replace*.
-- **If stored data can't be read** (for example, it was written by a newer version), LIFE OS shows a recovery screen and does not overwrite anything; you can download the raw data.
+- **If stored data can't be read** (for example, it was written by a newer version), Atlas shows a recovery screen and does not overwrite anything; you can download the raw data.
 
 ## Preloading your own data
 
-You can describe your life once in a JSON profile and turn it into an ordinary LIFE OS backup file to import. The app itself never loads it on its own: a new install still starts empty.
+You can describe your life once in a JSON profile and turn it into an ordinary Atlas backup file to import. The app itself never loads it on its own: a new install still starts empty.
 
 1. **Keep it private.** `private/` is git-ignored. Put your profile there and nowhere else:
    ```bash
@@ -161,10 +161,10 @@ You can describe your life once in a JSON profile and turn it into an ordinary L
    - **Amounts:** they must be above zero, so leave out anything whose amount you don't know yet.
 3. **Build and validate:**
    ```bash
-   npm run seed:build      # private/profile.json → private/life-os-seed.json (use --today YYYY-MM-DD to pin dates)
+   npm run seed:build      # private/profile.json → private/atlas-seed.json (use --today YYYY-MM-DD to pin dates)
    npm run seed:validate   # runs the app's own import validator in strict mode: must report 0 rejected records
    ```
-4. **Import it:** Settings → Data & backups → Import → choose `private/life-os-seed.json`.
+4. **Import it:** Settings → Data & backups → Import → choose `private/atlas-seed.json`.
    - On a **fresh install**, choose **Replace everything**. Your records *and* settings (name, currency, date format, week start) are applied.
    - With existing data, choose **Merge**. Records are added or updated, but **your current settings are kept**, so set name, currency and so on in Settings → General afterwards.
 5. **Optional end-to-end check:** `npx playwright test e2e/private-seed.spec.ts --project=desktop` imports the seed with Merge in a real browser, applies its settings, and saves screenshots to `private/screenshots/`. It skips itself when there is no private seed.
@@ -183,7 +183,7 @@ These are deliberately **not** simulated. Each needs an outside service and some
 
 ## Deploying
 
-`npm run build` produces static files in `dist/` that any static host can serve (Netlify, Vercel, Cloudflare Pages, GitHub Pages…). Because LIFE OS uses normal URLs like `/finance`, the host must send unknown paths to `index.html` — `public/_redirects` (Netlify) and `vercel.json` (Vercel) already do this. Data still lives in each visitor's own browser; nothing is shared between visitors.
+`npm run build` produces static files in `dist/` that any static host can serve (Netlify, Vercel, Cloudflare Pages, GitHub Pages…). Because Atlas uses normal URLs like `/finance`, the host must send unknown paths to `index.html` — `public/_redirects` (Netlify) and `vercel.json` (Vercel) already do this. Data still lives in each visitor's own browser; nothing is shared between visitors.
 
 ### GitHub Pages
 

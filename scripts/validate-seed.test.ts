@@ -1,23 +1,23 @@
 /**
- * Validates your own generated seed (private/life-os-seed.json, git-ignored)
+ * Validates your own generated seed (private/atlas-seed.json, git-ignored)
  * with the same checks the app's import screen uses. Skipped when the file
  * does not exist, so it never fails for anyone who has not made one.
  *
  *   npm run seed:validate
  *
- * Set LIFE_OS_SEED=path/to/file.json to check a different file.
+ * Set ATLAS_SEED=path/to/file.json to check a different file.
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { COLLECTION_KEYS, SCHEMA_VERSION, databaseSchema } from '@/data/schema'
 import { totalRecords, validateDatabase } from '@/data/validate'
 
-const SEED = resolve(process.env.LIFE_OS_SEED ?? 'private/life-os-seed.json')
+const SEED = resolve(process.env.ATLAS_SEED ?? process.env.LIFE_OS_SEED ?? 'private/atlas-seed.json')
 
 describe.skipIf(!existsSync(SEED))(`private seed (${SEED})`, () => {
   const raw = existsSync(SEED) ? JSON.parse(readFileSync(SEED, 'utf8')) : null
 
-  it('is a LIFE OS backup for the current schema version', () => {
+  it('is an Atlas backup for the current schema version', () => {
     expect(raw).toMatchObject({ app: 'life-os', kind: 'backup', schemaVersion: SCHEMA_VERSION })
   })
 
