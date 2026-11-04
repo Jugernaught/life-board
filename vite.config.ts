@@ -3,6 +3,7 @@ import { fileURLToPath, URL } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { type Plugin, defineConfig } from 'vite'
+import { scaleTextInCss } from './src/app/textScaleCss.ts'
 
 // BASE_PATH lets the same build run at a domain root (Vercel, Netlify, local)
 // or under a sub-path such as GitHub Pages' /<repo-name>/. Defaults to '/'.
@@ -53,6 +54,22 @@ const BASE = ${JSON.stringify(base)}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)).then(() => self.skipWaiting()))
+})
+
+// Tapping a reminder: bring LIFE OS forward and open the task or event.
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const data = event.notification.data || {}
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      const client = list.find((c) => new URL(c.url).pathname.startsWith(BASE + 'm/'))
+      if (client) {
+        client.postMessage({ type: 'life-os:open-record', kind: data.kind, id: data.id })
+        return client.focus()
+      }
+      return self.clients.openWindow(BASE + 'm/')
+    }),
+  )
 })
 
 self.addEventListener('activate', (event) => {
@@ -107,10 +124,21 @@ self.addEventListener('fetch', (event) => {
 `
 }
 
+/** Makes every font size follow the Text size setting (see src/app/textScaleCss.ts). */
+function textScale(): Plugin {
+  return {
+    name: 'life-os:text-scale',
+    transform(code, id) {
+      if (!/\.css(?:$|\?)/.test(id) || id.includes('node_modules')) return
+      return { code: scaleTextInCss(code), map: null }
+    },
+  }
+}
+
 // Vite builds and serves both apps: the desktop app at / and the iPhone app at /m/.
 export default defineConfig({
   base,
-  plugins: [react(), tailwindcss(), mobileServiceWorker()],
+  plugins: [react(), tailwindcss(), textScale(), mobileServiceWorker()],
   resolve: {
     alias: { '@': r('./src') },
   },

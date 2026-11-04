@@ -91,3 +91,66 @@ describe('store CRUD', () => {
     expect(get().db.settings.dashboard.length).toBeGreaterThan(5)
   })
 })
+
+describe('undo history and repeating tasks', () => {
+  it('undoes edits, completions, creations and deletions — newest first', () => {
+    const s = fresh()
+    const t = s().create('tasks', { title: 'Write report' })
+    s().update('tasks', t.id, { title: 'Write the report' })
+    s().update('tasks', t.id, { status: 'done' })
+    expect(s().db.tasks[0].status).toBe('done')
+    expect(s().undoLast()?.kind).toBe('update')
+    expect(s().db.tasks[0]).toMatchObject({ status: 'todo', title: 'Write the report' })
+    s().undoLast()
+    expect(s().db.tasks[0].title).toBe('Write report')
+    s().undoLast()
+    expect(s().db.tasks).toHaveLength(0)
+
+    const u = s().create('tasks', { title: 'Keep me' })
+    s().remove('tasks', u.id)
+    expect(s().db.tasks).toHaveLength(0)
+    s().undoLast()
+    expect(s().db.tasks.map((x) => x.title)).toEqual(['Keep me'])
+  })
+
+  it('merges rapid edits of one record into a single undo step', () => {
+    const s = fresh()
+    const n = s().create('notes', { title: 'Idea', body: '' })
+    for (const body of ['a', 'ab', 'abc']) s().update('notes', n.id, { body })
+    s().undoLast()
+    expect(s().db.notes[0].body).toBe('')
+  })
+
+  it('completing a repeating task creates exactly one next occurrence; undo removes it', () => {
+    const s = fresh()
+    const t = s().create('tasks', {
+      title: 'Water plants',
+      dueDate: '2020-01-06',
+      repeat: { freq: 'weekly', interval: 1, days: [] },
+      checklist: [{ id: 'c1', title: 'Balcony', done: true }],
+    })
+    s().update('tasks', t.id, { status: 'done' })
+    const open = s().db.tasks.filter((x) => x.status !== 'done')
+    expect(open).toHaveLength(1)
+    expect(open[0].id).not.toBe(t.id)
+    expect(open[0].dueDate! > '2020-01-06').toBe(true)
+    expect(open[0].dueDate! > new Date().toISOString().slice(0, 10) || open[0].dueDate === undefined).toBe(true)
+    expect(open[0].checklist[0].done).toBe(false)
+    expect(open[0].repeat?.freq).toBe('weekly')
+    // Re-saving the completed task doesn't spawn again.
+    s().update('tasks', t.id, { notes: 'done' })
+    expect(s().db.tasks).toHaveLength(2)
+    s().undoLast() // notes edit
+    s().undoLast() // completion + spawn
+    expect(s().db.tasks).toHaveLength(1)
+    expect(s().db.tasks[0].status).toBe('todo')
+  })
+
+  it('a delete undone from its notification is removed from the history', () => {
+    const s = fresh()
+    const t = s().create('tasks', { title: 'Temp' })
+    const token = s().remove('tasks', t.id)!
+    s().undo(token)
+    expect(s().history.some((c) => c.kind === 'delete')).toBe(false)
+  })
+})

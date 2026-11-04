@@ -1,4 +1,4 @@
-import { type ComponentType, type ReactNode, useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ComponentType, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { MoreHorizontal } from 'lucide-react'
@@ -19,7 +19,9 @@ export interface MenuItem {
 /** A small dropdown of actions ("…" menus on cards and rows). */
 export function Menu({ items, label = 'More actions', trigger, align = 'end' }: { items: (MenuItem | 'divider')[]; label?: string; trigger?: (props: { onClick: () => void; 'aria-expanded': boolean; 'aria-haspopup': 'menu'; id: string }) => ReactNode; align?: 'start' | 'end' }) {
   const [open, setOpen] = useState(false)
-  const [pos, setPos] = useState<{ top: number; left: number; right: number } | null>(null)
+  const [pos, setPos] = useState<{ top: number; left: number; right: number; anchorTop: number } | null>(null)
+  // When the menu would run off the bottom of the window it opens upwards instead.
+  const [flipTop, setFlipTop] = useState<number | null>(null)
   const id = useId()
   const anchor = useRef<HTMLDivElement>(null)
   const menu = useRef<HTMLDivElement>(null)
@@ -27,8 +29,17 @@ export function Menu({ items, label = 'More actions', trigger, align = 'end' }: 
   const place = () => {
     const r = anchor.current?.getBoundingClientRect()
     if (!r) return
-    setPos({ top: r.bottom + 6, left: r.left, right: window.innerWidth - r.right })
+    setFlipTop(null)
+    setPos({ top: r.bottom + 6, left: r.left, right: window.innerWidth - r.right, anchorTop: r.top })
   }
+
+  useLayoutEffect(() => {
+    if (!open || !pos || !menu.current) return
+    const h = menu.current.offsetHeight
+    if (pos.top + h <= window.innerHeight - 8) return
+    const above = pos.anchorTop - 6 - h
+    setFlipTop(above >= 8 ? above : Math.max(8, window.innerHeight - 8 - h))
+  }, [open, pos])
 
   useEffect(() => {
     if (!open) return
@@ -89,7 +100,7 @@ export function Menu({ items, label = 'More actions', trigger, align = 'end' }: 
               exit={{ opacity: 0, y: -4, transition: { duration: 0.1 } }}
               transition={{ duration: 0.14 }}
               className="float fixed z-[90] min-w-44 rounded-[calc(var(--radius-control)+4px)] p-1"
-              style={align === 'end' ? { top: pos.top, right: Math.max(8, pos.right) } : { top: pos.top, left: Math.max(8, pos.left) }}
+              style={{ top: flipTop ?? pos.top, maxHeight: 'calc(100dvh - 16px)', overflowY: 'auto', ...(align === 'end' ? { right: Math.max(8, pos.right) } : { left: Math.max(8, pos.left) }) }}
               onClick={(e) => e.stopPropagation()}
             >
               {items.map((item, i) =>

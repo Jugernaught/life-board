@@ -18,6 +18,8 @@ import { createEmptyDatabase, normaliseSettings } from '@/data/defaults'
 import { COLLECTIONS, RELATIONS } from '@/data/registry'
 import { collectionSchemas } from '@/data/schema'
 import type { ActivityAction, ActivityEntry, CollectionKey, Collections, Database, InputOf, Settings } from '@/data/types'
+import { todayISO } from '@/lib/dates'
+import { nextDueDate } from '@/lib/recurrence'
 import { uid } from '@/lib/utils'
 import { onCreate, onUpdate } from './lifecycle'
 
@@ -39,8 +41,21 @@ export interface UndoToken<K extends CollectionKey = CollectionKey> {
   unlinked: { key: CollectionKey; id: string; field: string; value: string }[]
 }
 
+/**
+ * A recent change that can be undone (Ctrl/Cmd+Z, or Undo on a notification).
+ * Kept in memory only — the last HISTORY_LIMIT changes of this session.
+ */
+export type Change =
+  | { id: string; kind: 'update'; key: CollectionKey; prev: Collections[CollectionKey]; label: string; action: ActivityAction; at: number; spawned?: { key: CollectionKey; id: string } }
+  | { id: string; kind: 'create'; key: CollectionKey; recordId: string; label: string; at: number }
+  | { id: string; kind: 'delete'; token: UndoToken; label: string; at: number }
+
+export const HISTORY_LIMIT = 50
+
 export interface AppState {
   db: Database
+  /** Recent undoable changes, newest last. */
+  history: Change[]
   ready: boolean
   /** Set when stored data could not be read. Saving is disabled until resolved. */
   loadError?: { message: string; raw?: unknown }
@@ -58,6 +73,10 @@ export interface AppState {
   ): Collections[K] | undefined
   remove<K extends CollectionKey>(key: K, id: string): UndoToken<K> | undefined
   undo(token: UndoToken): void
+  /** Undo the most recent change; returns what was undone. */
+  undoLast(): Change | undefined
+  /** Undo a specific change (from its notification). */
+  undoChange(id: string): boolean
   updateSettings(patch: Partial<Settings>): void
   /** Replace everything (import, restore, reset). Callers must back up first. */
   replaceDatabase(db: Database): void
@@ -129,9 +148,36 @@ function logActivity(activity: ActivityEntry[], entry: ActivityInput, at: string
   return out.length > ACTIVITY_LIMIT ? out.slice(0, ACTIVITY_LIMIT) : out
 }
 
+/** Add a change, merging rapid repeat edits of one record (autosave, typing) into one step. */
+function pushHistory(history: Change[], change: Change): Change[] {
+  const last = history[history.length - 1]
+  if (last && change.kind === 'update' && last.kind === 'update' && last.key === change.key && last.prev.id === change.prev.id && change.action === 'updated' && last.action === 'updated' && !change.spawned && change.at - last.at < 3000) {
+    return [...history.slice(0, -1), { ...change, prev: last.prev, at: change.at }]
+  }
+  const out = [...history, change]
+  return out.length > HISTORY_LIMIT ? out.slice(-HISTORY_LIMIT) : out
+}
+
+/** The next occurrence of a repeating task that was just completed. */
+function nextOccurrenceOf(task: Collections['tasks'], now: string): Collections['tasks'] | undefined {
+  if (!task.repeat || task.status !== 'done') return undefined
+  const rest: Record<string, unknown> = { ...task }
+  for (const k of ['id', 'completedAt', 'createdAt', 'updatedAt', 'focusDate']) delete rest[k]
+  return validate('tasks', {
+    ...rest,
+    id: uid(),
+    createdAt: now,
+    updatedAt: now,
+    status: 'todo',
+    dueDate: nextDueDate(task.repeat, task.dueDate, todayISO()),
+    checklist: task.checklist.map((c) => ({ ...c, done: false, doneAt: undefined })),
+  })
+}
+
 export function createAppStore(initial: Database = createEmptyDatabase()) {
   return createStore<AppState>()((set, get) => ({
     db: initial,
+    history: [],
     ready: false,
     save: { status: 'idle' },
 
@@ -149,7 +195,8 @@ export function createAppStore(initial: Database = createEmptyDatabase()) {
             now,
           )
         }
-        return { db }
+        const history = opts?.silent ? s.history : pushHistory(s.history, { id: uid(), kind: 'create', key, recordId: final.id, label: titleOf(key, final), at: Date.now() })
+        return { db, history }
       })
       return final
     },
@@ -164,27 +211,41 @@ export function createAppStore(initial: Database = createEmptyDatabase()) {
       const merged = validate(key, { ...prev, ...changes, id: prev.id, createdAt: prev.createdAt, updatedAt: now })
       const { record, action, detail } = onUpdate(key, prev, merged, now)
       const final = validate(key, record)
+      const resolvedAction = opts?.action ?? action
+      // A repeating task that has just been completed comes back on its next date.
+      const spawn = key === 'tasks' && resolvedAction === 'completed' ? nextOccurrenceOf(final as Collections['tasks'], now) : undefined
       set((s) => {
         const items = [...(s.db[key] as Collections[typeof key][])]
         const i = items.findIndex((r) => r.id === id)
         if (i === -1) return s
         items[i] = final
         const db = { ...s.db, [key]: items } as Database
+        if (spawn) db.tasks = [spawn, ...db.tasks]
         if (!opts?.silent) {
           db.activity = logActivity(
             s.db.activity,
             {
-              action: opts?.action ?? action,
+              action: resolvedAction,
               collection: key,
               entityId: id,
               label: titleOf(key, final),
               projectId: projectIdOf(key, final as never),
-              detail: opts?.detail ?? detail,
+              detail: spawn ? `Repeats — next ${spawn.dueDate}` : (opts?.detail ?? detail),
             },
             now,
           )
         }
-        return { db }
+        const history = pushHistory(s.history, {
+          id: uid(),
+          kind: 'update',
+          key,
+          prev,
+          label: titleOf(key, final),
+          action: resolvedAction,
+          at: Date.now(),
+          spawned: spawn ? { key: 'tasks', id: spawn.id } : undefined,
+        })
+        return { db, history }
       })
       return final
     },
@@ -224,8 +285,9 @@ export function createAppStore(initial: Database = createEmptyDatabase()) {
         },
         now,
       )
-      set({ db })
-      return { key, record, index, unlinked }
+      const token: UndoToken = { key, record, index, unlinked }
+      set((s) => ({ db, history: pushHistory(s.history, { id: uid(), kind: 'delete', token, label: titleOf(key, record), at: Date.now() }) }))
+      return token as UndoToken<typeof key>
     },
 
     undo(token) {
@@ -254,8 +316,42 @@ export function createAppStore(initial: Database = createEmptyDatabase()) {
           },
           now,
         )
-        return { db }
+        // The change is undone; it can't be undone twice.
+        return { db, history: s.history.filter((c) => !(c.kind === 'delete' && c.token === token)) }
       })
+    },
+
+    undoLast() {
+      const last = get().history[get().history.length - 1]
+      if (!last) return undefined
+      get().undoChange(last.id)
+      return last
+    },
+
+    undoChange(changeId) {
+      const change = get().history.find((c) => c.id === changeId)
+      if (!change) return false
+      if (change.kind === 'delete') {
+        get().undo(change.token)
+        return true
+      }
+      const now = new Date().toISOString()
+      set((s) => {
+        const db = { ...s.db } as Database
+        const rows = db as unknown as Record<string, { id: string }[]>
+        let entityId: string
+        if (change.kind === 'create') {
+          rows[change.key] = rows[change.key].filter((r) => r.id !== change.recordId)
+          entityId = change.recordId
+        } else {
+          rows[change.key] = rows[change.key].map((r) => (r.id === change.prev.id ? (change.prev as { id: string }) : r))
+          if (change.spawned) rows[change.spawned.key] = rows[change.spawned.key].filter((r) => r.id !== change.spawned!.id)
+          entityId = change.prev.id
+        }
+        db.activity = logActivity(s.db.activity, { action: 'restored', collection: change.key, entityId, label: change.label, detail: change.kind === 'create' ? 'Undid adding' : 'Undid change' }, now)
+        return { db, history: s.history.filter((c) => c.id !== changeId) }
+      })
+      return true
     },
 
     updateSettings(patch) {
@@ -263,7 +359,8 @@ export function createAppStore(initial: Database = createEmptyDatabase()) {
     },
 
     replaceDatabase(db) {
-      set({ db: { ...db, settings: normaliseSettings(db.settings) } })
+      // Imports and restores aren't undoable step by step (they take a backup instead).
+      set({ db: { ...db, settings: normaliseSettings(db.settings) }, history: [] })
     },
 
     clearActivity() {
@@ -306,6 +403,8 @@ export const actions = {
   ) => appStore.getState().update(key, id, patch, opts),
   remove: <K extends CollectionKey>(key: K, id: string) => appStore.getState().remove(key, id),
   undo: (token: UndoToken) => appStore.getState().undo(token),
+  undoLast: () => appStore.getState().undoLast(),
+  undoChange: (id: string) => appStore.getState().undoChange(id),
   updateSettings: (patch: Partial<Settings>) => appStore.getState().updateSettings(patch),
   getDb: () => appStore.getState().db,
   get: <K extends CollectionKey>(key: K, id: string) => (appStore.getState().db[key] as Collections[K][]).find((r) => r.id === id),

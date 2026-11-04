@@ -86,7 +86,8 @@ test('tasks: quick add, complete, edit, delete with undo, and persist', async ({
   await expect(page.getByRole('dialog', { name: /Delete task/ })).toBeVisible()
   await page.getByTestId('confirm-button').click()
   await expect(page.getByTestId('task-item')).toHaveCount(0)
-  await page.getByRole('button', { name: 'Undo' }).click()
+  // The "Task completed" notice (with its own Undo) may still be showing.
+  await page.getByRole('status').filter({ hasText: 'Task deleted' }).getByRole('button', { name: 'Undo' }).click()
   await expect(page.getByTestId('task-item').filter({ hasText: 'Buy return train tickets' })).toBeVisible()
 
   await waitForSave(page)

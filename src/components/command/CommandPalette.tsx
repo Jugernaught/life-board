@@ -2,9 +2,9 @@ import { type ComponentType, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigate } from 'react-router'
-import { ArrowRight, BookOpen, CalendarPlus, CheckSquare, CornerDownLeft, Download, Dumbbell, FileText, FolderPlus, GraduationCap, Keyboard, Moon, PanelLeft, PencilLine, PoundSterling, Repeat, Search, Smile, Target, Palette as PaletteIcon } from 'lucide-react'
+import { ArrowRight, BookOpen, CalendarPlus, CheckSquare, CornerDownLeft, Download, Dumbbell, FileText, FolderPlus, GraduationCap, Keyboard, LayoutTemplate, Moon, PanelLeft, PencilLine, PoundSterling, Repeat, Search, Smile, Sunrise, Target, Palette as PaletteIcon } from 'lucide-react'
 import { NAV_ITEMS } from '@/app/navigation'
-import { COLLECTIONS } from '@/data/registry'
+import { COLLECTIONS, hrefFor } from '@/data/registry'
 import type { CollectionKey } from '@/data/types'
 import { searchDatabase } from '@/selectors/search'
 import { THEMES } from '@/app/themes'
@@ -13,9 +13,14 @@ import { actions, useDatabase } from '@/store/store'
 import { cn, normalise } from '@/lib/utils'
 import { Kbd } from '@/components/ui/display'
 import { editor } from '@/components/editor/editorStore'
+import { planDay } from '@/features/planday/model'
+import { templates } from '@/features/start/model'
+import { pushRecent, readRecent } from './recent'
 import { type QuickAddType, useUI } from './uiStore'
 
 type IconType = ComponentType<{ size?: number; className?: string }>
+
+const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
 
 interface Command {
   id: string
@@ -25,6 +30,8 @@ interface Command {
   hint?: string
   keywords?: string
   run: () => void
+  /** Ctrl/Cmd+Enter (e.g. complete a task without opening it). */
+  alt?: { label: string; run: () => void }
 }
 
 const SEARCH_ICONS: Partial<Record<CollectionKey, IconType>> = {
@@ -76,6 +83,8 @@ function Palette({ onClose }: { onClose: () => void }) {
       create('studySessions', 'Log study time', GraduationCap, 'learn session'),
       create('media', 'Add to library', BookOpen, 'book film podcast article'),
       create('habits', 'New habit', Repeat, 'routine streak'),
+      { id: 'plan-day', label: 'Plan my day', group: 'Create', icon: Sunrise, keywords: 'morning plan priorities focus today ritual', run: () => planDay.show() },
+      { id: 'templates', label: 'Starter templates', group: 'Create', icon: LayoutTemplate, keywords: 'habits routines repeating examples ideas', run: () => templates.show() },
       { id: 'new-project', label: 'New project', group: 'Create', icon: FolderPlus, keywords: 'business venture', run: () => editor.create('projects') },
       ...NAV_ITEMS.map((n) => ({ id: `go-${n.id}`, label: n.label, group: 'Go to', icon: n.icon, hint: `G ${n.key.toUpperCase()}`, keywords: n.description, run: () => navigate(n.path) })),
       { id: 'theme', label: 'Toggle light / dark theme', group: 'Actions', icon: Moon, keywords: 'appearance mode', run: () => actions.updateSettings({ theme: db.settings.theme === 'light' ? 'dark' : 'light' }) },
@@ -89,19 +98,35 @@ function Palette({ onClose }: { onClose: () => void }) {
   const items = useMemo(() => {
     const q = normalise(query)
     const matchedCommands = q ? commands.filter((c) => normalise(`${c.label} ${c.keywords ?? ''} ${c.group}`).includes(q)) : commands
-    const results = q
-      ? searchDatabase(db, query, 30).map<Command>((r) => ({
-          id: `rec-${r.key}-${r.id}`,
-          label: r.title,
-          group: 'Records',
-          icon: SEARCH_ICONS[r.key] ?? FileText,
-          hint: COLLECTIONS[r.key].singular,
-          keywords: r.snippet,
-          run: () => navigate(r.href),
-        }))
-      : []
+    const recordCommand = (key: CollectionKey, id: string, title: string, href: string, group: string, snippet?: string): Command => {
+      const task = key === 'tasks' ? db.tasks.find((t) => t.id === id) : undefined
+      return {
+        id: `${group === 'Recent' ? 'recent' : 'rec'}-${key}-${id}`,
+        label: title,
+        group,
+        icon: SEARCH_ICONS[key] ?? FileText,
+        hint: COLLECTIONS[key].singular,
+        keywords: snippet,
+        run: () => {
+          pushRecent({ key, id })
+          navigate(href)
+        },
+        alt: task ? { label: task.status === 'done' ? 'Mark not done' : 'Complete', run: () => actions.update('tasks', id, { status: task.status === 'done' ? 'todo' : 'done' }) } : undefined,
+      }
+    }
+    const found = q ? searchDatabase(db, query, 30) : []
+    const results = found.filter((r) => r.score >= 30).map<Command>((r) => recordCommand(r.key, r.id, r.title, r.href, 'Records', r.snippet))
+    // Letters-in-order guesses come after commands, so a typed command name always wins.
+    const guesses = found.filter((r) => r.score < 30).map<Command>((r) => recordCommand(r.key, r.id, r.title, r.href, 'Close matches', r.snippet))
+    // Idle: recently opened records first (ones that still exist).
+    const recent = q
+      ? []
+      : readRecent().flatMap((r) => {
+          const rec = (db[r.key] as { id: string }[] | undefined)?.find((x) => x.id === r.id)
+          return rec ? [recordCommand(r.key, r.id, COLLECTIONS[r.key].title(rec as never) ?? '', hrefFor(r.key, r.id), 'Recent')] : []
+        })
     // Records first when searching, commands first when idle.
-    return q ? [...results, ...matchedCommands] : matchedCommands
+    return q ? [...results, ...matchedCommands, ...guesses] : [...recent, ...matchedCommands]
   }, [query, commands, db, navigate])
 
   useEffect(() => setActive(0), [query])
@@ -145,7 +170,12 @@ function Palette({ onClose }: { onClose: () => void }) {
             setActive((a) => Math.max(0, a - 1))
           } else if (e.key === 'Enter') {
             e.preventDefault()
-            runItem(items[active])
+            const item = items[active]
+            if ((e.metaKey || e.ctrlKey) && item?.alt) {
+              item.alt.run()
+              return
+            }
+            runItem(item)
           } else if (e.key === 'Tab') {
             e.preventDefault()
             input.current?.focus()
@@ -180,7 +210,7 @@ function Palette({ onClose }: { onClose: () => void }) {
           )}
           {Object.entries(groups).map(([group, rows]) => (
             <div key={group} className="mb-1">
-              <p className="eyebrow px-3 pt-2 pb-1.5">{group}</p>
+              <p className="eyebrow px-3 pt-2 pb-1.5 !text-ink-muted">{group}</p>
               {rows.map(({ item, index }) => {
                 const Icon = item.icon
                 const isActive = index === active
@@ -199,9 +229,14 @@ function Palette({ onClose }: { onClose: () => void }) {
                     <Icon size={16} className={cn('shrink-0', isActive ? 'text-accent' : 'text-ink-subtle')} />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-[14px]">{item.label}</span>
-                      {item.group === 'Records' && item.keywords && <span className="block truncate text-[12px] text-ink-subtle">{item.keywords}</span>}
+                      {(item.group === 'Records' || item.group === 'Close matches') && item.keywords && <span className="block truncate text-[12px] text-ink-muted">{item.keywords}</span>}
                     </span>
-                    {item.hint && <span className="shrink-0 font-mono text-[10.5px] text-ink-subtle uppercase">{item.hint}</span>}
+                    {isActive && item.alt && (
+                      <span className="shrink-0 rounded-md border border-line px-1.5 py-0.5 text-[11px] text-ink-muted" data-testid="palette-alt-hint">
+                        {item.alt.label} · {isMac ? '⌘' : 'Ctrl'}↵
+                      </span>
+                    )}
+                    {item.hint && <span className="shrink-0 font-mono text-[10.5px] text-ink-muted uppercase">{item.hint}</span>}
                     {isActive && <ArrowRight size={14} className="shrink-0 text-accent" />}
                   </button>
                 )
@@ -220,7 +255,7 @@ function Palette({ onClose }: { onClose: () => void }) {
             </Kbd>
             open
           </span>
-          <span className="ml-auto">{items.filter((i) => i.group === 'Records').length ? `${items.filter((i) => i.group === 'Records').length} records found` : 'Searches everything stored on this device'}</span>
+          <span className="ml-auto">{items.filter((i) => i.group === 'Records' || i.group === 'Close matches').length ? `${items.filter((i) => i.group === 'Records' || i.group === 'Close matches').length} records found` : 'Searches everything stored on this device'}</span>
         </div>
       </motion.div>
     </div>

@@ -1,13 +1,15 @@
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
-import { ChevronsUpDown, CloudOff, Database, Download, FolderTree, Laptop, RotateCcw, Share, Smartphone, Target, Trash2, Upload } from 'lucide-react'
+import { Bell, BellRing, ChevronsUpDown, CloudOff, Database, Download, FolderTree, Laptop, RotateCcw, Share, Smartphone, Target, Trash2, Upload } from 'lucide-react'
 import { THEMES, resolveAppearance, supportsLight, themeMeta } from '@/app/themes'
+import { TEXT_SCALES } from '@/app/textScaleCss'
+import { REMINDER_LEAD_OPTIONS, leadLabel, permissionText, sendTestNotification, useNotificationPermission } from '@/app/reminders'
 import { useSystemDark } from '@/app/ThemeController'
 import { COLLECTIONS } from '@/data/registry'
 import { COLLECTION_KEYS } from '@/data/schema'
 import type { Database as Db, Settings } from '@/data/types'
 import { type ValidationResult, countRecords, makeBackupFile, totalRecords } from '@/data/validate'
 import { type BackupMeta, requestPersistentStorage, storageEstimate } from '@/storage'
-import { type ImportMode, applyImport, createBackup, deleteBackup, getBackup, inspectImportFile, listBackups, pruneAutoBackups, resetAllData, restoreBackup } from '@/store/backups'
+import { type ImportMode, applyImport, createBackup, deleteBackup, getBackup, inspectImportFile, listBackups, markExported, pruneAutoBackups, resetAllData, restoreBackup } from '@/store/backups'
 import { actions, appStore, useApp, useDatabase, useSettings } from '@/store/store'
 import { DATE_FORMATS, formatDate, todayISO } from '@/lib/dates'
 import { CURRENCIES, formatBytes } from '@/lib/format'
@@ -147,6 +149,13 @@ export function SettingsScreen() {
             ))}
           </div>
         </div>
+        <SelectRow
+          testId="m-text-size"
+          label="Text Size"
+          value={String(s.textScale) as `${(typeof TEXT_SCALES)[number]}`}
+          onChange={(v) => set({ textScale: Number(v) as (typeof TEXT_SCALES)[number] })}
+          options={TEXT_SCALES.map((v) => ({ value: String(v) as `${(typeof TEXT_SCALES)[number]}`, label: v === 100 ? 'Default' : `${v}%` }))}
+        />
         <SelectRow label="Motion" value={s.motion} onChange={(motion) => set({ motion })} options={[{ value: 'system', label: 'Match iPhone' }, { value: 'full', label: 'Full' }, { value: 'reduced', label: 'Reduced' }]} />
         <Row label="Reduce Transparency" sub="Solid bars instead of glass">
           <IosSwitch checked={s.reduceTransparency} onChange={(reduceTransparency) => set({ reduceTransparency })} label="Reduce transparency" testId="settings-reduce-transparency" />
@@ -193,6 +202,10 @@ export function SettingsScreen() {
         </Row>
       </Section>
 
+      <Section>
+        <Cell icon={Bell} iconTone="bad" title="Notifications" detail={s.reminders.enabled ? 'On' : 'Off'} subtitle="Reminders for tasks and events" chevron onClick={() => nav.push('more/settings/notifications')} testId="settings-notifications" />
+      </Section>
+
       <Section footer="Everything stays on this iPhone. No account, no server, no analytics, no tracking.">
         <Cell icon={Database} iconTone="info" title="Data & Backups" detail={totalRecords(db) || undefined} subtitle="Export, import, restore" chevron onClick={() => nav.push('more/settings/data')} testId="settings-data" />
       </Section>
@@ -231,7 +244,7 @@ export function SettingsScreen() {
           ['Cloud sync', 'Needs a sync server and sign-in'],
           ['Calendar sync', 'Needs Google/Outlook OAuth and a server'],
           ['Bank connections', 'Needs a regulated Open Banking provider'],
-          ['Notifications', 'Needs a push server (iOS 16.4+, installed app)'],
+          ['Push notifications', 'Alerts while LIFE OS is fully closed need a push server'],
           ['Apple Health', 'Needs a native iOS app — web apps can’t read HealthKit'],
         ].map(([t, d]) => (
           <Cell key={t} icon={CloudOff} iconTone="muted" title={t} subtitle={d} />
@@ -282,6 +295,56 @@ function TargetRow({ t }: { t: (typeof TARGETS)[number] }) {
         />
       </Row>
     </div>
+  )
+}
+
+export function NotificationsScreen() {
+  const s = useSettings()
+  const r = s.reminders
+  const { permission, request } = useNotificationPermission()
+  const setR = (patch: Partial<typeof r>) => actions.updateSettings({ reminders: { ...r, ...patch } })
+  return (
+    <Screen title="Notifications" testId="screen-notifications">
+      <Section footer="A reminder shortly before tasks with a due time and calendar events. You can also set one on a single task when you edit it.">
+        <Row label="Reminders">
+          <IosSwitch
+            checked={r.enabled}
+            onChange={(on) => {
+              setR({ enabled: on })
+              if (on && permission === 'default') void request()
+            }}
+            label="Reminders"
+            testId="m-reminders-enabled"
+          />
+        </Row>
+        {r.enabled && (
+          <>
+            <Row label="Tasks with a Due Time">
+              <IosSwitch checked={r.tasks} onChange={(tasks) => setR({ tasks })} label="Tasks with a due time" />
+            </Row>
+            <Row label="Calendar Events">
+              <IosSwitch checked={r.events} onChange={(events) => setR({ events })} label="Calendar events" />
+            </Row>
+            <SelectRow label="When" value={String(r.lead)} onChange={(v) => setR({ lead: Number(v) })} options={REMINDER_LEAD_OPTIONS.map((m) => ({ value: String(m), label: leadLabel(m) }))} />
+          </>
+        )}
+      </Section>
+      {r.enabled && (
+        <Section header="System notifications" footer={permissionText(permission, true)}>
+          {permission === 'default' && (
+            <ActionCell icon={BellRing} onClick={() => void request()} testId="m-reminders-allow">
+              Allow Notifications
+            </ActionCell>
+          )}
+          <ActionCell icon={Bell} onClick={() => void sendTestNotification()} testId="m-reminders-test">
+            Send a Test
+          </ActionCell>
+        </Section>
+      )}
+      <Section header="Good to know" footer="Reminders run on this iPhone while LIFE OS is open or recently in the background. iOS doesn’t let a web app wake itself, so a reminder can’t arrive while LIFE OS is fully closed — that would need a push server, and LIFE OS keeps your data on this iPhone instead. If you open it up to 15 minutes late you’ll still see the reminder once.">
+        <Cell title="Works best from the Home Screen" subtitle="iOS 16.4+ shows system notifications only for Home Screen apps" />
+      </Section>
+    </Screen>
   )
 }
 
@@ -460,6 +523,7 @@ export function DataScreen() {
 
   const exportNow = async () => {
     const r = await shareJsonFile(`life-os-backup-${todayISO()}.json`, makeBackupFile(db))
+    if (r !== 'cancelled') markExported()
     if (r === 'downloaded') toast({ title: 'Backup downloaded', description: 'Find it in the Files app → Downloads.' })
   }
   const shareBackup = async (b: BackupMeta) => {

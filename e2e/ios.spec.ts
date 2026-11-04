@@ -343,18 +343,23 @@ test('empty state: a brand-new install renders every screen without errors', asy
 test('recovery: unreadable stored data is never overwritten', async ({ page }) => {
   await start(page)
   // Wait until the app's own (debounced) save has landed, so it can't overwrite the corruption.
-  await page.waitForFunction(
-    () =>
-      new Promise<boolean>((resolve) => {
-        const req = indexedDB.open('life-os', 1)
-        req.onsuccess = () => {
-          const get = req.result.transaction('state').objectStore('state').get('database')
-          get.onsuccess = () => resolve((get.result as { settings?: { onboarded?: boolean } } | undefined)?.settings?.onboarded === true)
-          get.onerror = () => resolve(false)
-        }
-        req.onerror = () => resolve(false)
-      }),
-  )
+  // (expect.poll awaits each check; waitForFunction would treat the returned Promise as truthy at once.)
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          new Promise<boolean>((resolve) => {
+            const req = indexedDB.open('life-os', 1)
+            req.onsuccess = () => {
+              const get = req.result.transaction('state').objectStore('state').get('database')
+              get.onsuccess = () => resolve((get.result as { settings?: { onboarded?: boolean } } | undefined)?.settings?.onboarded === true)
+              get.onerror = () => resolve(false)
+            }
+            req.onerror = () => resolve(false)
+          }),
+      ),
+    )
+    .toBe(true)
   await page.evaluate(
     () =>
       new Promise<void>((resolve, reject) => {
@@ -408,7 +413,7 @@ test('offline: after the first visit the app opens without a network', async ({ 
     await navigator.serviceWorker.ready
   })
   // Let the service worker finish precaching, then take control on reload.
-  await page.waitForFunction(async () => (await caches.keys()).some((k) => k.startsWith('life-os-m')), null, { timeout: 15000 })
+  await expect.poll(() => page.evaluate(async () => (await caches.keys()).some((k) => k.startsWith('life-os-m'))), { timeout: 15000 }).toBe(true)
   await page.reload()
   await expect(page.getByTestId('tab-today')).toBeVisible()
   await context.setOffline(true)
@@ -431,4 +436,105 @@ test('the desktop app is untouched and links to the iPhone version', async ({ pa
   await expect(page).toHaveURL(/\/m\/(#\/today)?$/)
   // Same data on the same device: onboarding was already completed on desktop.
   await expect(page.getByTestId('tab-today')).toBeVisible()
+})
+
+/* ------------------------------------------------ everyday features */
+
+async function longPress(page: Page, locator: ReturnType<Page['locator']>) {
+  await locator.evaluate((el) => el.scrollIntoView({ block: 'center' }))
+  const box = (await locator.boundingBox())!
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+  await page.mouse.down()
+  await page.waitForTimeout(650)
+  await page.mouse.up()
+}
+
+test('quick add reads one line of text; the New Task shortcut opens it', async ({ page }) => {
+  await start(page)
+  // A Home Screen shortcut (?action=new-task) opens the quick add sheet straight away.
+  await page.goto('/m/?action=new-task#/plan')
+  const sheet = page.getByTestId('quick-add-sheet')
+  await expect(sheet).toBeVisible()
+  await expect(page).not.toHaveURL(/action=/)
+  await sheet.getByLabel('Title').fill('Gym tomorrow 7am !high #fit')
+  const chips = sheet.getByTestId('smart-chips')
+  await expect(chips).toContainText('Tomorrow')
+  await expect(chips).toContainText('07:00')
+  await expect(chips).toContainText('High priority')
+  await page.getByTestId('quick-add-save').click()
+  await page.getByTestId('tab-plan').click()
+  await page.getByRole('radio', { name: 'Tasks' }).click()
+  await page.getByRole('radio', { name: /^Upcoming/ }).click()
+  const row = top(page).getByTestId('m-task-row').filter({ hasText: 'Gym' })
+  await expect(row).toContainText('Tomorrow')
+  await expect(row).toContainText('07:00')
+  await expect(row).toContainText('!!')
+})
+
+test('long-press a task for every action; Later reschedules with undo', async ({ page }) => {
+  await start(page)
+  await page.getByTestId('add-today-task').fill('Call the bank')
+  await page.getByTestId('add-today-task').press('Enter')
+  const row = top(page).getByTestId('m-task-row').filter({ hasText: 'Call the bank' })
+  await expect(row).toBeVisible()
+
+  await longPress(page, row)
+  const sheet = page.getByTestId('choice-sheet')
+  await expect(sheet.getByRole('button', { name: 'Reschedule…' })).toBeVisible()
+  await expect(sheet.getByRole('button', { name: 'Duplicate' })).toBeVisible()
+  await sheet.getByRole('button', { name: 'Reschedule…' }).click()
+  await page.getByTestId('choice-sheet').getByRole('button', { name: 'Tomorrow' }).click()
+  await expect(row).toHaveCount(0)
+  const moved = page.getByRole('status').filter({ hasText: 'Moved to tomorrow' })
+  await expect(moved).toBeVisible()
+  await moved.getByRole('button', { name: 'Undo' }).click()
+  await expect(row).toBeVisible()
+
+  // Swipe → Later offers the same choices.
+  await swipeLeft(page, row, 260)
+  await row.getByRole('button', { name: 'Later' }).click()
+  await expect(page.getByTestId('choice-sheet')).toContainText('Reschedule')
+  await page.getByTestId('choice-sheet').getByRole('button', { name: 'Cancel' }).click()
+})
+
+test('plan your day from Today: pick priorities and set an intention', async ({ page }) => {
+  await start(page)
+  for (const t of ['Write report', 'Buy present']) {
+    await page.getByTestId('add-today-task').fill(t)
+    await page.getByTestId('add-today-task').press('Enter')
+  }
+  await page.getByTestId('m-plan-day').click()
+  const sheet = page.getByTestId('plan-day-sheet')
+  await expect(sheet).toBeVisible()
+  await sheet.getByTestId('m-pd-candidate').filter({ hasText: 'Write report' }).click()
+  await page.getByTestId('m-pd-next').click()
+  await page.getByTestId('m-pd-next').click()
+  await sheet.getByLabel('Intention for today').fill('One thing at a time')
+  await page.getByTestId('m-pd-finish').click()
+  await expect(page.getByTestId('m-today-intention')).toHaveText('One thing at a time')
+  await expect(page.getByTestId('m-plan-day')).toHaveCount(0)
+  await expect(top(page).getByTestId('m-task-row').filter({ hasText: 'Write report' }).first()).toBeVisible()
+})
+
+test('get started: templates add habits; notifications and text size settings work', async ({ page }) => {
+  await start(page)
+  await expect(page.getByText('Get Started · 0 of 6')).toBeVisible()
+  await page.getByTestId('m-gs-templates').click()
+  const sheet = page.getByTestId('templates-sheet')
+  await sheet.getByTestId('m-tpl-walk').click()
+  await sheet.getByTestId('m-tpl-laundry').click()
+  await page.getByTestId('m-tpl-add').click()
+  await expect(page.getByRole('status').filter({ hasText: 'Added 1 habit and 1 repeating task' })).toBeVisible()
+  await expect(page.getByText('Get Started · 2 of 6')).toBeVisible()
+  await page.getByTestId('tab-habits').click()
+  await expect(top(page).getByText('Walk 30 minutes').first()).toBeVisible()
+
+  await open(page, 'more/settings')
+  await page.getByTestId('m-text-size').selectOption('110')
+  await expect.poll(() => page.evaluate(() => document.documentElement.style.getPropertyValue('--text-scale'))).toBe('1.1')
+  await page.getByTestId('settings-notifications').click()
+  await expect(page.getByTestId('screen-notifications')).toBeVisible()
+  await page.getByTestId('m-reminders-enabled').click()
+  await expect(page.getByRole('button', { name: 'Send a Test' })).toBeVisible()
+  await expect(page.getByTestId('screen-notifications')).toContainText('can’t arrive while LIFE OS is fully closed')
 })

@@ -46,7 +46,7 @@ export function TopBar() {
           aria-label="Search and commands"
         >
           <Search size={14} />
-          <span className="flex-1 text-left">Search or jump to…</span>
+          <span className="min-w-0 flex-1 truncate text-left">Search or jump to…</span>
           <Kbd>Ctrl</Kbd>
           <Kbd>K</Kbd>
         </button>

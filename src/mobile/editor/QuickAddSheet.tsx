@@ -66,7 +66,7 @@ export function QuickAddSheet() {
         </div>
       </div>
       <div className="px-4">
-        <EntityForm key={`${type}-${allFields}-${quickAdd.open}`} config={config as never} initial={initial} ctx={ctx} formId="m-quick-add" onSubmit={save} only={allFields || !config.quickFields ? undefined : config.quickFields} />
+        <EntityForm key={`${type}-${quickAdd.open}`} config={config as never} initial={initial} ctx={ctx} formId="m-quick-add" onSubmit={save} only={allFields || !config.quickFields ? undefined : config.quickFields} smart />
         {config.quickFields && (
           <button type="button" onClick={() => setAllFields((v) => !v)} className="ios-subhead mt-4 flex items-center gap-1 text-accent">
             <ChevronDown size={16} className={cn('transition-transform', allFields && 'rotate-180')} />

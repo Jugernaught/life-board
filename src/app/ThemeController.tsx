@@ -21,8 +21,8 @@ export function ThemeController({ children }: { children: ReactNode }) {
   const systemDark = useSystemDark()
   const a = resolveAppearance(s, s.theme, systemDark)
   useEffect(() => {
-    applyAppearance(document.documentElement, a, { storageKey: 'life-os:appearance', modePref: s.theme })
+    applyAppearance(document.documentElement, a, { storageKey: 'life-os:appearance', modePref: s.theme, textScale: s.textScale })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [a.style, a.mode, a.accent, a.motion, a.transparency, a.effects, s.theme])
+  }, [a.style, a.mode, a.accent, a.motion, a.transparency, a.effects, s.theme, s.textScale])
   return <MotionConfig reducedMotion={s.motion === 'reduced' ? 'always' : s.motion === 'full' ? 'never' : 'user'}>{children}</MotionConfig>
 }

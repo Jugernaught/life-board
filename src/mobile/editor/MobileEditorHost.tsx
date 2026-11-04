@@ -95,7 +95,7 @@ function EditorSheet({ request, index, onClosed }: { request: EditorRequest; ind
       }
     >
       <div className="px-4 pt-3">
-        <EntityForm config={config as never} initial={initial} ctx={ctx} formId={formId} onSubmit={save} autoFocus={request.mode === 'create'} onDirtyChange={setDirty} />
+        <EntityForm config={config as never} initial={initial} ctx={ctx} formId={formId} onSubmit={save} autoFocus={request.mode === 'create'} onDirtyChange={setDirty} smart={request.mode === 'create'} />
       </div>
       {request.mode === 'edit' && (
         <div className="mt-8 px-4">

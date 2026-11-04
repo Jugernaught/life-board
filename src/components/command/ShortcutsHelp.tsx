@@ -7,6 +7,8 @@ const GENERAL = [
   { keys: ['Ctrl', 'K'], label: 'Search & command menu (⌘K on Mac)' },
   { keys: ['/'], label: 'Search' },
   { keys: ['N'], label: 'Quick add' },
+  { keys: ['Ctrl', 'Z'], label: 'Undo last change (⌘Z on Mac)' },
+  { keys: ['Ctrl', 'Enter'], label: 'In search: complete the highlighted task' },
   { keys: ['['], label: 'Collapse / expand sidebar' },
   { keys: ['?'], label: 'Show this help' },
   { keys: ['Esc'], label: 'Close dialog' },

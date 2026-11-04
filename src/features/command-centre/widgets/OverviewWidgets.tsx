@@ -7,6 +7,7 @@ import { buildAgenda } from '@/selectors/agenda'
 import { nextMilestone, projectProgress } from '@/selectors/projects'
 import { goalProgressOf } from '@/store/lifecycle'
 import { actions, useCollection, useDatabase } from '@/store/store'
+import { quickCreateEvent, quickCreateTask } from '@/app/taskCommands'
 import { addDaysISO, relativeDay } from '@/lib/dates'
 import { toneColor } from '@/lib/tone'
 import { Button } from '@/components/ui/Button'
@@ -157,7 +158,7 @@ type QuickKind = 'task' | 'event' | 'goal' | 'note'
 export function QuickAddWidget({ today, size }: WidgetProps & { size: WidgetSize }) {
   const [kind, setKind] = useState<QuickKind>('task')
   const { showQuickAdd } = useUI()
-  const placeholder = { task: 'Task title…', event: 'Event today, e.g. Gym 18:00', goal: 'Goal, e.g. Read 12 books', note: 'Quick note…' }[kind]
+  const placeholder = { task: 'e.g. Call mum tomorrow 6pm !high', event: 'e.g. Gym 18:00 or Dentist Fri 3pm', goal: 'Goal, e.g. Read 12 books', note: 'Quick note…' }[kind]
   return (
     <Widget title="Quick add" icon={Zap} size={size} testId="widget-quickadd">
       <Segmented
@@ -180,26 +181,11 @@ export function QuickAddWidget({ today, size }: WidgetProps & { size: WidgetSize
           const input = e.currentTarget.elements.namedItem('title') as HTMLInputElement
           const raw = input.value.trim()
           if (!raw) return
-          if (kind === 'task') actions.create('tasks', { title: raw })
+          if (kind === 'task') quickCreateTask(raw)
           if (kind === 'goal') actions.create('goals', { title: raw })
           if (kind === 'note') actions.create('notes', { title: raw.slice(0, 80), body: raw.length > 80 ? raw : '' })
-          if (kind === 'event') {
-            // A trailing time like "18:00" or "6pm" becomes the start time.
-            const m = raw.match(/\s(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/i)
-            let start: string | undefined
-            let title = raw
-            if (m) {
-              let h = Number(m[1])
-              if (m[3]?.toLowerCase() === 'pm' && h < 12) h += 12
-              if (m[3]?.toLowerCase() === 'am' && h === 12) h = 0
-              if (h < 24) {
-                start = `${String(h).padStart(2, '0')}:${m[2] ?? '00'}`
-                title = raw.slice(0, m.index).trim() || raw
-              }
-            }
-            const end = start ? `${String(Math.min(23, Number(start.slice(0, 2)) + 1)).padStart(2, '0')}:${start.slice(3)}` : undefined
-            actions.create('events', { title, date: today, allDay: !start, startTime: start, endTime: end })
-          }
+          // "Gym 18:00", "Dentist Friday 3pm": dates and times are read from the text.
+          if (kind === 'event') quickCreateEvent(raw, { date: today })
           input.value = ''
         }}
       >

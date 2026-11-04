@@ -16,7 +16,31 @@ beforeEach(() => {
 })
 afterEach(() => teardownPersistence())
 
+/** Like IndexedDB: a save takes a while to commit (and closing the page can abort it). */
+class SlowAdapter extends MemoryAdapter {
+  // @ts-expect-error — pretend to be a persistent store so page-hide stashing applies.
+  override readonly kind = 'indexeddb'
+  release: (() => void) | undefined
+  override async save(db: Parameters<MemoryAdapter['save']>[0]) {
+    await new Promise<void>((r) => (this.release = r))
+    return super.save(db)
+  }
+}
+
 describe('persistence', () => {
+  it('stashes a save that started but has not committed when the page closes', async () => {
+    const adapter = new SlowAdapter()
+    await initPersistence({ adapter })
+    appStore.getState().create('tasks', { title: 'Typed just before closing' })
+    flushSave() // the write starts…
+    await tick()
+    expect(adapter.release).toBeDefined()
+    window.dispatchEvent(new Event('pagehide')) // …and the page closes before it commits.
+    const stash = JSON.parse(localStorage.getItem(PENDING_KEY) ?? 'null') as { db: ReturnType<typeof createEmptyDatabase> } | null
+    expect(stash?.db.tasks.map((t) => t.title)).toEqual(['Typed just before closing'])
+    adapter.release?.()
+  })
+
   it('starts empty on first run and saves changes', async () => {
     const adapter = new MemoryAdapter()
     await initPersistence({ adapter })

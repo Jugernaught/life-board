@@ -3,6 +3,7 @@ import { type MotionValue, animate, motion, motionValue, useTransform } from 'fr
 import { useDatabase } from '@/store/store'
 import { RouteContext } from '../ui/RouteContext'
 import { ScreenLoading } from '../ui/ScreenLoading'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { type Entry, navControllers, useNav } from './navigator'
 import { type TabId, matchPath } from './paths'
 import { ROUTES, routeTitle } from './routes'
@@ -156,9 +157,11 @@ export function StackView({ tab, active }: { tab: TabId; active: boolean }) {
 
 function Screen({ component: Component, params }: { component: React.ComponentType<{ params: Record<string, string> }>; params: Record<string, string> }) {
   return (
-    <Suspense fallback={<ScreenLoading />}>
-      <Component params={params} />
-    </Suspense>
+    <ErrorBoundary label="This screen">
+      <Suspense fallback={<ScreenLoading />}>
+        <Component params={params} />
+      </Suspense>
+    </ErrorBoundary>
   )
 }
 

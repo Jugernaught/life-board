@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Calendar, Database, Globe2, LayoutGrid, Lock, Palette, Plug, Plus, Smartphone, Target, Trash2, User, Wallet } from 'lucide-react'
+import { Bell, Calendar, Database, Globe2, LayoutGrid, Lock, Palette, Plug, Plus, Smartphone, Target, Trash2, User, Wallet } from 'lucide-react'
 import { DATE_FORMATS, formatDate, todayISO } from '@/lib/dates'
 import { CURRENCIES } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -14,11 +14,13 @@ import { PageHeader } from '@/components/layout/PageHeader'
 import { DashboardLayoutEditor } from '@/features/command-centre/CustomiseDashboard'
 import { AppearanceSettings } from './AppearanceSettings'
 import { DataSettings } from './DataSettings'
+import { NotificationSettings } from './NotificationSettings'
 
 const TABS = [
   { id: 'general', label: 'General', icon: User },
   { id: 'appearance', label: 'Appearance', icon: Palette },
   { id: 'schedule', label: 'Schedule', icon: Calendar },
+  { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
   { id: 'targets', label: 'Targets', icon: Target },
   { id: 'finance', label: 'Finance', icon: Wallet },
@@ -163,6 +165,7 @@ export default function SettingsPage() {
             </Panel>
           )}
           {tab === 'appearance' && <AppearanceSettings />}
+          {tab === 'notifications' && <NotificationSettings />}
           {tab === 'schedule' && (
             <Panel title="Schedule" icon={Calendar}>
               <Row label="Working hours" description="Shaded on the daily and weekly timeline">
@@ -235,7 +238,7 @@ export default function SettingsPage() {
                     ['Cloud sync (Supabase)', 'Sync between devices. The storage layer is ready for a Supabase adapter — needs a Supabase project, authentication and the steps in docs/SUPABASE.md.'],
                     ['Calendar sync (Google / Outlook)', 'Two-way calendar sync needs OAuth credentials and a small server to hold tokens securely.'],
                     ['Bank connections (Open Banking)', 'Automatic transactions need a regulated provider (e.g. TrueLayer, GoCardless) and a server. All finance data is entered manually today.'],
-                    ['Notifications & reminders', 'Background reminders need push notifications (a service worker plus a push server). LIFE OS does not send notifications today.'],
+                    ['Push notifications', 'Reminders work while LIFE OS is open (Settings → Notifications). Alerts that reach a fully closed app need a push server, which would mean your schedule leaving this device.'],
                     ['Fitness trackers', 'Importing steps/sleep from Apple Health, Google Fit or Fitbit needs their APIs or a mobile app.'],
                   ].map(([title, text]) => (
                     <li key={title} className="rounded-lg border border-line bg-panel-2/30 p-3">

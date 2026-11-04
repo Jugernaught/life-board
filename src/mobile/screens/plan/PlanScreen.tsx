@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronDown, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { CalendarClock, ChevronDown, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { WEEKDAYS } from '@/data/constants'
 import type { Task } from '@/data/types'
 import { useFormatters } from '@/hooks/useFormatters'
@@ -10,13 +10,14 @@ import { addDaysISO, eachDay, formatDate, minutesToTime, monthEndISO, monthStart
 import { toneColor, toneTint } from '@/lib/tone'
 import { cn, groupBy, normalise } from '@/lib/utils'
 import { actions, useDatabase } from '@/store/store'
+import { quickCreateTask, rescheduleMany } from '@/app/taskCommands'
 import { editor } from '@/components/editor/editorStore'
 import { layoutDay, toTimed } from '@/features/schedule/layout'
 import { AgendaRow, openAgenda } from '../../components/AgendaRow'
 import { InlineAdd } from '../../components/InlineAdd'
 import { TaskRow } from '../../components/TaskRow'
 import { Chips, SearchField, Segmented } from '../../ui/controls'
-import { EmptyRow, Section } from '../../ui/List'
+import { ActionCell, EmptyRow, Section } from '../../ui/List'
 import { NavButton, Screen } from '../../ui/Screen'
 
 type Mode = 'calendar' | 'tasks'
@@ -363,8 +364,13 @@ function TasksView({ today }: { today: string }) {
           {shown.map((t) => (
             <TaskRow key={t.id} task={t} today={today} />
           ))}
+          {(scope === 'overdue' || scope === 'today') && shown.filter((t) => isOverdue(t, today)).length > 1 && (
+            <ActionCell icon={CalendarClock} testId="m-overdue-to-today" onClick={() => rescheduleMany(shown.filter((t) => isOverdue(t, today)), today, today)}>
+              Move {shown.filter((t) => isOverdue(t, today)).length} Overdue to Today
+            </ActionCell>
+          )}
           {(scope === 'today' || scope === 'someday') && (
-            <InlineAdd placeholder="New task" testId="tasks-inline-add" onAdd={(title) => actions.create('tasks', scope === 'today' ? { title, dueDate: today } : { title })} />
+            <InlineAdd placeholder="New task" testId="tasks-inline-add" onAdd={(title) => quickCreateTask(title, scope === 'today' ? { dueDate: today } : {})} />
           )}
         </Section>
       )}

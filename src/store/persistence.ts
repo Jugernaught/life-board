@@ -41,9 +41,13 @@ export function getAdapter(): StorageAdapter {
 /** Timestamp written into every saved copy, used to pick the newest copy on start-up. */
 type Persisted = Database & { savedAt?: string }
 
+/** Saves started but not yet committed. Closing the page can abort them, so they're stashed too. */
+let inFlight = 0
+
 async function writeNow(db: Database) {
   if (!adapter) return
   appStore.setState((s) => ({ save: { ...s.save, status: 'saving' } }))
+  inFlight++
   try {
     const savedAt = new Date().toISOString()
     await adapter.save({ ...db, savedAt } as Persisted)
@@ -52,6 +56,8 @@ async function writeNow(db: Database) {
     channel?.postMessage({ type: 'saved', from: TAB_ID })
   } catch (e) {
     appStore.setState((s) => ({ save: { ...s.save, status: 'error', error: (e as Error).message } }))
+  } finally {
+    inFlight--
   }
 }
 
@@ -75,9 +81,9 @@ function clearPending(upTo?: string) {
   }
 }
 
-/** Synchronously stash an unsaved change so it survives the page closing. */
+/** Synchronously stash an unsaved (or not yet committed) change so it survives the page closing. */
 function stashPending() {
-  if (!scheduleSave.pending() || adapter?.kind === 'memory') return
+  if ((!scheduleSave.pending() && inFlight === 0) || adapter?.kind === 'memory') return
   try {
     localStorage.setItem(PENDING_KEY, JSON.stringify({ at: new Date().toISOString(), db: appStore.getState().db }))
   } catch {

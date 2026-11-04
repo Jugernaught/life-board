@@ -4,9 +4,12 @@ import { MemoryRouter } from 'react-router'
 import { useApp, useSettings } from '@/store/store'
 import { applyAppearance, resolveAppearance } from '@/app/themes'
 import { useSystemDark } from '@/app/ThemeController'
+import { useChangeToasts } from '@/app/useChangeToasts'
+import { useReminders } from '@/app/reminders'
 import { StartupNotice } from '@/app/StartupNotice'
 import { Toaster } from '@/components/ui/toast'
 import { MobileEditorHost } from './editor/MobileEditorHost'
+import { openRecord } from './editor/openRecord'
 import { QuickAddSheet } from './editor/QuickAddSheet'
 import { useNav, syncHash } from './nav/navigator'
 import { TAB_IDS, type TabId } from './nav/paths'
@@ -14,10 +17,14 @@ import { StackView } from './nav/StackView'
 import { TabBar } from './nav/TabBar'
 import { MobileOnboarding } from './screens/onboarding/MobileOnboarding'
 import { MobileRecovery } from './screens/onboarding/MobileRecovery'
+import { TemplatesSheet } from './screens/today/GettingStarted'
+import { PlanDaySheet } from './screens/today/PlanDaySheet'
 import { ActionSheetHost } from './ui/ActionSheet'
+import { MobileDatePromptHost } from './ui/DatePromptSheet'
 import { ScreenLoading } from './ui/ScreenLoading'
 import { useSheetDepth } from './ui/sheetStore'
 import { useKeyboardInset } from './ui/useKeyboardInset'
+import { useLaunchAction } from './launchActions'
 
 /** Applies the visual style, light/dark (follows iOS by default), accent, motion and transparency. */
 function useAppearance() {
@@ -25,9 +32,9 @@ function useAppearance() {
   const systemDark = useSystemDark()
   const a = resolveAppearance(s, s.mobileTheme, systemDark)
   useEffect(() => {
-    applyAppearance(document.documentElement, a, { storageKey: 'life-os:m-appearance', modePref: s.mobileTheme, themeColorVar: '--ios-grouped' })
+    applyAppearance(document.documentElement, a, { storageKey: 'life-os:m-appearance', modePref: s.mobileTheme, themeColorVar: '--ios-grouped', textScale: s.textScale })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [a.style, a.mode, a.accent, a.motion, a.transparency, a.effects, s.mobileTheme])
+  }, [a.style, a.mode, a.accent, a.motion, a.transparency, a.effects, s.mobileTheme, s.textScale])
   return s.motion
 }
 
@@ -59,6 +66,9 @@ export function MobileApp() {
   const settings = useSettings()
   const motionPref = useAppearance()
   useKeyboardInset()
+  useChangeToasts()
+  useReminders(openRecord)
+  useLaunchAction(ready && !loadError && settings.onboarded)
   return (
     <MemoryRouter>
       <MotionConfig reducedMotion={motionPref === 'reduced' ? 'always' : motionPref === 'full' ? 'never' : 'user'}>
@@ -68,6 +78,9 @@ export function MobileApp() {
         <MobileEditorHost />
         <QuickAddSheet />
         <ActionSheetHost />
+        <MobileDatePromptHost />
+        <PlanDaySheet />
+        <TemplatesSheet />
         <StartupNotice />
         <Toaster placement="top" />
       </MotionConfig>

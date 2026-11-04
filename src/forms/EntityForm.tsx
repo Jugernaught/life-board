@@ -11,6 +11,9 @@ import { Field, Input, NumberInput, Segmented, Select, Switch, Textarea } from '
 import { ChecklistEditor, ColorSwatches, LevelPicker, ListEditor, RatingInput, ScaleInput, TagInput, WeekdayPicker } from '@/components/ui/pickers'
 import { PROFICIENCY_LEVELS } from '@/data/constants'
 import type { CheckItem } from '@/data/types'
+import type { TokenKind } from '@/lib/parseQuick'
+import { SmartChips } from './SmartChips'
+import { applySmart, parseSmart } from './smart'
 import type { FieldDef, FormConfig, FormContext, Values } from './types'
 
 const STRINGISH = new Set(['text', 'textarea', 'url', 'date', 'time', 'select', 'segmented'])
@@ -64,9 +67,11 @@ export interface EntityFormProps {
   autoFocus?: boolean
   /** Called once with true when the person first changes something. */
   onDirtyChange?: (dirty: boolean) => void
+  /** Read the title as natural language (new records only). */
+  smart?: boolean
 }
 
-export function EntityForm({ config, initial, ctx, formId, onSubmit, only, className, autoFocus = true, onDirtyChange }: EntityFormProps) {
+export function EntityForm({ config, initial, ctx, formId, onSubmit, only, className, autoFocus = true, onDirtyChange, smart: smartOn }: EntityFormProps) {
   const [values, setValues] = useState<Values>(initial)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitted, setSubmitted] = useState(false)
@@ -74,10 +79,29 @@ export function EntityForm({ config, initial, ctx, formId, onSubmit, only, class
   const baseId = useId()
 
   const fields = useMemo(() => config.fields.filter((f) => !only || only.includes(f.name)), [config.fields, only])
-  const visible = fields.filter((f) => !f.visible || f.visible(values))
+
+  const smart = smartOn ? config.smart : undefined
+  const [ignored, setIgnored] = useState<ReadonlySet<TokenKind>>(new Set())
+  // Fields the person set by hand: those win over what the title says.
+  const touched = useRef(new Set<string>())
+  const smartText = smart ? String(values[smart.field] ?? '') : ''
+  const parsed = useMemo(() => (smart ? parseSmart(smartText, ctx, smart, ignored) : undefined), [smart, smartText, ctx.today, ctx.settings, ignored]) // eslint-disable-line react-hooks/exhaustive-deps
+  // What the fields show: the typed title plus anything read from it, so the
+  // form always matches what will be saved.
+  const shown = smart && parsed?.tokens.length ? { ...smart.apply(values, parsed, touched.current), [smart.field]: values[smart.field] } : values
+  const toggleKind = (k: TokenKind) =>
+    setIgnored((prev) => {
+      const next = new Set(prev)
+      if (next.has(k)) next.delete(k)
+      else next.add(k)
+      return next
+    })
+
+  const visible = fields.filter((f) => !f.visible || f.visible(shown))
 
   const dirty = useRef(false)
   const setValue = (name: string, v: unknown) => {
+    if (name !== smart?.field) touched.current.add(name)
     if (!dirty.current) {
       dirty.current = true
       onDirtyChange?.(true)
@@ -93,7 +117,8 @@ export function EntityForm({ config, initial, ctx, formId, onSubmit, only, class
     e.preventDefault()
     e.stopPropagation()
     setSubmitted(true)
-    const { errors: errs, data } = validateForm(config, values, ctx)
+    const source = smart ? applySmart(smart, values, ctx, ignored, touched.current) : values
+    const { errors: errs, data } = validateForm(config, source, ctx)
     // Ignore errors for fields that aren't on screen (they keep their stored value).
     const shown = new Set(visible.map((f) => f.name))
     const relevant = Object.fromEntries(Object.entries(errs).filter(([k]) => shown.has(k) || !config.fields.some((f) => f.name === k)))
@@ -111,23 +136,38 @@ export function EntityForm({ config, initial, ctx, formId, onSubmit, only, class
   return (
     <form ref={root} id={formId} onSubmit={submit} noValidate className={cn('grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2', className)}>
       {visible.map((f, i) => (
-        <FieldRenderer
-          key={f.name}
-          field={f}
-          id={`${baseId}-${f.name}`}
-          value={values[f.name]}
-          values={values}
-          error={errors[f.name]}
-          ctx={ctx}
-          autoFocus={autoFocus && (f.autoFocus ?? i === 0)}
-          onChange={(v) => setValue(f.name, v)}
-          setValue={setValue}
-        />
+        <SmartSlot key={f.name} after={smart && parsed && f.name === smart.field ? <SmartChips parsed={parsed} ctx={ctx} ignored={ignored} onToggle={toggleKind} idleHint={SMART_HINT[config.key] ?? ''} /> : null}>
+          <FieldRenderer
+            field={f}
+            id={`${baseId}-${f.name}`}
+            value={shown[f.name]}
+            values={shown}
+            error={errors[f.name]}
+            ctx={ctx}
+            autoFocus={autoFocus && (f.autoFocus ?? i === 0)}
+            onChange={(v) => setValue(f.name, v)}
+            setValue={setValue}
+          />
+        </SmartSlot>
       ))}
       {errors._form && <p className="text-sm text-bad sm:col-span-2">{errors._form}</p>}
       {/* Enter key submits even when the submit button lives in the modal footer. */}
       <button type="submit" hidden aria-hidden tabIndex={-1} />
     </form>
+  )
+}
+
+const SMART_HINT: Partial<Record<string, string>> = {
+  tasks: 'Try “Pay rent every month 1 Dec !high #home” — dates, times, repeats, !priority, #tags and @areas are read for you.',
+  events: 'Try “Dentist Friday 3pm @health” — the date and time are read for you.',
+}
+
+function SmartSlot({ children, after }: { children: React.ReactNode; after: React.ReactNode }) {
+  return (
+    <>
+      {children}
+      {after}
+    </>
   )
 }
 

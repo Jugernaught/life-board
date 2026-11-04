@@ -138,7 +138,7 @@ export function appearanceAttrs(a: Appearance) {
  * index.html and m/index.html). `themeColorVar` is the CSS variable whose
  * value the browser/OS chrome should match.
  */
-export function applyAppearance(root: HTMLElement, a: Appearance, opts: { storageKey: string; modePref: 'light' | 'dark' | 'system'; themeColorVar?: string }) {
+export function applyAppearance(root: HTMLElement, a: Appearance, opts: { storageKey: string; modePref: 'light' | 'dark' | 'system'; themeColorVar?: string; textScale?: number }) {
   root.dataset.style = a.style
   root.dataset.theme = a.mode
   root.dataset.accent = a.accent
@@ -146,10 +146,13 @@ export function applyAppearance(root: HTMLElement, a: Appearance, opts: { storag
   root.dataset.transparency = a.transparency
   root.dataset.effects = a.effects
   root.style.colorScheme = a.mode
+  const scale = (opts.textScale ?? 100) / 100
+  if (scale === 1) root.style.removeProperty('--text-scale')
+  else root.style.setProperty('--text-scale', String(scale))
   const fromCss = opts.themeColorVar ? getComputedStyle(root).getPropertyValue(opts.themeColorVar).trim() : ''
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', fromCss || themeMeta(a.style).chrome[a.mode] || '#000000')
   try {
-    localStorage.setItem(opts.storageKey, JSON.stringify({ style: a.style, pref: supportsLight(a.style) ? opts.modePref : 'dark', accent: a.accent, transparency: a.transparency, effects: a.effects }))
+    localStorage.setItem(opts.storageKey, JSON.stringify({ style: a.style, pref: supportsLight(a.style) ? opts.modePref : 'dark', accent: a.accent, transparency: a.transparency, effects: a.effects, textScale: scale }))
   } catch {
     // Only affects the colours painted before the app loads next time.
   }

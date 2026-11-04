@@ -5,6 +5,7 @@ import { isTypingTarget } from '@/lib/utils'
 import { actions } from '@/store/store'
 import { useUI } from '@/components/command/uiStore'
 import { useEditorStore } from '@/components/editor/editorStore'
+import { announceUndo } from '@/app/useChangeToasts'
 
 /**
  * App-wide keyboard shortcuts. Single-key shortcuts are ignored while typing
@@ -20,6 +21,12 @@ export function useGlobalHotkeys() {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault()
         ui.setPalette(!ui.paletteOpen)
+        return
+      }
+      // Undo the last change — but leave text fields their own undo.
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'z' && !isTypingTarget(e.target) && !dialogOpen()) {
+        e.preventDefault()
+        announceUndo(actions.undoLast())
         return
       }
       if (e.metaKey || e.ctrlKey || e.altKey || isTypingTarget(e.target) || dialogOpen() || useEditorStore.getState().stack.length) return

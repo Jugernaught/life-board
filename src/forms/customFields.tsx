@@ -1,10 +1,14 @@
 /** Custom form controls used by specific record types. */
-import { Plus, Star, Trash2 } from 'lucide-react'
+import { Plus, Repeat, Star, Trash2 } from 'lucide-react'
 import { CAREER_CRITERIA, REFLECTION_PROMPTS } from '@/data/constants'
+import type { RepeatRule } from '@/data/schema'
 import type { ExerciseEntry, ResourceLink } from '@/data/types'
+import { weekday } from '@/lib/dates'
+import { describeRepeat } from '@/lib/recurrence'
 import { cn, uid } from '@/lib/utils'
 import { Button, IconButton } from '@/components/ui/Button'
-import { Input, NumberInput, Switch, Textarea } from '@/components/ui/inputs'
+import { Input, NumberInput, Select, Switch, Textarea } from '@/components/ui/inputs'
+import { WeekdayPicker } from '@/components/ui/pickers'
 import type { CustomFieldProps } from './types'
 
 export function FocusToggle({ value, onChange, ctx }: CustomFieldProps) {
@@ -12,6 +16,61 @@ export function FocusToggle({ value, onChange, ctx }: CustomFieldProps) {
   return (
     <div className="rounded-lg border border-line bg-panel-2/40 px-3 py-2.5">
       <Switch checked={on} onChange={(v) => onChange(v ? ctx.today : undefined)} label="Make this one of today's priorities" description="Shows in Today's priorities on the Command Centre" />
+    </div>
+  )
+}
+
+const REPEAT_CHOICES = [
+  { value: '', label: 'Does not repeat' },
+  { value: 'daily', label: 'Daily' },
+  { value: 'weekdays', label: 'Every weekday (Mon–Fri)' },
+  { value: 'weekly', label: 'Weekly' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'yearly', label: 'Yearly' },
+] as const
+const UNIT: Record<string, string> = { daily: 'day', weekly: 'week', monthly: 'month', yearly: 'year' }
+
+/** How often a task repeats. Completing it brings the next one back automatically. */
+export function RepeatPicker({ value, onChange, values, ctx, id }: CustomFieldProps) {
+  const rule = value as RepeatRule | undefined
+  const set = (freq: string) => {
+    if (!freq) return onChange(undefined)
+    const due = typeof values.dueDate === 'string' ? values.dueDate : ctx.today
+    // Weekly starts on the due date's weekday so "weekly" means what you'd expect.
+    onChange({ freq, interval: rule?.interval ?? 1, days: freq === 'weekly' ? (rule?.days?.length ? rule.days : [weekday(due)]) : [] })
+  }
+  return (
+    <div className="space-y-2.5 rounded-lg border border-line bg-panel-2/40 p-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Select id={id} value={rule?.freq ?? ''} onChange={(e) => set(e.target.value)} className="min-w-[13rem] flex-1" aria-label="Repeat">
+          {REPEAT_CHOICES.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </Select>
+        {rule && UNIT[rule.freq] && (
+          <label className="flex items-center gap-2 text-[13px] text-ink-muted">
+            every
+            <span className="w-16">
+              <NumberInput
+                value={rule.interval}
+                onChange={(n) => onChange({ ...rule, interval: Math.min(365, Math.max(1, Math.round(n && Number.isFinite(n) ? n : 1))) })}
+                inputMode="numeric"
+                aria-label="Repeat interval"
+              />
+            </span>
+            {UNIT[rule.freq]}
+            {rule.interval > 1 ? 's' : ''}
+          </label>
+        )}
+      </div>
+      {rule?.freq === 'weekly' && <WeekdayPicker value={rule.days ?? []} onChange={(days) => onChange({ ...rule, days })} weekStartsOn={ctx.settings.weekStartsOn} />}
+      {rule && (
+        <p className="flex items-center gap-1.5 text-[12.5px] text-ink-muted" data-testid="repeat-summary">
+          <Repeat size={13} aria-hidden /> {describeRepeat(rule)}. When you complete it, the next one appears automatically.
+        </p>
+      )}
     </div>
   )
 }

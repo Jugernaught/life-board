@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Check, Moon, Palette, Sparkles, Sun } from 'lucide-react'
 import { type Mode, type ThemeMeta, type UiStyle, THEMES, appearanceAttrs, resolveAppearance, supportsLight, themeMeta } from '@/app/themes'
+import { TEXT_SCALES } from '@/app/textScaleCss'
 import { useSystemDark } from '@/app/ThemeController'
 import type { Settings } from '@/data/types'
 import { cn } from '@/lib/utils'
@@ -213,6 +214,15 @@ export function AppearanceSettings() {
               </button>
             ))}
           </div>
+        </Row>
+        <Row label="Text size" description="Makes all text larger or smaller. Layout and controls stay where they are.">
+          <Segmented
+            value={String(s.textScale) as `${(typeof TEXT_SCALES)[number]}`}
+            onChange={(v) => set({ textScale: Number(v) as (typeof TEXT_SCALES)[number] })}
+            fullWidth
+            ariaLabel="Text size"
+            options={TEXT_SCALES.map((v) => ({ value: String(v) as `${(typeof TEXT_SCALES)[number]}`, label: v === 100 ? 'Default' : `${v}%`, title: `Text size ${v}%` }))}
+          />
         </Row>
         <Row label="Motion" description="Automatic follows your device's reduced-motion setting.">
           <Segmented

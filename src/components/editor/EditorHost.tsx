@@ -111,7 +111,7 @@ function EditorDialog({ request, onClose, active }: { request: EditorRequest; on
         </>
       }
     >
-      <EntityForm config={config as never} initial={initial} ctx={ctx} formId={formId} onSubmit={save} />
+      <EntityForm config={config as never} initial={initial} ctx={ctx} formId={formId} onSubmit={save} smart={request.mode === 'create'} />
     </Modal>
   )
 }

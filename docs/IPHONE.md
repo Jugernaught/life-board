@@ -45,6 +45,11 @@ More → Settings → **Theme** offers the same four themes as the desktop versi
 - **Swipe a row left** for actions (Delete, Priority, Pause, Status, +1…). Deletions ask first and can be undone from the message that appears.
 - **New and edit forms open as sheets.** Drag the sheet down or tap Cancel to close; if you've typed something, it asks before discarding it.
 - **+** in the top right adds something relevant to the screen you're on.
+- **Press and hold a task** for every action: Complete, Reschedule, Priority, Edit, Duplicate, Delete.
+- **Swipe a task left → Later** to reschedule it (Today, Tomorrow, This Weekend, Next Week, Pick a Date…).
+- **Type naturally in New:** "Gym tomorrow 7am !high #fit" sets the date, time, priority and tag. Tap a chip to keep those words in the title instead.
+- **Plan Your Day** on Today: catch up on overdue tasks, pick priorities, set an intention.
+- **Settings → Text Size** (90–125%) and **Settings → Notifications** (reminders).
 
 ## What's different from desktop (on purpose)
 
@@ -64,7 +69,8 @@ Everything is still there: every record type can be created, edited and deleted 
 These need a native iOS app or a server, and are **not** pretended:
 
 - **Haptics** — Safari doesn't expose the Taptic Engine to web pages.
-- **Notifications** — possible for installed web apps since iOS 16.4, but they need a push server; none is included.
+- **Notifications while LIFE OS is closed** — these need a push server, and none is included. Reminders *do* work while the app is open or recently in the background (Settings → Notifications). System alerts need the Home Screen app (iOS 16.4+) and permission in iPhone Settings; otherwise reminders show as banners inside the app.
+- **Home Screen quick actions** (long-press the app icon) — iOS doesn't offer them to web apps. The manifest includes them (New Task, Today, Journal, Check In) for Android and desktop installs; on iPhone, press-and-hold menus inside the app do the same job.
 - **Widgets, Siri, Shortcuts, Apple Health** — native-only.
 - **Sync between devices** — needs a backend (see `docs/SUPABASE.md`).
 

@@ -97,16 +97,16 @@ export function QuickAdd() {
               onClick={() => showQuickAdd(t.type)}
               className={cn(
                 'flex shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-[12.5px] font-medium transition-all',
-                active ? 'border-accent/50 bg-accent/12 text-accent shadow-[0_0_14px_-6px_var(--color-accent)]' : 'border-line bg-panel-2/40 text-ink-muted hover:text-ink',
+                active ? 'border-accent/50 bg-accent/12 text-ink shadow-[0_0_14px_-6px_var(--color-accent)]' : 'border-line bg-panel-2/40 text-ink-muted hover:text-ink',
               )}
             >
-              <Icon size={14} />
+              <Icon size={14} className={active ? 'text-accent' : undefined} />
               {t.label}
             </button>
           )
         })}
       </div>
-      <EntityForm key={`${type}-${resetKey}-${allFields}`} config={config as never} initial={initial} ctx={ctx} formId={formId} onSubmit={save} only={only} />
+      <EntityForm key={`${type}-${resetKey}`} config={config as never} initial={initial} ctx={ctx} formId={formId} onSubmit={save} only={only} smart />
     </Modal>
   )
 }

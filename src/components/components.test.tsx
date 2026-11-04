@@ -122,3 +122,43 @@ describe('TaskItem', () => {
     expect(appStore.getState().db.tasks.find((t) => t.id === t2.id)?.focusDate).toBe(TODAY)
   })
 })
+
+describe('ErrorBoundary', () => {
+  it('contains a crash to its own area and recovers on Try again', async () => {
+    const { ErrorBoundary } = await import('@/components/ui/ErrorBoundary')
+    let broken = true
+    function Fragile() {
+      if (broken) throw new Error('boom')
+      return <p>Widget content</p>
+    }
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+    render(
+      <div>
+        <p>Rest of the page</p>
+        <ErrorBoundary label="This widget" compact>
+          <Fragile />
+        </ErrorBoundary>
+      </div>,
+    )
+    expect(screen.getByText('Rest of the page')).toBeInTheDocument()
+    expect(screen.getByTestId('error-boundary')).toHaveTextContent('This widget couldn’t be shown')
+    broken = false
+    await userEvent.click(screen.getByRole('button', { name: /Try again/ }))
+    expect(screen.getByText('Widget content')).toBeInTheDocument()
+    warn.mockRestore()
+    error.mockRestore()
+  })
+})
+
+describe('Smart title in the task form', () => {
+  it('shows chips while typing and saves the parsed values', async () => {
+    const onSubmit = vi.fn()
+    render(<EntityForm config={FORMS.tasks as never} initial={FORMS.tasks.defaults!(ctx())} ctx={ctx()} formId="f" onSubmit={onSubmit} smart />)
+    await userEvent.type(screen.getByLabelText(/Title/), 'Dentist tomorrow 3pm !high')
+    expect(screen.getByTestId('smart-chips')).toHaveTextContent('Tomorrow')
+    expect(screen.getByTestId('smart-chips')).toHaveTextContent('High priority')
+    await userEvent.keyboard('{Enter}')
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ title: 'Dentist', dueDate: '2026-11-05', dueTime: '15:00', priority: 'high' }))
+  })
+})

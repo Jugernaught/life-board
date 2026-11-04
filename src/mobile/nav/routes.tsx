@@ -83,6 +83,7 @@ export const ROUTES: Record<RoutePattern, RouteDef> = {
   'more/analytics/report': { component: named(analytics, 'ReportScreen'), title: 'Report' },
   'more/settings': { component: named(settings, 'SettingsScreen'), title: 'Settings' },
   'more/settings/data': { component: named(settings, 'DataScreen'), title: 'Data & Backups' },
+  'more/settings/notifications': { component: named(settings, 'NotificationsScreen'), title: 'Notifications' },
   'more/settings/targets': { component: named(settings, 'TargetsScreen'), title: 'Targets' },
   'more/settings/categories': { component: named(settings, 'CategoriesScreen'), title: 'Categories' },
 }

@@ -2,8 +2,14 @@ import { Suspense } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import { motion } from 'framer-motion'
 import { useGlobalHotkeys } from '@/hooks/useGlobalHotkeys'
+import { useChangeToasts } from '@/app/useChangeToasts'
+import { useReminders } from '@/app/reminders'
+import { PlanDayDialog } from '@/features/planday/PlanDayDialog'
+import { TemplatesDialog } from '@/features/start/GettingStarted'
+import { editor } from '@/components/editor/editorStore'
 import { useApp, useSettings } from '@/store/store'
 import { Skeleton } from '@/components/ui/display'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { CommandPalette } from '@/components/command/CommandPalette'
 import { QuickAdd } from '@/components/command/QuickAdd'
 import { ShortcutsHelp } from '@/components/command/ShortcutsHelp'
@@ -32,6 +38,8 @@ export function AppShell() {
   const settings = useSettings()
   const storageWarning = useApp((s) => s.storage?.warning)
   useGlobalHotkeys()
+  useChangeToasts()
+  useReminders(openReminderRecord)
   return (
     <div className="flex min-h-dvh">
       <BackgroundFX style={settings.uiStyle} enabled={settings.effects} />
@@ -50,7 +58,9 @@ export function AppShell() {
         <main id="main" className="mx-auto w-full max-w-[1480px] flex-1 px-4 pt-5 pb-24 sm:px-6 sm:pt-7 lg:px-8">
           <motion.div key={pathname} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}>
             <Suspense fallback={<PageFallback />}>
-              <Outlet />
+              <ErrorBoundary label="This page" resetKey={pathname}>
+                <Outlet />
+              </ErrorBoundary>
             </Suspense>
           </motion.div>
         </main>
@@ -58,7 +68,11 @@ export function AppShell() {
       <EditorHost />
       <QuickAdd />
       <CommandPalette />
+      <PlanDayDialog />
+      <TemplatesDialog />
       <ShortcutsHelp />
     </div>
   )
 }
+
+const openReminderRecord = (kind: 'tasks' | 'events', id: string) => editor.edit(kind, id)

@@ -99,7 +99,10 @@ export function TabBar() {
             </span>
           )}
         </span>
-        <span className="text-[10px] leading-none font-medium tracking-[0.01em]">{t.label}</span>
+        {/* Like iOS, tab labels keep their size whatever the Text Size setting (inline style isn't scaled). */}
+        <span className="leading-none font-medium tracking-[0.01em]" style={{ fontSize: 10 }}>
+          {t.label}
+        </span>
       </button>
     )
   })

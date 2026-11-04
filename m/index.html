@@ -28,6 +28,7 @@
           d.dataset.accent = a.accent
           d.dataset.transparency = a.transparency
           d.dataset.effects = a.effects
+          if (a.textScale && a.textScale !== 1) d.style.setProperty('--text-scale', String(a.textScale))
         } catch (e) {}
       })()
     </script>

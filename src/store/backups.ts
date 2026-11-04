@@ -66,8 +66,28 @@ export function downloadJson(filename: string, value: unknown) {
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
+const EXPORTED_KEY = 'life-os:last-export'
+
+/** Remember that a backup file was saved (for the getting-started guide). */
+export function markExported() {
+  try {
+    localStorage.setItem(EXPORTED_KEY, new Date().toISOString())
+  } catch {
+    // Not important enough to surface.
+  }
+}
+
+export function lastExportedAt(): string | undefined {
+  try {
+    return localStorage.getItem(EXPORTED_KEY) ?? undefined
+  } catch {
+    return undefined
+  }
+}
+
 export function exportDatabase(db: Database = appStore.getState().db) {
   downloadJson(`life-os-backup-${todayISO()}.json`, makeBackupFile(db))
+  markExported()
 }
 
 export async function downloadBackup(id: string) {

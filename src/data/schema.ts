@@ -81,6 +81,15 @@ export const checkItem = z.looseObject({
 })
 export type CheckItem = z.infer<typeof checkItem>
 
+/** How a task repeats: every `interval` days/weeks/months/years, or on weekdays. */
+export const repeatRule = z.looseObject({
+  freq: z.enum(['daily', 'weekdays', 'weekly', 'monthly', 'yearly']),
+  interval: z.number().int().min(1).max(365).default(1),
+  /** Weekly only: weekdays to repeat on (0 = Sunday). Empty = same weekday as the due date. */
+  days: z.array(z.number().int().min(0).max(6)).default([]),
+})
+export type RepeatRule = z.infer<typeof repeatRule>
+
 const base = {
   id: idSchema,
   createdAt: timestamp,
@@ -107,6 +116,12 @@ export const task = entity({
   focusDate: isoDate.optional(),
   completedAt: timestamp.optional(),
   tags,
+  /** Repeat rule. Completing a repeating task creates the next occurrence. */
+  repeat: repeatRule.optional(),
+  /** Subtasks. */
+  checklist: z.array(checkItem).default([]),
+  /** Remind this many minutes before the due time (needs a due time). */
+  remindBefore: z.number().int().min(0).max(10_080).optional(),
 })
 
 export const calendarEvent = entity({
@@ -592,6 +607,24 @@ export const settings = z.looseObject({
   effects: z.boolean().default(true),
   /** Like iOS "Reduce Transparency": solid surfaces, no blur. */
   reduceTransparency: z.boolean().default(false),
+  /** Interface size in percent (accessibility). */
+  textScale: z.union([z.literal(90), z.literal(100), z.literal(110), z.literal(125)]).default(100),
+  /** Local reminders while LIFE OS is open. */
+  reminders: z
+    .looseObject({
+      enabled: z.boolean().default(false),
+      tasks: z.boolean().default(true),
+      events: z.boolean().default(true),
+      /** Minutes before the start, when a task/event has no lead of its own. */
+      lead: z.number().int().min(0).max(240).default(10),
+    })
+    .default({ enabled: false, tasks: true, events: true, lead: 10 }),
+  /** The getting-started guide was dismissed. */
+  gettingStartedDismissed: z.boolean().default(false),
+  /** Last day "Plan my day" was completed. */
+  planDayLast: isoDate.optional(),
+  /** Optional one-line focus for the day, set in Plan My Day. */
+  intention: z.looseObject({ date: isoDate, text: z.string().trim().max(200) }).optional(),
   motion: z.enum(['system', 'full', 'reduced']).default('system'),
   currency: z.string().length(3).default('GBP'),
   dateFormat: z.enum(['dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd', 'd MMM yyyy']).default('d MMM yyyy'),

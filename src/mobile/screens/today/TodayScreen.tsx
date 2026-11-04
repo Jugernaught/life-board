@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { format } from 'date-fns'
-import { Flame, Plus, Share, X } from 'lucide-react'
+import { CalendarClock, Flame, Plus, Share, Sparkles, Sunrise, X } from 'lucide-react'
 import { COLLECTIONS } from '@/data/registry'
 import type { CollectionKey } from '@/data/types'
 import { useNow, useToday } from '@/hooks/useNow'
@@ -13,17 +13,20 @@ import { formatMinutes } from '@/lib/format'
 import { toneColor } from '@/lib/tone'
 import { cn, truncate } from '@/lib/utils'
 import { actions, useDatabase } from '@/store/store'
+import { quickCreateTask, rescheduleMany } from '@/app/taskCommands'
 import { ProgressRing } from '@/components/ui/display'
 import { useUI } from '@/components/command/uiStore'
+import { planDay } from '@/features/planday/model'
 import { AgendaRow } from '../../components/AgendaRow'
 import { CheckInCard } from '../../components/CheckInCard'
 import { InlineAdd } from '../../components/InlineAdd'
 import { StatGrid, StatTile } from '../../components/Stats'
 import { TaskRow } from '../../components/TaskRow'
 import { openRecord } from '../../editor/openRecord'
+import { GettingStartedSection } from './GettingStarted'
 import { nav } from '../../nav/navigator'
 import { CheckCircle } from '../../ui/controls'
-import { Cell, EmptyRow, Section, SeeAll } from '../../ui/List'
+import { ActionCell, Cell, EmptyRow, Section, SeeAll } from '../../ui/List'
 import { NavButton, Screen } from '../../ui/Screen'
 
 const isStandalone = () => (navigator as unknown as { standalone?: boolean }).standalone === true || window.matchMedia?.('(display-mode: standalone)').matches
@@ -107,6 +110,8 @@ export default function TodayScreen() {
   const dueAll = [...overdue, ...dueToday]
   const dueDone = db.tasks.filter((t) => t.status === 'done' && t.dueDate === today).length
   const name = db.settings.displayName
+  const planned = db.settings.planDayLast === today
+  const intention = db.settings.intention?.date === today ? db.settings.intention.text : undefined
 
   return (
     <Screen
@@ -126,6 +131,19 @@ export default function TodayScreen() {
       testId="screen-today"
     >
       <InstallHint />
+
+      {intention ? (
+        <button type="button" onClick={() => planDay.show()} className="mx-4 mb-5 flex w-[calc(100%-2rem)] items-start gap-2 text-left" data-testid="m-today-intention">
+          <Sparkles size={16} className="mt-[3px] shrink-0 text-accent" aria-hidden />
+          <span className="ios-body text-ink">{intention}</span>
+        </button>
+      ) : null}
+      <GettingStartedSection />
+      {!planned && (
+        <Section>
+          <Cell icon={Sunrise} iconTone="amber" title="Plan Your Day" subtitle="Two minutes: catch up, pick priorities, set an intention" chevron onClick={() => planDay.show()} testId="m-plan-day" />
+        </Section>
+      )}
 
       <div className="mx-4 mb-7 flex rounded-[12px] bg-[var(--ios-cell)] px-1.5 py-2.5" data-testid="today-rings">
         <Ring label="Priorities" done={priorities.filter((p) => p.status === 'done').length} total={priorities.length} tone="cyan" onClick={() => document.getElementById('today-priorities')?.scrollIntoView({ behavior: 'smooth' })} />
@@ -147,7 +165,12 @@ export default function TodayScreen() {
         {dueAll.map((t) => (
           <TaskRow key={t.id} task={t} today={today} />
         ))}
-        <InlineAdd placeholder="Add a task for today" testId="add-today-task" onAdd={(title) => actions.create('tasks', { title, dueDate: today })} />
+        {overdue.length > 1 && (
+          <ActionCell icon={CalendarClock} testId="m-today-overdue-to-today" onClick={() => rescheduleMany(overdue, today, today)}>
+            Move {overdue.length} Overdue to Today
+          </ActionCell>
+        )}
+        <InlineAdd placeholder="Add a task for today" testId="add-today-task" onAdd={(title) => quickCreateTask(title, { dueDate: today })} />
       </Section>
 
       <Section header="Up next" headerAction={<SeeAll label="Calendar" onClick={() => nav.push('plan')} />}>

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router'
 import type { WidgetSize } from '@/data/types'
 import { tasksDueToday, todaysPriorities } from '@/selectors/tasks'
 import { actions, useCollection } from '@/store/store'
+import { quickCreateTask, rescheduleMany } from '@/app/taskCommands'
 import { Button } from '@/components/ui/Button'
 import { EmptyState, ProgressBar } from '@/components/ui/display'
 import { TaskItem } from '@/components/shared/TaskItem'
@@ -58,7 +59,14 @@ export function TodayWidget({ today, size }: WidgetProps & { size: WidgetSize })
         />
       ) : (
         <div className="-mx-2 max-h-80 overflow-y-auto">
-          {overdue.length > 0 && <p className="eyebrow px-2 pt-1 pb-1 text-[color-mix(in_oklab,var(--color-bad)_80%,var(--color-ink))]">Overdue · {overdue.length}</p>}
+          {overdue.length > 0 && (
+            <div className="flex items-center justify-between px-2 pt-1 pb-1">
+              <p className="eyebrow text-[color-mix(in_oklab,var(--color-bad)_80%,var(--color-ink))]">Overdue · {overdue.length}</p>
+              <button type="button" onClick={() => rescheduleMany(overdue, today, today)} className="text-[11.5px] font-medium text-accent hover:underline" data-testid="overdue-to-today">
+                Move all to today
+              </button>
+            </div>
+          )}
           <AnimatePresence initial={false}>
             {overdue.map((t) => (
               <TaskItem key={t.id} task={t} today={today} />
@@ -72,7 +80,7 @@ export function TodayWidget({ today, size }: WidgetProps & { size: WidgetSize })
           </AnimatePresence>
         </div>
       )}
-      <InlineAdd placeholder="Add a task due today…" onAdd={(title) => actions.create('tasks', { title, dueDate: today })} />
+      <InlineAdd placeholder="Add a task due today…" onAdd={(title) => quickCreateTask(title, { dueDate: today })} />
     </Widget>
   )
 }

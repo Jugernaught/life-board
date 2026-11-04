@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
-import { CheckSquare, Plus } from 'lucide-react'
+import { CalendarDays, CheckSquare, Plus } from 'lucide-react'
 import { LIFE_AREAS, PRIORITIES, PRIORITY_RANK } from '@/data/constants'
 import type { Task } from '@/data/types'
 import { useListControls } from '@/hooks/useListControls'
@@ -8,6 +8,7 @@ import { addDaysISO, formatDate, relativeDay } from '@/lib/dates'
 import { groupBy } from '@/lib/utils'
 import { isOverdue } from '@/selectors/tasks'
 import { useCollection } from '@/store/store'
+import { rescheduleMany } from '@/app/taskCommands'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/display'
 import { Segmented } from '@/components/ui/inputs'
@@ -104,6 +105,19 @@ export function TasksView({ today }: { today: string }) {
         </Button>
       </div>
       <ListToolbar controls={controls} placeholder="Search tasks…" total={scoped.length} />
+      {scope === 'overdue' && controls.results.length > 1 && (
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-[var(--radius-control)] border border-bad/25 bg-bad/5 px-3 py-2 text-[13px] text-ink-muted">
+          <span>Behind on {controls.results.length} tasks? Give them a fresh start.</span>
+          <span className="flex gap-2">
+            <Button size="xs" variant="secondary" onClick={() => rescheduleMany(controls.results, today, today)} data-testid="overdue-all-today">
+              Move all to today
+            </Button>
+            <Button size="xs" variant="ghost" onClick={() => rescheduleMany(controls.results, addDaysISO(today, 1), today)}>
+              Tomorrow
+            </Button>
+          </span>
+        </div>
+      )}
       {controls.results.length === 0 ? (
         <Panel>
           <EmptyState
@@ -118,7 +132,18 @@ export function TasksView({ today }: { today: string }) {
             <Panel
               key={k}
               title={grouped ? (k === 'none' ? 'No due date' : `${relativeDay(k, today)} · ${formatDate(k, 'EEE d MMM')}`) : undefined}
-              actions={grouped && <span className="font-mono text-[11px] text-ink-subtle">{groups[k].length}</span>}
+              actions={
+                grouped && (
+                  <span className="flex items-center gap-3">
+                    {k !== 'none' && k < today && (
+                      <Button size="xs" variant="ghost" icon={CalendarDays} onClick={() => rescheduleMany(groups[k], today, today)}>
+                        Move to today
+                      </Button>
+                    )}
+                    <span className="font-mono text-[11px] text-ink-subtle">{groups[k].length}</span>
+                  </span>
+                )
+              }
               className={grouped && k !== 'none' && k < today ? 'border-bad/25' : undefined}
             >
               <div className="-mx-2">

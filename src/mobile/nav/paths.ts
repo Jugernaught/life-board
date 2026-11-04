@@ -58,6 +58,7 @@ export const ROUTE_PATTERNS = [
   'more/analytics/report',
   'more/settings',
   'more/settings/data',
+  'more/settings/notifications',
   'more/settings/targets',
   'more/settings/categories',
 ] as const

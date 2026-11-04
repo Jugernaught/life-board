@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 import { useApp, useSettings } from '@/store/store'
 import { AppShell } from '@/components/layout/AppShell'
 import { ConfirmHost } from '@/components/ui/confirm'
+import { DatePromptHost } from '@/components/ui/datePrompt'
 import { Toaster } from '@/components/ui/toast'
 import { StartupNotice } from './StartupNotice'
 import { RecoveryScreen } from './RecoveryScreen'
@@ -67,6 +68,7 @@ export function App() {
         <Gate />
         <StartupNotice />
         <ConfirmHost />
+        <DatePromptHost />
         <Toaster />
       </ThemeController>
     </BrowserRouter>

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { CollectionKey, Database, InputOf, Settings } from '@/data/types'
+import type { SmartTitle } from './smart'
 
 export interface FormContext {
   db: Database
@@ -80,6 +81,8 @@ export interface FormConfig<K extends CollectionKey = CollectionKey> {
   validate?: (values: Values, ctx: FormContext) => Partial<Record<string, string>> | undefined
   /** Adjust values just before saving (e.g. clear times for all-day events). */
   prepare?: (values: Values, ctx: FormContext) => Values
+  /** Read the title as natural language when creating ("Gym tomorrow 7am"). */
+  smart?: SmartTitle
   /** Field names shown in Quick Add. */
   quickFields?: string[]
   size?: 'md' | 'lg'

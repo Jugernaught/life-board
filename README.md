@@ -68,18 +68,33 @@ The desktop app keeps its own local data, separate from the browser version. To 
 | 10 | **Reading & Media** | Books, articles, podcasts, films, documentaries and courses with status, dates, rating, progress, notes and key takeaways. Search, filters and yearly stats. |
 | 11 | **Social Life** | Social events, important dates (repeat yearly), people to reconnect with on a chosen rhythm, social commitments and goals, private reflections. Stores only what's needed — a first name is enough. |
 | 12 | **Analytics & Reports** | Any date range, this period vs previous, progress against your own targets, trends for tasks, habits, learning, fitness, money, mood and reading, category (life-area) comparisons, printable weekly/monthly reports with an 8-week/6-month history table, and the weekly review. No single "life score". |
-| 13 | **Settings** | Name, **Appearance** (four themes with live previews, light/dark/automatic, accent colour, motion, ambient effects, reduce transparency), currency, date/time formats, week start, working hours, default calendar view, dashboard widgets, personal targets, finance categories, privacy, and data: export, validated import with preview (merge or replace), backups and restore, reset. |
+| 13 | **Settings** | Name, **Appearance** (four themes with live previews, light/dark/automatic, accent colour, text size, motion, ambient effects, reduce transparency), **Notifications** (reminders), currency, date/time formats, week start, working hours, default calendar view, dashboard widgets, personal targets, finance categories, privacy, and data: export, validated import with preview (merge or replace), backups and restore, reset. |
+
+### Everyday essentials
+
+These work across every section, on desktop and iPhone. Details are in [`docs/FEATURES-ROADMAP.md`](docs/FEATURES-ROADMAP.md).
+
+- **Type it, done:** `Pay rent every month 1 Dec !high #home` fills in the date, repeat, priority and tag as you type, with chips you can switch off.
+- **Repeating tasks and subtasks:** complete a repeating task and the next one appears, with its checklist reset.
+- **Reschedule in one tap:** Tomorrow / This weekend / Next week / Pick a date, or move every overdue task to today.
+- **Undo anything:** completing, editing, adding and deleting, from the notification or with Ctrl/Cmd+Z.
+- **Plan My Day:** a two-minute morning routine — catch up, pick priorities, set an intention.
+- **Getting started and starter templates:** a guide that ticks itself off, plus ready-made habits and routines you choose from.
+- **Reminders** while LIFE OS is open, and **text size** from 90% to 125%.
+- **A command palette** that forgives typos, remembers recent items and completes tasks with Ctrl/Cmd+Enter.
 
 ### On iPhone
 
-The iPhone version (`/m/`) is a separate app shell built for one-handed use: **Today · Plan · Habits · Journal · More** tabs, per-tab navigation with swipe-back, swipe actions on rows, bottom sheets for forms, iOS-style lists, light/dark following your phone, safe areas for the notch and home indicator, and offline support. Every section and record type is available. Install it with Safari → Share → *Add to Home Screen*. Details, gestures and limitations: [`docs/IPHONE.md`](docs/IPHONE.md).
+The iPhone version (`/m/`) is a separate app shell built for one-handed use: **Today · Plan · Habits · Journal · More** tabs, per-tab navigation with swipe-back, swipe actions and press-and-hold menus on rows, bottom sheets for forms, iOS-style lists, light/dark following your phone, safe areas for the notch and home indicator, and offline support. Every section and record type is available. Install it with Safari → Share → *Add to Home Screen*. Details, gestures and limitations: [`docs/IPHONE.md`](docs/IPHONE.md).
 
 ### Keyboard shortcuts
 
 | Keys | Action |
 | --- | --- |
 | `Ctrl K` / `⌘K` or `/` | Search everything and run commands |
-| `N` | Quick add (task, event, goal, note, transaction, journal, workout…) |
+| `N` | Quick add (task, event, goal, note, transaction, journal, workout…) — type dates, times, repeats, `!priority`, `#tags` and `@areas` right in the title |
+| `Ctrl Z` / `⌘Z` | Undo the last change (complete, edit, add or delete) |
+| `Ctrl Enter` / `⌘Enter` in search | Complete the highlighted task without opening it |
 | `G` then a letter | Go to a section — `H` home, `C` career, `P` projects, `F` finance, `W` fitness, `G` goals, `L` learning, `J` journal, `S` schedule, `R` reading, `O` social, `A` analytics, `,` settings |
 | `[` | Collapse / expand the sidebar |
 | `?` | Show all shortcuts |
@@ -134,7 +149,7 @@ These are deliberately **not** simulated. Each needs an outside service and some
 | Sync across devices | A backend such as Supabase plus sign-in — see [`docs/SUPABASE.md`](docs/SUPABASE.md). The storage layer is ready for an adapter. |
 | Google / Outlook calendar sync | OAuth app credentials and a small server to hold tokens. |
 | Bank connections | A regulated Open Banking provider (e.g. TrueLayer, GoCardless) and a server. |
-| Reminders / notifications | Push notifications (service worker + push server). |
+| Notifications while the app is closed | A push server. Reminders already work while LIFE OS is open (Settings → Notifications). |
 | Fitness trackers | Apple Health / Google Fit / Fitbit APIs or a companion mobile app. |
 
 ## Deploying
@@ -154,7 +169,7 @@ Pages on a private repo needs a paid GitHub plan (Pro, Team or Enterprise). On a
 
 ## Testing
 
-- **80 unit & component tests** (`npm test`) cover dates and money maths, streaks, budgets, grades, agenda building, analytics ranges, search ranking, schema validation and migration, all storage adapters, persistence (including crash recovery and never overwriting unreadable data), backups, imports, forms, delete/undo and the iPhone navigator.
-- **64 browser tests** (`npm run test:e2e`) run on a production build:
-  - **Desktop & Android (19):** setup, every section, create/edit/complete/delete/undo, search, dashboard customisation, drag-and-drop on the calendar and project board, journal autosave, export/backup/restore and import validation.
-  - **iPhone SE, 15 Pro and 16 Pro Max (15 each), light and dark:** onboarding, tab stacks, back button and edge-swipe, swipe-to-delete with confirm and undo, quick add, unsaved-changes guard, habits, journal autosave across reload, transactions, appearance, export/backups, recovery screen, offline start, desktop ↔ iPhone link, and a layout audit of every screen (no sideways scrolling, 16px inputs so iOS doesn't zoom, 24px+ touch targets, safe areas) plus a performance budget (no chart code on first load).
+- **121 unit & component tests** (`npm test`) cover dates and money maths, streaks, budgets, grades, agenda building, analytics ranges, search ranking (including typo-tolerant matching), schema validation and migration, all storage adapters, persistence (crash recovery, never overwriting unreadable data, stashing a save that hadn't committed when the page closed), backups, imports, forms, delete/undo, the iPhone navigator, and the everyday features: the natural-language parser, repeating tasks, undo history, reschedule options, reminders, Plan My Day, templates, the text-size CSS transform and error boundaries.
+- **94 browser tests** (`npm run test:e2e`) run on a production build:
+  - **Desktop & Android (34):** setup, every section, create/edit/complete/delete/undo, search, dashboard customisation, drag-and-drop on the calendar and project board, journal autosave, export/backup/restore, import validation, every theme — and the everyday features at a fixed date: one-line quick add with chips, repeating tasks with undo by notification and Ctrl+Z, subtasks, reschedule and pick-a-date, move all overdue, Plan My Day, getting started and templates, reminders, text size and the command palette.
+  - **iPhone SE, 15 Pro and 16 Pro Max (20 each), light and dark:** onboarding, tab stacks, back button and edge-swipe, swipe-to-delete with confirm and undo, quick add, unsaved-changes guard, habits, journal autosave across reload, transactions, appearance and themes, export/backups, recovery screen, offline start, desktop ↔ iPhone link, a layout audit of every screen (no sideways scrolling, 16px inputs so iOS doesn't zoom, 24px+ touch targets, safe areas), a performance budget, natural-language quick add and the New Task shortcut, press-and-hold and Later menus, Plan Your Day, templates, notifications and text size.

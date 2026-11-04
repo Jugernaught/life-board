@@ -1,7 +1,7 @@
 import { type ComponentType, useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import { motion } from 'framer-motion'
-import { LayoutGrid, Plus, Settings2 } from 'lucide-react'
+import { LayoutGrid, Plus, Settings2, Sparkles, Sunrise } from 'lucide-react'
 import type { WidgetId, WidgetSize } from '@/data/types'
 import { useNow, useToday } from '@/hooks/useNow'
 import { buildAgenda } from '@/selectors/agenda'
@@ -11,8 +11,11 @@ import { formatTime, greetingFor } from '@/lib/dates'
 import { pluralise } from '@/lib/utils'
 import { useDatabase, useSettings } from '@/store/store'
 import { Button } from '@/components/ui/Button'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { EmptyState } from '@/components/ui/display'
 import { useUI } from '@/components/command/uiStore'
+import { planDay } from '@/features/planday/model'
+import { GettingStartedCard } from '@/features/start/GettingStarted'
 import { CustomiseDashboard } from './CustomiseDashboard'
 import { ActivityWidget, CheckInWidget, FinanceWidget, HabitsWidget, NotesWidget, ReadingWidget, SocialWidget, WeeklyWidget } from './widgets/LifeWidgets'
 import { GoalsWidget, ProjectsWidget, QuickAddWidget, UpcomingWidget } from './widgets/OverviewWidgets'
@@ -42,7 +45,7 @@ function Clock() {
     <div className="text-right" aria-label={`Current time ${format(now, 'HH:mm')}`}>
       <p className="font-mono text-[34px] leading-none font-medium tracking-tight text-ink tabular sm:text-[42px]">
         {settings.timeFormat === '12h' ? formatTime(format(now, 'HH:mm'), '12h') : format(now, 'HH:mm')}
-        {settings.timeFormat === '24h' && <span className="text-[0.55em] text-ink-subtle">:{format(now, 'ss')}</span>}
+        {settings.timeFormat === '24h' && <span className="text-[0.55em] text-ink-muted">:{format(now, 'ss')}</span>}
       </p>
       <p className="cyber-only mt-1.5 font-mono text-[11px] tracking-[0.16em] text-ink-muted uppercase">{format(now, 'EEEE · d MMMM yyyy')}</p>
       <p className="not-cyber mt-1.5 text-[13px] font-medium text-ink-muted">{format(now, 'EEEE d MMMM')}</p>
@@ -54,6 +57,8 @@ function Hero({ today }: { today: string }) {
   const db = useDatabase()
   const now = useNow()
   const name = db.settings.displayName
+  const planned = db.settings.planDayLast === today
+  const intention = db.settings.intention?.date === today ? db.settings.intention.text : undefined
   const summary = useMemo(() => {
     const { overdue, today: due } = tasksDueToday(db.tasks, today)
     const events = buildAgenda(db, today, today, today).filter((i) => i.sourceKey === 'events')
@@ -99,6 +104,17 @@ function Hero({ today }: { today: string }) {
               <span>Nothing scheduled yet — add a task, event or habit to get your day going.</span>
             )}
           </p>
+          {intention && (
+            <p className="mt-2 flex items-center gap-1.5 text-[13.5px] text-ink" data-testid="today-intention">
+              <Sparkles size={14} className="shrink-0 text-accent" aria-hidden />
+              <span className="min-w-0">{intention}</span>
+            </p>
+          )}
+          {!planned && (
+            <Button size="sm" variant="primary" icon={Sunrise} className="mt-4" onClick={() => planDay.show()} data-testid="plan-day-open">
+              Plan my day
+            </Button>
+          )}
         </div>
         <Clock />
       </div>
@@ -115,6 +131,7 @@ export default function CommandCentrePage() {
   return (
     <div>
       <Hero today={today} />
+      <GettingStartedCard />
       <div className="mb-4 flex items-center justify-between gap-2">
         <p className="eyebrow">Widgets · {visible.length} shown</p>
         <div className="flex gap-2">
@@ -132,7 +149,12 @@ export default function CommandCentrePage() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
           {visible.map((w) => {
             const Component = WIDGETS[w.id]
-            return <Component key={w.id} today={today} size={w.size} />
+            // One failing widget shows a small notice; the rest of the dashboard keeps working.
+            return (
+              <ErrorBoundary key={w.id} label="This widget" compact>
+                <Component today={today} size={w.size} />
+              </ErrorBoundary>
+            )
           })}
         </div>
       )}
