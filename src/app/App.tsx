@@ -56,9 +56,13 @@ function Gate() {
   )
 }
 
+// Vite's BASE_URL is '/' normally and '/<repo>/' on GitHub Pages. React Router
+// wants it without the trailing slash so '/finance' maps to '/<repo>/finance'.
+const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/'
+
 export function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <ThemeController>
         <Gate />
         <StartupNotice />
