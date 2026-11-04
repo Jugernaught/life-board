@@ -1,9 +1,21 @@
-/** Subtle ambient background: grid, two slow light blooms, film grain. Purely decorative. */
-export function BackgroundFX({ enabled }: { enabled: boolean }) {
+import type { UiStyle } from '@/app/themes'
+
+/**
+ * The wallpaper behind the interface, one per theme. Purely decorative.
+ * `effects` adds ambient motion and detail (drifting light, grid, grain).
+ * `contained` renders inside a preview box instead of the whole window.
+ */
+export function Wallpaper({ style, effects, contained }: { style: UiStyle; effects: boolean; contained?: boolean }) {
+  const pos = contained ? 'absolute' : 'fixed'
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-canvas">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--color-canvas-2),var(--color-canvas)_65%)]" />
-      {enabled && (
+    <div aria-hidden className={`pointer-events-none ${pos} inset-0 -z-10 overflow-hidden wallpaper-${style}`}>
+      {style === 'glass' && effects && !contained && (
+        <>
+          <div className="wallpaper-orb -top-[16vh] left-[22vw] h-[46vh] w-[40vw] animate-drift" style={{ background: 'var(--color-accent)' }} />
+          <div className="wallpaper-orb top-[30vh] -right-[10vw] h-[46vh] w-[40vw] animate-drift-slow" style={{ background: 'var(--color-accent-2)' }} />
+        </>
+      )}
+      {style === 'cyber' && effects && (
         <>
           <div className="bg-grid absolute inset-0" />
           <div
@@ -22,6 +34,14 @@ export function BackgroundFX({ enabled }: { enabled: boolean }) {
           <div className="bg-scanlines absolute inset-0 opacity-40" />
         </>
       )}
+      {style === 'glass' && effects && <div className="bg-noise absolute inset-0 opacity-[0.025]" />}
     </div>
   )
+}
+
+const documentStyle = (): UiStyle => (typeof document !== 'undefined' ? (document.documentElement.dataset.style as UiStyle | undefined) : undefined) ?? 'glass'
+
+/** The app's wallpaper for the current theme (before settings load, the last applied one). */
+export function BackgroundFX({ style, enabled }: { style?: UiStyle; enabled: boolean }) {
+  return <Wallpaper style={style ?? documentStyle()} effects={enabled} />
 }

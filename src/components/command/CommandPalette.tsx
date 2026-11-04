@@ -2,31 +2,12 @@ import { type ComponentType, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigate } from 'react-router'
-import {
-  ArrowRight,
-  BookOpen,
-  CalendarPlus,
-  CheckSquare,
-  CornerDownLeft,
-  Download,
-  Dumbbell,
-  FileText,
-  FolderPlus,
-  GraduationCap,
-  Keyboard,
-  Moon,
-  PanelLeft,
-  PencilLine,
-  PoundSterling,
-  Repeat,
-  Search,
-  Smile,
-  Target,
-} from 'lucide-react'
+import { ArrowRight, BookOpen, CalendarPlus, CheckSquare, CornerDownLeft, Download, Dumbbell, FileText, FolderPlus, GraduationCap, Keyboard, Moon, PanelLeft, PencilLine, PoundSterling, Repeat, Search, Smile, Target, Palette as PaletteIcon } from 'lucide-react'
 import { NAV_ITEMS } from '@/app/navigation'
 import { COLLECTIONS } from '@/data/registry'
 import type { CollectionKey } from '@/data/types'
 import { searchDatabase } from '@/selectors/search'
+import { THEMES } from '@/app/themes'
 import { exportDatabase } from '@/store/backups'
 import { actions, useDatabase } from '@/store/store'
 import { cn, normalise } from '@/lib/utils'
@@ -98,6 +79,7 @@ function Palette({ onClose }: { onClose: () => void }) {
       { id: 'new-project', label: 'New project', group: 'Create', icon: FolderPlus, keywords: 'business venture', run: () => editor.create('projects') },
       ...NAV_ITEMS.map((n) => ({ id: `go-${n.id}`, label: n.label, group: 'Go to', icon: n.icon, hint: `G ${n.key.toUpperCase()}`, keywords: n.description, run: () => navigate(n.path) })),
       { id: 'theme', label: 'Toggle light / dark theme', group: 'Actions', icon: Moon, keywords: 'appearance mode', run: () => actions.updateSettings({ theme: db.settings.theme === 'light' ? 'dark' : 'light' }) },
+      ...THEMES.map((t) => ({ id: `style-${t.id}`, label: `Appearance: ${t.name}`, group: 'Actions', icon: PaletteIcon, keywords: `theme style look ${t.tagline}`, run: () => actions.updateSettings({ uiStyle: t.id }) })),
       { id: 'sidebar', label: 'Toggle sidebar', group: 'Actions', icon: PanelLeft, hint: '[', run: () => actions.updateSettings({ sidebarCollapsed: !db.settings.sidebarCollapsed }) },
       { id: 'export', label: 'Export backup (JSON)', group: 'Actions', icon: Download, keywords: 'download save data', run: () => exportDatabase() },
       { id: 'help', label: 'Keyboard shortcuts', group: 'Actions', icon: Keyboard, hint: '?', run: () => setHelp(true) },
@@ -141,7 +123,7 @@ function Palette({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-[70] flex items-start justify-center p-3 pt-[10vh] sm:p-6 sm:pt-[14vh]">
-      <motion.div className="absolute inset-0 bg-overlay backdrop-blur-[3px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
+      <motion.div className="absolute inset-0 bg-overlay backdrop-blur-[2px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} />
       <motion.div
         role="dialog"
         aria-modal="true"
@@ -150,7 +132,7 @@ function Palette({ onClose }: { onClose: () => void }) {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: -8, scale: 0.98, transition: { duration: 0.12 } }}
         transition={{ type: 'spring', stiffness: 500, damping: 38 }}
-        className="panel hud glow-ring relative flex max-h-[70vh] w-full max-w-2xl flex-col overflow-hidden bg-panel/95"
+        className="float hud relative flex max-h-[70vh] w-full max-w-2xl flex-col overflow-hidden"
         onKeyDown={(e) => {
           if (e.key === 'Escape') {
             e.preventDefault()
@@ -212,7 +194,7 @@ function Palette({ onClose }: { onClose: () => void }) {
                     aria-selected={isActive}
                     onMouseMove={() => setActive(index)}
                     onClick={() => runItem(item)}
-                    className={cn('flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors', isActive ? 'bg-accent/10 text-ink' : 'text-ink-muted')}
+                    className={cn('flex w-full items-center gap-3 rounded-[var(--radius-control)] px-3 py-2.5 text-left transition-colors', isActive ? 'bg-[var(--nav-active-bg)] text-ink' : 'text-ink-muted')}
                   >
                     <Icon size={16} className={cn('shrink-0', isActive ? 'text-accent' : 'text-ink-subtle')} />
                     <span className="min-w-0 flex-1">

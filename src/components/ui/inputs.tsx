@@ -15,7 +15,7 @@ import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 export const controlBase =
-  'w-full rounded-lg border border-line bg-panel-2/60 text-[14px] text-ink placeholder:text-ink-subtle transition-[border-color,box-shadow,background] duration-150 hover:border-line-strong focus:border-accent/60 focus:bg-panel-2 focus:outline-none focus:ring-2 focus:ring-accent/15 disabled:opacity-50 aria-[invalid=true]:border-bad/60 aria-[invalid=true]:ring-bad/10'
+  'w-full rounded-[var(--radius-control)] border border-line bg-panel-2/60 text-[14px] text-ink placeholder:text-ink-subtle transition-[border-color,box-shadow,background] duration-150 hover:border-line-strong focus:border-accent/60 focus:bg-panel-2 focus:outline-none focus:ring-2 focus:ring-accent/15 disabled:opacity-50 aria-[invalid=true]:border-bad/60 aria-[invalid=true]:ring-bad/10'
 
 export function Label({ htmlFor, children, required, className }: { htmlFor?: string; children: ReactNode; required?: boolean; className?: string }) {
   return (
@@ -156,7 +156,7 @@ export function Checkbox({
           'relative inline-flex shrink-0 items-center justify-center rounded-[5px] border transition-all duration-150 peer-focus-visible:ring-2 peer-focus-visible:ring-accent/60',
           checked ? 'border-transparent' : 'border-line-strong bg-panel-2 hover:border-accent/60',
         )}
-        style={checked ? { background: tone ?? 'var(--color-accent)', boxShadow: `0 0 12px -2px ${tone ?? 'var(--color-accent)'}` } : undefined}
+        style={checked ? { background: tone ?? 'var(--color-accent-fill)', boxShadow: `0 0 calc(var(--hud-opacity) * 12px) -2px ${tone ?? 'var(--color-accent)'}` } : undefined}
         aria-hidden
       >
         {checked && (
@@ -190,13 +190,15 @@ export function Switch({ checked, onChange, label, description, id, disabled }: 
         onClick={() => onChange(!checked)}
         className={cn(
           'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors duration-200 disabled:opacity-50',
-          checked ? 'border-accent/60 bg-accent/25' : 'border-line-strong bg-panel-3',
+          checked ? 'border-accent/60' : 'border-[var(--switch-border)]',
         )}
+        style={{ background: checked ? 'var(--switch-on-track)' : 'var(--switch-off-track)' }}
       >
         <motion.span
           layout
           transition={{ type: 'spring', stiffness: 700, damping: 35 }}
-          className={cn('mx-0.5 block size-[18px] rounded-full', checked ? 'ml-auto bg-accent shadow-[0_0_10px_var(--color-accent)]' : 'bg-ink-subtle')}
+          className={cn('mx-0.5 block size-[18px] rounded-full', checked && 'ml-auto')}
+          style={{ background: checked ? 'var(--switch-on-knob)' : 'var(--switch-off-knob)', boxShadow: checked ? 'var(--switch-knob-shadow)' : '0 1px 2px rgb(0 0 0 / 0.2)' }}
         />
       </button>
     </div>
@@ -228,7 +230,7 @@ export function Segmented<T extends string>({
 }) {
   const groupId = useId()
   return (
-    <div role="radiogroup" aria-label={ariaLabel} className={cn('inline-flex rounded-lg border border-line bg-panel-2/60 p-0.5', fullWidth && 'flex w-full', className)}>
+    <div role="radiogroup" aria-label={ariaLabel} className={cn('inline-flex rounded-[var(--radius-control)] border border-[var(--seg-track-border)] bg-[var(--seg-track)] p-0.5', fullWidth && 'flex w-full', className)}>
       {options.map((o) => {
         const active = o.value === value
         return (
@@ -241,16 +243,16 @@ export function Segmented<T extends string>({
             title={o.title}
             onClick={() => onChange(o.value)}
             className={cn(
-              'relative z-0 inline-flex items-center justify-center gap-1.5 rounded-md font-medium whitespace-nowrap transition-colors',
+              'relative z-0 inline-flex items-center justify-center gap-1.5 rounded-[calc(var(--radius-control)-2px)] font-medium whitespace-nowrap transition-colors',
               size === 'sm' ? 'h-7 px-2.5 text-[12px]' : 'h-8 px-3 text-[13px]',
               fullWidth && 'flex-1',
-              active ? 'text-ink' : 'text-ink-subtle hover:text-ink-muted',
+              active ? 'text-ink' : 'text-ink-muted hover:text-ink',
             )}
           >
             {active && (
               <motion.span
                 layoutId={`seg-${groupId}`}
-                className="absolute inset-0 -z-10 rounded-md border border-accent/30 bg-panel-3 shadow-[0_0_14px_-6px_var(--color-accent)]"
+                className="absolute inset-0 -z-10 rounded-[calc(var(--radius-control)-2px)] border border-[var(--seg-active-border)] bg-[var(--seg-active-bg)] shadow-[var(--seg-active-shadow)]"
                 transition={{ type: 'spring', stiffness: 500, damping: 38 }}
               />
             )}

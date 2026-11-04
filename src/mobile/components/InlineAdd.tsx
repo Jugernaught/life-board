@@ -20,7 +20,7 @@ export function InlineAdd({ placeholder, onAdd, testId }: { placeholder: string;
       }}
     >
       <button type="button" aria-label={placeholder} onClick={() => input.current?.focus()} className="-m-2.5 flex size-11 shrink-0 items-center justify-center text-accent">
-        <span className="flex size-[22px] items-center justify-center rounded-full bg-accent text-on-accent">
+        <span className="flex size-[22px] items-center justify-center rounded-full bg-accent-fill text-on-accent">
           <Plus size={15} strokeWidth={3} />
         </span>
       </button>

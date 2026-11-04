@@ -1,8 +1,11 @@
-import { CalendarDays, CircleEllipsis, NotebookPen, Repeat, Sun } from 'lucide-react'
+import { CalendarDays, CircleEllipsis, NotebookPen, PenLine, Plus, Repeat, Search, Sun } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { useToday } from '@/hooks/useNow'
 import { cn } from '@/lib/utils'
-import { useCollection } from '@/store/store'
-import { screenScrollers, useNav } from './navigator'
+import { useCollection, useSettings } from '@/store/store'
+import { editor } from '@/components/editor/editorStore'
+import { useUI } from '@/components/command/uiStore'
+import { nav, screenScrollers, useNav } from './navigator'
 import type { TabId } from './paths'
 
 export const TABS: { id: TabId; label: string; icon: typeof Sun }[] = [
@@ -13,15 +16,48 @@ export const TABS: { id: TabId; label: string; icon: typeof Sun }[] = [
   { id: 'more', label: 'More', icon: CircleEllipsis },
 ]
 
+/** The floating accessory button does the most likely next thing for the tab you're on. */
+function useAccessory(tab: TabId) {
+  const today = useToday()
+  const { showQuickAdd } = useUI()
+  switch (tab) {
+    case 'plan':
+      return { label: 'New task', icon: Plus, run: () => showQuickAdd('tasks', { dueDate: today }) }
+    case 'habits':
+      return { label: 'New habit', icon: Plus, run: () => editor.create('habits') }
+    case 'journal':
+      return { label: 'Write today’s entry', icon: PenLine, run: () => nav.push(`journal/write/${today}`) }
+    case 'more':
+      return {
+        label: 'Search everything',
+        icon: Search,
+        run: () => {
+          useNav.getState().popToRoot('more')
+          // Focus once the More screen is on top again.
+          setTimeout(() => document.querySelector<HTMLInputElement>('[data-testid="more-search"] input, input[data-testid="more-search"]')?.focus(), 380)
+        },
+      }
+    default:
+      return { label: 'Quick add', icon: Plus, run: () => showQuickAdd() }
+  }
+}
+
 /**
  * Bottom tab bar. Tapping the current tab goes back to its first screen,
  * and tapping again scrolls to the top — the standard iOS behaviour.
+ *
+ * Liquid Glass, Cyberpunk and Minimal Dark use a floating capsule (iOS 26
+ * style) with a contextual action button beside it; Apple Clean keeps the
+ * classic full-width bar.
  */
 export function TabBar() {
   const { tab, stacks, switchTab, popToRoot } = useNav()
+  const style = useSettings().uiStyle
   const today = useToday()
   const tasks = useCollection('tasks')
   const overdue = tasks.filter((t) => t.status !== 'done' && t.dueDate && t.dueDate < today).length
+  const accessory = useAccessory(tab)
+  const floating = style !== 'clean'
 
   const onTap = (id: TabId) => {
     if (id !== tab) return switchTab(id)
@@ -30,37 +66,80 @@ export function TabBar() {
     screenScrollers.get(top.key)?.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const items = TABS.map((t) => {
+    const active = t.id === tab
+    const badge = t.id === 'plan' && overdue > 0 ? overdue : 0
+    return (
+      <button
+        key={t.id}
+        type="button"
+        onClick={() => onTap(t.id)}
+        aria-current={active ? 'page' : undefined}
+        aria-label={badge ? `${t.label}, ${badge} overdue` : t.label}
+        data-testid={`tab-${t.id}`}
+        className={cn(
+          'relative z-0 flex flex-1 flex-col items-center gap-[3px] transition-[color,transform] duration-150 active:scale-[0.94]',
+          floating ? 'justify-center' : 'justify-start pt-[7px]',
+          active ? 'text-accent' : floating ? 'text-ink-muted' : 'text-[var(--color-ink-subtle)]',
+        )}
+      >
+        {floating && active && (
+          <motion.span
+            layoutId="tab-lens"
+            className="absolute inset-y-[5px] inset-x-[3px] -z-10 rounded-full"
+            style={{ background: 'var(--ios-tab-active-bg)', boxShadow: 'var(--ios-tab-glow)' }}
+            transition={{ type: 'spring', stiffness: 520, damping: 38 }}
+          />
+        )}
+        <span className="relative">
+          <t.icon size={floating ? 23 : 25} strokeWidth={active ? 2.3 : 1.8} />
+          {badge > 0 && (
+            <span className="absolute -top-1 -right-2.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#ff3b30] px-1 text-[12px] leading-none font-medium text-white tabular-nums" aria-hidden>
+              {badge > 99 ? '99+' : badge}
+            </span>
+          )}
+        </span>
+        <span className="text-[10px] leading-none font-medium tracking-[0.01em]">{t.label}</span>
+      </button>
+    )
+  })
+
+  if (!floating) {
+    return (
+      <nav
+        aria-label="Tabs"
+        className="ios-bar ios-hairline-t absolute inset-x-0 bottom-0 z-40 flex"
+        style={{ height: 'var(--tabbar-h)', paddingBottom: 'var(--safe-bottom)', paddingLeft: 'var(--safe-left)', paddingRight: 'var(--safe-right)' }}
+      >
+        {items}
+      </nav>
+    )
+  }
+
   return (
     <nav
       aria-label="Tabs"
-      className="ios-bar ios-hairline-t absolute inset-x-0 bottom-0 z-40 flex"
-      style={{ height: 'var(--tabbar-h)', paddingBottom: 'var(--safe-bottom)', paddingLeft: 'var(--safe-left)', paddingRight: 'var(--safe-right)' }}
+      className="pointer-events-none absolute inset-x-0 bottom-0 z-40 flex items-end gap-2.5"
+      style={{ height: 'var(--tabbar-h)', paddingBottom: 'var(--tabbar-float-bottom)', paddingLeft: 'calc(var(--safe-left) + 14px)', paddingRight: 'calc(var(--safe-right) + 14px)' }}
+      data-floating
     >
-      {TABS.map((t) => {
-        const active = t.id === tab
-        const badge = t.id === 'plan' && overdue > 0 ? overdue : 0
-        return (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => onTap(t.id)}
-            aria-current={active ? 'page' : undefined}
-            aria-label={badge ? `${t.label}, ${badge} overdue` : t.label}
-            data-testid={`tab-${t.id}`}
-            className={cn('relative flex flex-1 flex-col items-center justify-start gap-[3px] pt-[7px] transition-colors', active ? 'text-accent' : 'text-[var(--color-ink-subtle)]')}
-          >
-            <span className="relative">
-              <t.icon size={25} strokeWidth={active ? 2.3 : 1.8} />
-              {badge > 0 && (
-                <span className="absolute -top-1 -right-2.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#ff3b30] px-1 text-[12px] leading-none font-medium text-white tabular-nums" aria-hidden>
-                  {badge > 99 ? '99+' : badge}
-                </span>
-              )}
-            </span>
-            <span className="text-[10px] leading-none font-medium tracking-[0.01em]">{t.label}</span>
-          </button>
-        )
-      })}
+      <div className="ios-glass pointer-events-auto flex h-[62px] min-w-0 flex-1 rounded-full px-1" data-testid="tab-capsule">
+        {items}
+      </div>
+      <motion.button
+        key={tab}
+        type="button"
+        onClick={accessory.run}
+        aria-label={accessory.label}
+        title={accessory.label}
+        data-testid="tab-accessory"
+        initial={{ scale: 0.85, opacity: 0.6 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 520, damping: 30 }}
+        className="ios-glass pointer-events-auto flex size-[62px] shrink-0 items-center justify-center rounded-full text-accent active:scale-[0.92]"
+      >
+        <accessory.icon size={26} strokeWidth={2.2} />
+      </motion.button>
     </nav>
   )
 }

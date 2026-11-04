@@ -57,7 +57,7 @@ export function QuickAddSheet() {
               role="radio"
               aria-checked={t.type === type}
               onClick={() => showQuickAdd(t.type)}
-              className={cn('ios-subhead flex h-9 items-center gap-1.5 rounded-full px-3.5 font-medium', t.type === type ? 'bg-accent text-on-accent' : 'bg-[var(--ios-fill)] text-ink')}
+              className={cn('ios-subhead flex h-9 items-center gap-1.5 rounded-full px-3.5 font-medium', t.type === type ? 'bg-accent-fill text-on-accent' : 'bg-[var(--ios-fill)] text-ink')}
             >
               <t.icon size={16} />
               {t.label}

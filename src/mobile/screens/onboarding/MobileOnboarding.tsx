@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils'
 import { applyImport, inspectImportFile } from '@/store/backups'
 import { actions, useSettings } from '@/store/store'
 import { toast } from '@/components/ui/toast'
+import { THEMES, supportsLight } from '@/app/themes'
+import { PhoneThemePreview } from '../../components/PhoneThemePreview'
 import { Segmented } from '../../ui/controls'
 import { Cell, Section } from '../../ui/List'
 
@@ -69,6 +71,18 @@ export function MobileOnboarding() {
               <div className="pt-10">
                 <h1 className="ios-large-title px-6 text-ink">Preferences</h1>
                 <p className="ios-body mt-2 mb-6 px-6 text-ink-subtle">You can change these any time in Settings.</p>
+                <Section header="Theme">
+                  <div className="grid grid-cols-2 gap-3 p-3" role="radiogroup" aria-label="Theme">
+                    {THEMES.map((t) => (
+                      <button key={t.id} type="button" role="radio" aria-checked={s.uiStyle === t.id} onClick={() => actions.updateSettings({ uiStyle: t.id, ...(t.accents.some((a) => a.id === s.accent) ? {} : { accent: t.accents[0].id }) })} className="text-left active:scale-[0.97]">
+                        <span className={cn('block rounded-[21px] p-[3px]', s.uiStyle === t.id ? 'bg-accent' : '')}>
+                          <PhoneThemePreview style={t.id} mode={supportsLight(t.id) ? (document.documentElement.dataset.theme === 'light' ? 'light' : 'dark') : 'dark'} accent={t.accents.some((a) => a.id === s.accent) ? s.accent : t.accents[0].id} />
+                        </span>
+                        <span className={cn('ios-subhead mt-1.5 block text-center font-medium', s.uiStyle === t.id ? 'text-accent' : 'text-ink')}>{t.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </Section>
                 <Section header="Appearance">
                   <div className="px-4 py-2.5">
                     <Segmented
@@ -112,7 +126,7 @@ export function MobileOnboarding() {
             <span key={i} className={cn('h-2 rounded-full transition-all', i === step ? 'w-5 bg-accent' : 'w-2 bg-[var(--color-line-strong)]')} />
           ))}
         </div>
-        <button type="button" onClick={() => (step < 2 ? setStep(step + 1) : finish())} className="ios-headline h-[50px] w-full rounded-[14px] bg-accent text-on-accent active:opacity-80" data-testid="m-onboarding-next">
+        <button type="button" onClick={() => (step < 2 ? setStep(step + 1) : finish())} className="ios-headline h-[50px] w-full rounded-[14px] bg-accent-fill text-on-accent active:opacity-80" data-testid="m-onboarding-next">
           {step === 0 ? 'Get Started' : step === 1 ? 'Continue' : 'Start Using LIFE OS'}
         </button>
         <div className="mt-2 flex justify-between">

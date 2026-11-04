@@ -44,7 +44,8 @@ function Clock() {
         {settings.timeFormat === '12h' ? formatTime(format(now, 'HH:mm'), '12h') : format(now, 'HH:mm')}
         {settings.timeFormat === '24h' && <span className="text-[0.55em] text-ink-subtle">:{format(now, 'ss')}</span>}
       </p>
-      <p className="mt-1.5 font-mono text-[11px] tracking-[0.16em] text-ink-subtle uppercase">{format(now, 'EEEE · d MMMM yyyy')}</p>
+      <p className="cyber-only mt-1.5 font-mono text-[11px] tracking-[0.16em] text-ink-muted uppercase">{format(now, 'EEEE · d MMMM yyyy')}</p>
+      <p className="not-cyber mt-1.5 text-[13px] font-medium text-ink-muted">{format(now, 'EEEE d MMMM')}</p>
     </div>
   )
 }
@@ -61,7 +62,7 @@ function Hero({ today }: { today: string }) {
     const parts: { label: string; tone?: string }[] = []
     if (priorities.length) parts.push({ label: `${priorities.filter((p) => p.status === 'done').length}/${priorities.length} priorities done` })
     if (due.length) parts.push({ label: `${pluralise(due.length, 'task')} due today` })
-    if (overdue.length) parts.push({ label: `${overdue.length} overdue`, tone: 'text-bad' })
+    if (overdue.length) parts.push({ label: `${overdue.length} overdue`, tone: 'text-[color-mix(in_oklab,var(--color-bad)_85%,var(--color-ink))]' })
     if (events.length) parts.push({ label: pluralise(events.length, 'event') + ' today' })
     if (habits.total) parts.push({ label: `${habits.done}/${habits.total} habits` })
     return parts
@@ -72,11 +73,12 @@ function Hero({ today }: { today: string }) {
       <div className="pointer-events-none absolute -bottom-24 left-1/3 size-60 rounded-full bg-accent-2/10 blur-3xl" aria-hidden />
       <div className="relative flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <p className="eyebrow flex items-center gap-2 text-accent/80">
+          <p className="eyebrow cyber-only flex items-center gap-2 text-accent">
             <span className="size-1.5 animate-pulse-soft rounded-full bg-ok shadow-[0_0_8px_var(--color-ok)]" />
             01 // Command Centre · System online
           </p>
-          <h1 className="mt-3 font-display text-[28px] leading-tight font-semibold tracking-tight sm:text-[36px]">
+          <p className="not-cyber text-[13px] font-medium text-ink-muted">Command Centre</p>
+          <h1 className="title mt-2 text-[28px] leading-tight font-bold sm:text-[36px]">
             {greetingFor(now)}
             {name ? (
               <>

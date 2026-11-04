@@ -1,0 +1,526 @@
+/* =========================================================================
+ * LIFE OS themes — design tokens for every visual style.
+ *
+ * Selected by attributes (see src/app/themes.ts):
+ *   data-style   glass | clean | cyber | minimal
+ *   data-theme   light | dark          (dark-only styles are always dark)
+ *   data-accent  blue | cyan | violet | magenta | lime
+ *   data-transparency  full | reduced  data-effects  on | off
+ *
+ * Selectors never use :root, so any element carrying the attributes gets the
+ * full token set — the Appearance page previews other themes that way.
+ *
+ * Token groups
+ *   Palette     --color-*            (Tailwind utilities: bg-panel, text-ink…)
+ *   Type        --font-*, --display-*, --label-*
+ *   Shape       --radius-*
+ *   Materials   --surface-*  cards      --chrome-*  sidebar/toolbars/tab bar
+ *               --float-*    menus, dialogs, popovers, toasts
+ *   Effects     --glow-*, --hud-opacity, --chamfer, --dot-glow
+ *   Layout      --shell-gap, --sidebar-radius, --toolbar-radius
+ *   Navigation  --nav-active-bg, --nav-indicator
+ *   Motion      --dur-fast, --dur-base, --ease-out
+ * ====================================================================== */
+
+/* ------------------------------------------------------------- defaults */
+/* Structural defaults shared by all styles; each style overrides below. */
+[data-style] {
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter Variable', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter Variable', system-ui, 'Segoe UI', sans-serif;
+  /* Numbers and timers: the UI font with tabular figures (see .font-mono rule in index.css). */
+  --font-mono: var(--font-sans);
+  --font-code: ui-monospace, 'SF Mono', 'JetBrains Mono Variable', Menlo, Consolas, monospace;
+  --display-tracking: -0.022em;
+  --title-tracking: -0.012em;
+  --label-font: var(--font-sans);
+  --label-size: 12px;
+  --label-weight: 600;
+  --label-tracking: 0;
+  --label-transform: none;
+
+  --radius-panel: 16px;
+  --radius-control: 10px;
+  --radius-btn: 10px;
+  --radius-window: 18px;
+  --sidebar-radius: 0px;
+  --toolbar-radius: 0px;
+  --shell-gap: 0px;
+
+  --hud-opacity: 0;
+  --chamfer: none;
+  --chamfer-sm: none;
+  --glow-sm: 0 0 0 0 transparent;
+  --glow-md: 0 0 0 0 transparent;
+  --dot-glow: 0px;
+
+  --nav-active-bg: color-mix(in oklab, var(--color-accent) 14%, transparent);
+  --nav-active-ink: var(--color-ink);
+  --nav-indicator: 0;
+  --sidebar-border: 0 1px 0 0;
+  --toolbar-border: 0 0 1px 0;
+  --radius-btn-primary: var(--radius-btn);
+  --radius-badge: 6px;
+
+  /* Controls */
+  --tab-active-bg: color-mix(in oklab, var(--color-ink) 8%, transparent);
+  --tab-underline: 0;
+  --tab-radius: 999px;
+  --seg-track: color-mix(in oklab, var(--color-ink) 7%, transparent);
+  --seg-track-border: transparent;
+  --seg-active-bg: var(--color-panel);
+  --seg-active-border: transparent;
+  --seg-active-shadow: 0 1px 3px rgb(0 0 0 / 0.14), 0 1px 1px rgb(0 0 0 / 0.04);
+  --switch-off-track: color-mix(in oklab, var(--color-ink) 18%, transparent);
+  --switch-off-knob: #ffffff;
+  --switch-on-track: var(--color-accent-fill);
+  --switch-on-knob: #ffffff;
+  --switch-knob-shadow: 0 2px 4px rgb(0 0 0 / 0.2), 0 0 1px rgb(0 0 0 / 0.2);
+  --switch-border: transparent;
+
+  --dur-fast: 140ms;
+  --dur-base: 260ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Materials — solid by default (clean / minimal override with their own). */
+  --surface: var(--color-panel);
+  --surface-sheen: linear-gradient(transparent, transparent);
+  --surface-filter: none;
+  --surface-border: var(--color-line);
+  --surface-highlight: transparent;
+  --surface-shadow: 0 1px 2px rgb(0 0 0 / 0.06);
+  --surface-solid: var(--color-panel);
+
+  --chrome: color-mix(in oklab, var(--color-canvas) 82%, transparent);
+  --chrome-sheen: linear-gradient(transparent, transparent);
+  --chrome-filter: blur(20px) saturate(180%);
+  --chrome-border: var(--color-line);
+  --chrome-highlight: transparent;
+  --chrome-shadow: none;
+  --chrome-solid: var(--color-canvas-2);
+
+  --float: color-mix(in oklab, var(--color-panel) 94%, transparent);
+  --float-sheen: linear-gradient(transparent, transparent);
+  --float-filter: blur(24px) saturate(160%);
+  --float-border: var(--color-line-strong);
+  --float-highlight: transparent;
+  --float-shadow: 0 24px 60px -24px rgb(0 0 0 / 0.45);
+  --float-solid: var(--color-panel);
+
+  --color-blue: #4d8dff;
+  --color-accent-fill: var(--color-accent);
+  --color-backdrop: var(--color-canvas);
+}
+
+/* ============================================================ CYBERPUNK */
+/* The original identity — values match the @theme defaults in index.css,
+   restated so previews inside another theme render correctly. */
+[data-style='cyber'] {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Chakra Petch', 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-code: var(--font-mono);
+  --display-tracking: 0.01em;
+  --title-tracking: 0.025em;
+  --label-font: var(--font-mono);
+  --label-size: 10.5px;
+  --label-weight: 400;
+  --label-tracking: 0.14em;
+  --label-transform: uppercase;
+
+  --radius-panel: 14px;
+  --radius-control: 8px;
+  --radius-btn: 8px;
+  --radius-window: 14px;
+
+  --hud-opacity: 0.8;
+  --chamfer: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+  --chamfer-sm: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+  --glow-sm: 0 0 10px var(--color-accent);
+  --glow-md: 0 0 24px -6px color-mix(in oklab, var(--color-accent) 70%, transparent);
+  --dot-glow: 6px;
+  --nav-active-bg: color-mix(in oklab, var(--color-accent) 9%, transparent);
+  --nav-indicator: 1;
+  --radius-btn-primary: 0px;
+  --tab-active-bg: transparent;
+  --tab-underline: 1;
+  --tab-radius: 8px;
+  --seg-track: color-mix(in oklab, var(--color-panel-2) 60%, transparent);
+  --seg-track-border: var(--color-line);
+  --seg-active-bg: var(--color-panel-3);
+  --seg-active-border: color-mix(in oklab, var(--color-accent) 30%, transparent);
+  --seg-active-shadow: 0 0 14px -6px var(--color-accent);
+  --switch-off-track: var(--color-panel-3);
+  --switch-off-knob: var(--color-ink-subtle);
+  --switch-on-track: color-mix(in oklab, var(--color-accent) 25%, transparent);
+  --switch-on-knob: var(--color-accent);
+  --switch-knob-shadow: 0 0 10px var(--color-accent);
+  --switch-border: var(--color-line-strong);
+
+  --color-canvas: #05060a;
+  --color-canvas-2: #090b11;
+  --color-panel: #0d1017;
+  --color-panel-2: #121620;
+  --color-panel-3: #181d29;
+  --color-overlay: rgb(3 4 8 / 0.72);
+  --color-line: rgb(148 163 184 / 0.11);
+  --color-line-strong: rgb(148 163 184 / 0.2);
+  --color-ink: #e7edf5;
+  --color-ink-muted: #a7b2c2;
+  --color-ink-subtle: #8b95a5;
+  --color-cyan: #19e6ff;
+  --color-violet: #9b7bff;
+  --color-magenta: #ff3ea8;
+  --color-lime: #b6f35c;
+  --color-amber: #ffc94d;
+  --color-blue: #73adff;
+  --color-on-accent: #00151a;
+  --color-ok: #3ee6a0;
+  --color-warn: #ffc94d;
+  --color-bad: #ff5c7a;
+  --color-info: #5aa9ff;
+
+  --surface: color-mix(in oklab, var(--color-panel) 78%, transparent);
+  --surface-sheen: linear-gradient(180deg, rgb(255 255 255 / 0.028), rgb(255 255 255 / 0.008));
+  --surface-filter: blur(16px) saturate(130%);
+  --surface-border: var(--color-line);
+  --surface-highlight: rgb(255 255 255 / 0.035);
+  --surface-shadow: 0 18px 40px -28px rgb(0 0 0 / 0.9);
+
+  --chrome: color-mix(in oklab, var(--color-canvas) 70%, transparent);
+  --chrome-filter: blur(24px);
+  --chrome-border: var(--color-line);
+
+  --float: color-mix(in oklab, var(--color-panel) 95%, transparent);
+  --float-sheen: linear-gradient(180deg, rgb(255 255 255 / 0.028), rgb(255 255 255 / 0.008));
+  --float-filter: blur(16px) saturate(130%);
+  --float-highlight: rgb(255 255 255 / 0.035);
+  --float-shadow:
+    0 0 0 1px color-mix(in oklab, var(--color-accent) 12%, transparent),
+    0 24px 60px -20px rgb(0 0 0 / 0.9);
+}
+
+/* ========================================================= LIQUID GLASS */
+[data-style='glass'] {
+  --radius-panel: 22px;
+  --radius-control: 12px;
+  --radius-btn: 999px;
+  --radius-window: 26px;
+  --sidebar-radius: 24px;
+  --toolbar-radius: 20px;
+  --shell-gap: 10px;
+  --sidebar-border: 1px;
+  --toolbar-border: 1px;
+  --radius-badge: 999px;
+  --radius-btn-primary: 999px;
+  --nav-active-bg: color-mix(in oklab, var(--color-accent-fill) 22%, rgb(255 255 255 / 0.55));
+  --seg-active-bg: color-mix(in oklab, var(--color-panel) 86%, transparent);
+  --dur-base: 320ms;
+}
+
+[data-style='glass'][data-theme='dark'] {
+  --color-canvas: #0b0e17;
+  --color-canvas-2: #121626;
+  --color-panel: #1b1f2c;
+  --color-panel-2: #242938;
+  --color-panel-3: #2e3445;
+  --color-overlay: rgb(4 6 12 / 0.5);
+  --color-line: rgb(255 255 255 / 0.09);
+  --color-line-strong: rgb(255 255 255 / 0.16);
+  --color-ink: #f5f7fb;
+  --color-ink-muted: #c3cad6;
+  --color-ink-subtle: #a9b1bf;
+  --nav-active-bg: color-mix(in oklab, var(--color-accent-fill) 42%, rgb(10 14 24 / 0.5));
+
+  --surface: rgb(26 30 42 / 0.66);
+  --surface-sheen: linear-gradient(160deg, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0.015) 45%, rgb(255 255 255 / 0) 70%);
+  --surface-filter: blur(18px) saturate(160%);
+  --surface-border: rgb(255 255 255 / 0.09);
+  --surface-highlight: rgb(255 255 255 / 0.09);
+  --surface-shadow: 0 1px 1px rgb(0 0 0 / 0.18), 0 14px 36px -20px rgb(0 0 0 / 0.65);
+  --surface-solid: #1b1f2c;
+
+  /* Liquid glass: thin tint, strong blur, light along the rim. The tint is
+     just dense enough that text stays AA over the brightest wallpaper. */
+  --chrome: rgb(24 28 40 / 0.6);
+  --chrome-sheen: linear-gradient(135deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0.03) 36%, rgb(255 255 255 / 0) 60%, rgb(255 255 255 / 0.07));
+  --chrome-filter: blur(28px) saturate(190%) brightness(1.06);
+  --chrome-border: rgb(255 255 255 / 0.14);
+  --chrome-highlight: rgb(255 255 255 / 0.24);
+  --chrome-shadow: 0 12px 40px -14px rgb(0 0 0 / 0.6), 0 2px 6px -2px rgb(0 0 0 / 0.3);
+  --chrome-solid: #161a26;
+
+  --float: rgb(32 36 50 / 0.68);
+  --float-sheen: linear-gradient(135deg, rgb(255 255 255 / 0.13), rgb(255 255 255 / 0.02) 40%, rgb(255 255 255 / 0) 65%, rgb(255 255 255 / 0.05));
+  --float-filter: blur(40px) saturate(190%);
+  --float-border: rgb(255 255 255 / 0.15);
+  --float-highlight: rgb(255 255 255 / 0.22);
+  --float-shadow: 0 32px 80px -24px rgb(0 0 0 / 0.75);
+  --float-solid: #1f2331;
+
+  --color-backdrop: #0b0e17;
+}
+
+[data-style='glass'][data-theme='light'] {
+  --color-canvas: #e9eef7;
+  --color-canvas-2: #f4f6fb;
+  --color-panel: #ffffff;
+  --color-panel-2: #f3f5f9;
+  --color-panel-3: #e8ecf3;
+  --color-overlay: rgb(20 28 45 / 0.24);
+  --color-line: rgb(15 23 42 / 0.08);
+  --color-line-strong: rgb(15 23 42 / 0.15);
+  --color-ink: #0b1220;
+  --color-ink-muted: #36404f;
+  --color-ink-subtle: #4b5465;
+
+  --surface: rgb(255 255 255 / 0.68);
+  --surface-sheen: linear-gradient(160deg, rgb(255 255 255 / 0.55), rgb(255 255 255 / 0.1) 45%, rgb(255 255 255 / 0) 70%);
+  --surface-filter: blur(18px) saturate(170%);
+  --surface-border: rgb(255 255 255 / 0.75);
+  --surface-highlight: rgb(255 255 255 / 0.95);
+  --surface-shadow: 0 1px 2px rgb(15 23 42 / 0.05), 0 14px 34px -18px rgb(15 23 42 / 0.22);
+  --surface-solid: #ffffff;
+
+  --chrome: rgb(255 255 255 / 0.56);
+  --chrome-sheen: linear-gradient(135deg, rgb(255 255 255 / 0.75), rgb(255 255 255 / 0.18) 38%, rgb(255 255 255 / 0) 60%, rgb(255 255 255 / 0.4));
+  --chrome-filter: blur(28px) saturate(200%) brightness(1.04);
+  --chrome-border: rgb(255 255 255 / 0.8);
+  --chrome-highlight: rgb(255 255 255 / 1);
+  --chrome-shadow: 0 12px 40px -16px rgb(15 23 42 / 0.28), 0 1px 3px rgb(15 23 42 / 0.08);
+  --chrome-solid: #f4f6fb;
+
+  --float: rgb(255 255 255 / 0.74);
+  --float-sheen: linear-gradient(135deg, rgb(255 255 255 / 0.8), rgb(255 255 255 / 0.2) 40%, rgb(255 255 255 / 0) 65%, rgb(255 255 255 / 0.4));
+  --float-filter: blur(40px) saturate(200%);
+  --float-border: rgb(255 255 255 / 0.85);
+  --float-highlight: rgb(255 255 255 / 1);
+  --float-shadow: 0 32px 80px -24px rgb(15 23 42 / 0.35), 0 2px 8px rgb(15 23 42 / 0.06);
+  --float-solid: #ffffff;
+
+  --color-backdrop: #e9eef7;
+}
+
+/* ========================================================== APPLE CLEAN */
+[data-style='clean'] {
+  --text-gradient: linear-gradient(var(--color-accent), var(--color-accent));
+  --radius-panel: 14px;
+  --radius-control: 9px;
+  --radius-btn: 9px;
+  --radius-window: 16px;
+}
+
+[data-style='clean'][data-theme='light'] {
+  --color-canvas: #f5f5f7;
+  --color-canvas-2: #fbfbfd;
+  --color-panel: #ffffff;
+  --color-panel-2: #f5f5f7;
+  --color-panel-3: #ebebef;
+  --color-overlay: rgb(0 0 0 / 0.22);
+  --color-line: rgb(0 0 0 / 0.07);
+  --color-line-strong: rgb(0 0 0 / 0.13);
+  --color-ink: #1d1d1f;
+  --color-ink-muted: #424245;
+  --color-ink-subtle: #636369;
+  --surface-border: rgb(0 0 0 / 0.055);
+  --surface-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 6px 20px -12px rgb(0 0 0 / 0.12);
+  --chrome: rgb(246 246 248 / 0.8);
+  --chrome-solid: #f6f6f8;
+  --float: rgb(255 255 255 / 0.92);
+  --float-border: rgb(0 0 0 / 0.08);
+  --float-shadow: 0 24px 60px -20px rgb(0 0 0 / 0.25), 0 1px 3px rgb(0 0 0 / 0.06);
+}
+
+[data-style='clean'][data-theme='dark'],
+[data-style='glass'][data-theme='dark'] {
+  --seg-active-bg: color-mix(in oklab, var(--color-ink) 22%, transparent);
+}
+[data-style='clean'][data-theme='dark'] {
+  --color-canvas: #161618;
+  --color-canvas-2: #1c1c1f;
+  --color-panel: #1f1f22;
+  --color-panel-2: #2a2a2e;
+  --color-panel-3: #343439;
+  --color-overlay: rgb(0 0 0 / 0.5);
+  --color-line: rgb(255 255 255 / 0.08);
+  --color-line-strong: rgb(255 255 255 / 0.14);
+  --color-ink: #f5f5f7;
+  --color-ink-muted: #c4c4c9;
+  --color-ink-subtle: #a1a1a7;
+  --surface-border: rgb(255 255 255 / 0.06);
+  --surface-highlight: rgb(255 255 255 / 0.03);
+  --surface-shadow: 0 8px 24px -16px rgb(0 0 0 / 0.6);
+  --chrome: rgb(28 28 31 / 0.82);
+  --chrome-solid: #1c1c1f;
+  --float: rgb(40 40 44 / 0.92);
+  --float-shadow: 0 24px 60px -20px rgb(0 0 0 / 0.7);
+  --float-solid: #28282c;
+}
+
+/* ========================================================= MINIMAL DARK */
+[data-style='minimal'] {
+  --text-gradient: linear-gradient(var(--color-accent), var(--color-accent));
+  --font-sans: 'Inter Variable', -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', sans-serif;
+  --font-display: 'Inter Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --display-tracking: -0.025em;
+  --label-size: 11.5px;
+  --label-weight: 500;
+  --label-tracking: 0.02em;
+
+  --radius-panel: 12px;
+  --radius-control: 8px;
+  --radius-btn: 8px;
+  --radius-window: 14px;
+  --nav-active-bg: rgb(255 255 255 / 0.06);
+  --seg-active-bg: var(--color-panel-3);
+  --switch-on-knob: #0e0f11;
+
+  --color-canvas: #0e0f11;
+  --color-canvas-2: #121316;
+  --color-panel: #17181b;
+  --color-panel-2: #1d1e22;
+  --color-panel-3: #25262b;
+  --color-overlay: rgb(0 0 0 / 0.6);
+  --color-line: rgb(255 255 255 / 0.055);
+  --color-line-strong: rgb(255 255 255 / 0.1);
+  --color-ink: #ebebed;
+  --color-ink-muted: #a8aab0;
+  --color-ink-subtle: #8e9198;
+
+  --color-blue: #93abff;
+  --color-cyan: #7cc6d2;
+  --color-violet: #b4a8ee;
+  --color-magenta: #e795b7;
+  --color-lime: #a6cf80;
+  --color-amber: #d9b66e;
+  --color-on-accent: #0e0f11;
+  --color-ok: #86c79f;
+  --color-warn: #d9b66e;
+  --color-bad: #ec9090;
+  --color-info: #93abff;
+
+  --surface-border: rgb(255 255 255 / 0.045);
+  --surface-highlight: rgb(255 255 255 / 0.02);
+  --surface-shadow: 0 10px 30px -20px rgb(0 0 0 / 0.8);
+  --chrome: rgb(14 15 17 / 0.84);
+  --chrome-filter: blur(16px) saturate(140%);
+  --chrome-border: rgb(255 255 255 / 0.05);
+  --chrome-solid: #0e0f11;
+  --float: rgb(29 30 34 / 0.96);
+  --float-border: rgb(255 255 255 / 0.08);
+  --float-shadow: 0 24px 60px -20px rgb(0 0 0 / 0.85);
+  --float-solid: #1d1e22;
+}
+
+/* ===================================================== Apple palettes */
+/* System colours, tuned so text in every accent meets WCAG AA on surfaces,
+   and white text meets AA on every accent fill. */
+[data-style='glass'][data-theme='dark'],
+[data-style='clean'][data-theme='dark'] {
+  --color-blue: #6cb4ff;
+  --color-cyan: #64d2ff;
+  --color-violet: #c98bff;
+  --color-magenta: #ff7a98;
+  --color-lime: #4cd964;
+  --color-amber: #ffb340;
+  --color-on-accent: #ffffff;
+  --color-ok: #4cd964;
+  --color-warn: #ffb340;
+  --color-bad: #ff6961;
+  --color-info: #64b5ff;
+}
+[data-style='glass'][data-theme='light'],
+[data-style='clean'][data-theme='light'] {
+  --color-blue: #0061c9;
+  --color-cyan: #00708f;
+  --color-violet: #7b3fc4;
+  --color-magenta: #c4134f;
+  --color-lime: #1b7a32;
+  --color-amber: #995a00;
+  --color-on-accent: #ffffff;
+  --color-ok: #1b7a32;
+  --color-warn: #995a00;
+  --color-bad: #c81e2e;
+  --color-info: #0052cc;
+}
+
+/* Light-mode chart series (validated palette, light surfaces). */
+[data-theme='light'] {
+  --color-chart-1: #00929f;
+  --color-chart-2: #b12b6e;
+  --color-chart-3: #56932b;
+  --color-chart-4: #6337af;
+  --color-chart-5: #cc7d1b;
+  --color-chart-6: #1f68bc;
+  color-scheme: light;
+}
+[data-theme='dark'] {
+  --color-chart-1: #00a6b5;
+  --color-chart-2: #c3457f;
+  --color-chart-3: #629f39;
+  --color-chart-4: #734dbe;
+  --color-chart-5: #cb8315;
+  --color-chart-6: #3a81d7;
+  color-scheme: dark;
+}
+
+/* ====================================================== Accent presets */
+[data-accent='blue'] {
+  --color-accent: var(--color-blue);
+  --color-accent-2: var(--color-violet);
+  --color-accent-3: var(--color-magenta);
+}
+[data-accent='cyan'] {
+  --color-accent: var(--color-cyan);
+  --color-accent-2: var(--color-violet);
+  --color-accent-3: var(--color-magenta);
+}
+[data-accent='violet'] {
+  --color-accent: var(--color-violet);
+  --color-accent-2: var(--color-magenta);
+  --color-accent-3: var(--color-cyan);
+}
+[data-accent='magenta'] {
+  --color-accent: var(--color-magenta);
+  --color-accent-2: var(--color-violet);
+  --color-accent-3: var(--color-cyan);
+}
+[data-accent='lime'] {
+  --color-accent: var(--color-lime);
+  --color-accent-2: var(--color-cyan);
+  --color-accent-3: var(--color-violet);
+}
+
+/* Accent fills: Apple dark mode uses deeper fills so white labels stay legible. */
+[data-style='glass'][data-theme='dark'][data-accent='blue'],
+[data-style='clean'][data-theme='dark'][data-accent='blue'] {
+  --color-accent-fill: #0a6fe0;
+}
+[data-style='glass'][data-theme='dark'][data-accent='cyan'],
+[data-style='clean'][data-theme='dark'][data-accent='cyan'] {
+  --color-accent-fill: #00779a;
+}
+[data-style='glass'][data-theme='dark'][data-accent='violet'],
+[data-style='clean'][data-theme='dark'][data-accent='violet'] {
+  --color-accent-fill: #8e4ad6;
+}
+[data-style='glass'][data-theme='dark'][data-accent='magenta'],
+[data-style='clean'][data-theme='dark'][data-accent='magenta'] {
+  --color-accent-fill: #d1235a;
+}
+[data-style='glass'][data-theme='dark'][data-accent='lime'],
+[data-style='clean'][data-theme='dark'][data-accent='lime'] {
+  --color-accent-fill: #1f8a3b;
+}
+/* Cyberpunk: dark text on neon, except the deeper violet and blue. */
+[data-style='cyber'][data-accent='violet'] {
+  --color-on-accent: #0d0420;
+}
+[data-style='cyber'][data-accent='magenta'] {
+  --color-on-accent: #22000f;
+}
+[data-style='cyber'][data-accent='lime'] {
+  --color-on-accent: #0b1500;
+}
+[data-style='cyber'][data-accent='blue'] {
+  --color-on-accent: #000c22;
+}

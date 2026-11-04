@@ -15,7 +15,7 @@ export function MobileRecovery() {
         {error?.message}
       </p>
       {error?.raw !== undefined && (
-        <button type="button" className="ios-headline mt-6 h-[50px] rounded-[14px] bg-accent text-on-accent" onClick={() => void shareJsonFile(`life-os-raw-data-${todayISO()}.json`, error.raw)}>
+        <button type="button" className="ios-headline mt-6 h-[50px] rounded-[14px] bg-accent-fill text-on-accent" onClick={() => void shareJsonFile(`life-os-raw-data-${todayISO()}.json`, error.raw)}>
           Save Raw Data
         </button>
       )}
