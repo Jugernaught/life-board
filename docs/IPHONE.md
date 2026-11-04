@@ -44,11 +44,11 @@ More → Settings → **Theme** offers the same four themes as the desktop versi
 - **Tap the current tab again** to go back to its first screen; tap once more to scroll to the top.
 - **Swipe a row left** for actions (Delete, Priority, Pause, Status, +1…). Deletions ask first and can be undone from the message that appears.
 - **New and edit forms open as sheets.** Drag the sheet down or tap Cancel to close; if you've typed something, it asks before discarding it.
-- **+** in the top right adds something relevant to the screen you're on.
+- **One add button per screen.** In Liquid Glass, Cyberpunk and Minimal Dark it's the round button beside the tab bar, and it follows what you're looking at: New event in Calendar, New task in Tasks, New goal under Goals, Write on Journal. Apple Clean has no floating button, so the **+** sits in the top right instead.
 - **Press and hold a task** for every action: Complete, Reschedule, Priority, Edit, Duplicate, Delete.
 - **Swipe a task left → Later** to reschedule it (Today, Tomorrow, This Weekend, Next Week, Pick a Date…).
 - **Type naturally in New:** "Gym tomorrow 7am !high #fit" sets the date, time, priority and tag. Tap a chip to keep those words in the title instead.
-- **Plan Your Day** on Today: catch up on overdue tasks, pick priorities, set an intention.
+- **Plan Your Day** (beside Today's Priorities): catch up on overdue tasks, pick priorities, set an intention. Today opens on your day — rings, priorities, what's due — with setting-up help further down.
 - **Settings → Text Size** (90–125%) and **Settings → Notifications** (reminders).
 
 ## What's different from desktop (on purpose)

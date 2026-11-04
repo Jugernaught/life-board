@@ -42,7 +42,7 @@ export function GettingStartedCard() {
             Get started with LIFE OS
           </h2>
           <p className="text-[13px] text-ink-muted">
-            {done} of {steps.length} done — each step ticks itself off as you go.
+            {done} of {steps.length} done — each step ticks itself off as you go and leaves this list.
           </p>
         </div>
         <Button size="sm" variant="ghost" icon={LayoutTemplate} onClick={() => templates.show()}>
@@ -52,26 +52,28 @@ export function GettingStartedCard() {
       </div>
       <ProgressBar value={(done / steps.length) * 100} size="sm" className="mt-4" label="Getting started progress" />
       <ul className="mt-3 grid gap-1.5 sm:grid-cols-2 xl:grid-cols-3">
-        {steps.map((s) => (
-          <li key={s.id}>
-            <button
-              type="button"
-              onClick={run[s.id]}
-              disabled={s.done}
-              data-testid={`gs-${s.id}`}
-              data-done={s.done || undefined}
-              className={cn('flex w-full items-start gap-2.5 rounded-lg border px-3 py-2 text-left transition-colors', s.done ? 'border-transparent' : 'border-line bg-panel-2/40 hover:border-accent/40')}
-            >
-              <span className={cn('mt-0.5 flex size-[18px] shrink-0 items-center justify-center rounded-full border', s.done ? 'border-ok bg-ok text-white' : 'border-line-strong')}>
-                {s.done && <Check size={12} strokeWidth={3} />}
-              </span>
-              <span className="min-w-0">
-                <span className={cn('block text-[13.5px]', s.done ? 'text-ink-subtle line-through' : 'text-ink')}>{s.label}</span>
-                {!s.done && <span className="block text-[12px] text-ink-muted">{s.hint}</span>}
-              </span>
-            </button>
-          </li>
-        ))}
+        {steps
+          .filter((s) => !s.done)
+          .map((s) => (
+            <li key={s.id}>
+              <button
+                type="button"
+                onClick={run[s.id]}
+                disabled={s.done}
+                data-testid={`gs-${s.id}`}
+                data-done={s.done || undefined}
+                className={cn('flex w-full items-start gap-2.5 rounded-lg border px-3 py-2 text-left transition-colors', s.done ? 'border-transparent' : 'border-line bg-panel-2/40 hover:border-accent/40')}
+              >
+                <span className={cn('mt-0.5 flex size-[18px] shrink-0 items-center justify-center rounded-full border', s.done ? 'border-ok bg-ok text-white' : 'border-line-strong')}>
+                  {s.done && <Check size={12} strokeWidth={3} />}
+                </span>
+                <span className="min-w-0">
+                  <span className={cn('block text-[13.5px]', s.done ? 'text-ink-subtle line-through' : 'text-ink')}>{s.label}</span>
+                  {!s.done && <span className="block text-[12px] text-ink-muted">{s.hint}</span>}
+                </span>
+              </button>
+            </li>
+          ))}
       </ul>
     </section>
   )

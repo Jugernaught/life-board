@@ -19,6 +19,7 @@ import { TaskRow } from '../../components/TaskRow'
 import { Chips, SearchField, Segmented } from '../../ui/controls'
 import { ActionCell, EmptyRow, Section } from '../../ui/List'
 import { NavButton, Screen } from '../../ui/Screen'
+import { useShowsHeaderAdd, useTabContext } from '../../nav/tabContext'
 
 type Mode = 'calendar' | 'tasks'
 
@@ -26,15 +27,19 @@ export function PlanScreen() {
   const [mode, setMode] = useState<Mode>('calendar')
   const today = useToday()
   const [selected, setSelected] = useState(today)
+  const showAdd = useShowsHeaderAdd()
+  useEffect(() => useTabContext.getState().set({ planMode: mode, planDate: selected }), [mode, selected])
   return (
     <Screen
       title="Plan"
       large
       testId="screen-plan"
       trailing={
-        <NavButton label={mode === 'calendar' ? 'New event' : 'New task'} testId="plan-add" onClick={() => (mode === 'calendar' ? editor.create('events', { date: selected }) : editor.create('tasks'))}>
-          <Plus size={26} />
-        </NavButton>
+        showAdd && (
+          <NavButton label={mode === 'calendar' ? 'New event' : 'New task'} testId="plan-add" onClick={() => (mode === 'calendar' ? editor.create('events', { date: selected }) : editor.create('tasks'))}>
+            <Plus size={26} />
+          </NavButton>
+        )
       }
       header={
         <Segmented

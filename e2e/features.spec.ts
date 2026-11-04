@@ -177,7 +177,7 @@ test('getting started ticks itself off; templates add only what you pick', async
   await expect(page.getByRole('status').filter({ hasText: 'Added 1 habit and 1 repeating task' })).toBeVisible()
   await expect(dialog).toHaveCount(0)
   await expect(guide).toContainText('2 of 6 done') // a habit, and a task
-  await expect(guide.getByTestId('gs-habit')).toHaveAttribute('data-done', 'true')
+  await expect(guide.getByTestId('gs-habit')).toHaveCount(0) // done steps leave the list
 
   await page.keyboard.press('Control+k')
   await page.getByRole('combobox', { name: 'Search' }).fill('starter')
@@ -242,4 +242,36 @@ test('command palette: typo-tolerant search, complete with Ctrl+Enter, recent it
   await page.keyboard.press('Control+k')
   await expect(page.getByText('Recent', { exact: true })).toBeVisible()
   await expect(page.getByRole('option', { name: /Buy groceries/ })).toBeVisible()
+})
+
+test('one search and one add button; the Command Centre clock is not repeated in the toolbar', async ({ page }) => {
+  await skipOnboarding(page)
+  await expect(page.getByRole('button', { name: 'Search and commands' })).toHaveCount(1)
+  await expect(page.getByRole('button', { name: /^New$/ })).toHaveCount(1)
+  await expect(page.getByRole('button', { name: 'Quick add', exact: true })).toBeHidden() // the phone-width icon
+  await expect(page.getByTestId('toolbar').getByLabel('Current time')).toHaveCount(0)
+  await page.goto('/finance')
+  await expect(page.getByTestId('toolbar').getByLabel('Current time')).toBeVisible()
+})
+
+test('recurring payments: Log is one undoable step and shows its history', async ({ page }) => {
+  await skipOnboarding(page)
+  await page.goto('/finance?tab=recurring')
+  await page.getByRole('button', { name: 'Recurring item' }).click()
+  const dialog = page.getByRole('dialog')
+  await dialog.getByLabel('Name').fill('Gym membership')
+  await dialog.getByLabel('Amount').fill('30')
+  await dialog.getByLabel('Category').fill('Health')
+  await dialog.getByRole('button', { name: /^(Add|Create|Save)/ }).click()
+  const history = page.getByTestId('recurring-history')
+  await expect(history).toHaveText('Not logged yet')
+  await page.getByRole('button', { name: 'Log', exact: true }).click()
+  await expect(history).toContainText('Last logged 4 Nov 2026')
+  await expect(history).toContainText('(1 payment)')
+  // Ctrl+Z reverses the payment and the due date together.
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur())
+  await page.keyboard.press('Control+z')
+  await expect(history).toHaveText('Not logged yet')
+  await page.goto('/finance?tab=transactions')
+  await expect(page.getByText('Gym membership')).toHaveCount(0)
 })

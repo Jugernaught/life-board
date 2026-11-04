@@ -5,12 +5,13 @@ import { FINANCIAL_TARGET_METRICS, FREQUENCIES } from '@/data/constants'
 import type { SavingsGoal, Transaction } from '@/data/types'
 import { useFormatters } from '@/hooks/useFormatters'
 import { useToday } from '@/hooks/useNow'
-import { advanceDate, budgetStatus, monthTotals, monthlyEquivalent, monthlySeries, recurringSummary, savingsProgress, targetStatus } from '@/selectors/finance'
+import { budgetStatus, monthTotals, monthlyEquivalent, monthlySeries, recurringHistory, recurringSummary, savingsProgress, targetStatus } from '@/selectors/finance'
 import { addMonthsISO, formatDate, formatMonthKey, monthKey, relativeDay, todayISO } from '@/lib/dates'
 import { parseMoney } from '@/lib/format'
 import { toneColor } from '@/lib/tone'
 import { cn, sum, uid } from '@/lib/utils'
 import { actions, useCollection, useDatabase, useSettings } from '@/store/store'
+import { logRecurring } from '@/app/financeCommands'
 import { ProgressRing } from '@/components/ui/display'
 import { toast } from '@/components/ui/toast'
 import { ChartCard, ChartTooltip, axisProps, gridProps, series } from '@/components/charts/ChartKit'
@@ -358,8 +359,24 @@ export function SavingsScreen() {
   )
 }
 
+/** "Last logged 3 Oct · £1,440 this year (12 payments)" — from the transactions linked to the item. */
+function PaidLine({ history, money, date }: { history: ReturnType<typeof recurringHistory>; money: (n: number) => string; date: (d: string) => string }) {
+  if (!history.last)
+    return (
+      <span className="ios-footnote block text-ink-subtle" data-testid="recurring-history">
+        Not logged yet
+      </span>
+    )
+  return (
+    <span className="ios-footnote block truncate text-ink-subtle" data-testid="recurring-history">
+      Last logged {date(history.last.date)} · {money(history.thisYear)} this year ({history.payments.length} payment{history.payments.length === 1 ? '' : 's'})
+    </span>
+  )
+}
+
 export function RecurringScreen() {
   const items = useCollection('recurring')
+  const transactions = useCollection('transactions')
   const today = useToday()
   const { money, fmt } = useMoney()
   const summary = recurringSummary(items)
@@ -367,9 +384,7 @@ export function RecurringScreen() {
   const log = (id: string) => {
     const r = items.find((x) => x.id === id)
     if (!r) return
-    actions.create('transactions', { kind: r.kind, amount: r.amount, date: r.nextDate <= today ? r.nextDate : today, category: r.category, description: r.name, recurringId: r.id })
-    actions.update('recurring', r.id, { nextDate: advanceDate(r.nextDate, r.frequency) }, { action: 'logged', detail: 'Logged as a transaction' })
-    toast({ title: `${r.name} logged`, description: `Next due ${fmt.date(advanceDate(r.nextDate, r.frequency))}` })
+    logRecurring(r, today, fmt.date)
   }
   return (
     <Screen title="Recurring" trailing={<NavButton label="New recurring item" onClick={() => editor.create('recurring')}><Plus size={26} /></NavButton>} testId="screen-recurring">
@@ -389,6 +404,7 @@ export function RecurringScreen() {
                   <span className={cn('ios-footnote block truncate', due ? 'text-warn' : 'text-ink-subtle')}>
                     {money(r.amount)} · {FREQUENCIES.label(r.frequency)} · {r.active ? relativeDay(r.nextDate, today) : 'Paused'} · ≈{money(monthlyEquivalent(r))}/mo
                   </span>
+                  <PaidLine history={recurringHistory(transactions, r.id, today)} money={money} date={fmt.date} />
                 </button>
                 {r.active && (
                   <button type="button" onClick={() => log(r.id)} className={cn('ios-subhead h-8 shrink-0 rounded-full px-3.5 font-semibold', due ? 'bg-accent-fill text-on-accent' : 'bg-[var(--ios-fill)] text-accent')} data-testid="recurring-log">

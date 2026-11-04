@@ -149,7 +149,9 @@ test('tasks: add inline, swipe to delete with confirmation and undo, complete', 
 
 test('quick add sheet creates a task; unsaved edits ask before closing', async ({ page }) => {
   await start(page)
-  await page.getByTestId('today-add').click()
+  // One add button per screen: the floating one beside the tab bar.
+  await expect(page.getByTestId('today-add')).toHaveCount(0)
+  await page.getByTestId('tab-accessory').click()
   const sheet = page.getByTestId('quick-add-sheet')
   await expect(sheet).toBeVisible()
   await sheet.getByLabel('Title').fill('Call the bank')
@@ -537,4 +539,56 @@ test('get started: templates add habits; notifications and text size settings wo
   await page.getByTestId('m-reminders-enabled').click()
   await expect(page.getByRole('button', { name: 'Send a Test' })).toBeVisible()
   await expect(page.getByTestId('screen-notifications')).toContainText('can’t arrive while LIFE OS is fully closed')
+})
+
+test('one add button per screen: the floating button follows what the screen shows', async ({ page }) => {
+  await start(page)
+  // Today: the day comes first; setting-up help follows it.
+  const dayFirst = await page.evaluate(() => {
+    const rings = document.querySelector('[data-testid="today-rings"]')
+    const setup = [...document.querySelectorAll('h2')].find((h) => h.textContent?.startsWith('Get Started'))
+    return !!rings && !!setup && !!(rings.compareDocumentPosition(setup) & Node.DOCUMENT_POSITION_FOLLOWING)
+  })
+  expect(dayFirst).toBe(true)
+  await expect(page.getByTestId('today-add')).toHaveCount(0)
+
+  const accessory = page.getByTestId('tab-accessory')
+  await page.getByTestId('tab-plan').click()
+  await expect(page.getByTestId('plan-add')).toHaveCount(0)
+  await expect(accessory).toHaveAccessibleName('New event')
+  await page.getByRole('radio', { name: 'Tasks' }).click()
+  await expect(accessory).toHaveAccessibleName('New task')
+  await page.getByTestId('tab-habits').click()
+  await expect(page.getByTestId('habits-add')).toHaveCount(0)
+  await page.getByRole('radio', { name: 'Goals' }).click()
+  await expect(accessory).toHaveAccessibleName('New goal')
+  await accessory.click()
+  await expect(page.getByTestId('editor-sheet')).toBeVisible()
+  await page.getByTestId('editor-sheet').getByRole('button', { name: 'Cancel' }).click()
+
+  // Apple Clean has no floating button, so each screen shows its own "+".
+  await open(page, 'more/settings')
+  await page.getByTestId('m-theme-clean').click()
+  await page.getByTestId('tab-today').click()
+  await expect(accessory).toHaveCount(0)
+  await expect(page.getByTestId('today-add')).toBeVisible()
+})
+
+test('logging a recurring payment is one step: Undo reverses it, history shows it', async ({ page }) => {
+  await start(page)
+  await open(page, 'more/finance/recurring')
+  await expect(page.getByTestId('screen-recurring')).toBeVisible()
+  await page.getByRole('button', { name: 'New recurring item' }).click()
+  const editor = page.getByTestId('editor-sheet')
+  await editor.getByLabel('Name').fill('Streaming')
+  await editor.getByLabel('Amount').fill('10.99')
+  await editor.getByLabel('Category').fill('Subscriptions')
+  await page.getByTestId('editor-save').click()
+  await expect(editor).toHaveCount(0)
+  await expect(top(page).getByTestId('recurring-history')).toHaveText('Not logged yet')
+  await top(page).getByTestId('recurring-log').click()
+  await expect(top(page).getByTestId('recurring-history')).toContainText('this year (1 payment)')
+  await page.getByRole('status').filter({ hasText: 'Streaming logged' }).getByRole('button', { name: 'Undo' }).click()
+  await expect(top(page).getByTestId('recurring-history')).toHaveText('Not logged yet')
+  await expect(top(page)).toContainText('Today') // the due date moved back
 })

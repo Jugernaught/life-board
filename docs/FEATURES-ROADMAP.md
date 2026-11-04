@@ -41,6 +41,23 @@ LIFE OS was **broad but shallow in daily use**. All 13 sections worked and nothi
 - **Home Screen shortcuts** (long-press the app icon) work on Android and for installed desktop Chrome/Edge apps. **iOS doesn't support web-app shortcuts**; on iPhone, the long-press menus inside the app give the same speed.
 - **Chart axis labels** keep a fixed size under Text size; the chart axes are sized for them.
 
+## Refinement pass
+
+A later audit focused on coherence rather than new features. It changed:
+
+| Priority | Problem | Change |
+| --- | --- | --- |
+| Critical | Logging a recurring payment was two separate changes. Undo removed the date change but left the payment behind. The logic was also duplicated between desktop and iPhone. | One shared `logRecurring` (`src/app/financeCommands.ts`) records both as a single undoable change: the payment is linked to the due-date change, in the same way a repeating task's next copy is linked to its completion. |
+| Critical | A save that had started, but not finished, when the page closed could be lost. | Saves in flight are now stashed at page close, as well as pending ones (`src/store/persistence.ts`). |
+| High | iPhone Today buried the day under three setup cards, and had two "+" buttons. | Today opens on rings → priorities (Plan Your Day is a link in that header) → what's due. Setup help moves below the day's content. |
+| High | Root tabs had a header "+" and a floating "+" that did the same thing. | One add button per screen: the floating button follows the screen's mode. Apple Clean, which has no floating button, keeps the header "+". |
+| High | Desktop had two search boxes and two add buttons, a third Quick add on the Command Centre, and two clocks. Phones had no visible add button outside the drawer. | The toolbar is the single home for search and New (an icon on phones). The toolbar clock is hidden on the Command Centre, which has its own. |
+| Medium | Getting started kept completed steps on screen. | Only the remaining steps are listed; the header counts progress. |
+| Medium | Subscriptions and bills didn't show what had been paid, although payments were linked to them. | Each recurring item shows "Last logged … · £… this year (n payments)", from the linked transactions. No new data is stored. |
+| Low | The toolbar showed "Ctrl K" on a Mac. | Shows ⌘ on Apple devices. |
+
+Deliberately unchanged: the four themes, the 13 sections, the iPhone's five tabs and the data schema. No separate "subscriptions" entity was added, because recurring items already model subscriptions.
+
 ## Why these, in this order
 
 Each feature was chosen by how often it's used × how much friction it removes × whether existing parts could be reused:

@@ -2,11 +2,12 @@ import { useMemo, useState } from 'react'
 import { CalendarClock, CheckCircle2, Goal, Pause, PiggyBank, Play, Plus, Receipt, Repeat, Target, Trash2, XCircle } from 'lucide-react'
 import { FINANCIAL_TARGET_METRICS, FREQUENCIES } from '@/data/constants'
 import { useFormatters } from '@/hooks/useFormatters'
-import { advanceDate, budgetStatus, categoryBreakdown, monthlyEquivalent, recurringSummary, savingsProgress, targetStatus } from '@/selectors/finance'
+import { budgetStatus, categoryBreakdown, monthlyEquivalent, recurringHistory, recurringSummary, savingsProgress, targetStatus } from '@/selectors/finance'
 import { formatMonthKey, monthKey, relativeDay } from '@/lib/dates'
 import { parseMoney } from '@/lib/format'
 import { uid } from '@/lib/utils'
 import { actions, useCollection, useSettings } from '@/store/store'
+import { logRecurring } from '@/app/financeCommands'
 import { Button, IconButton } from '@/components/ui/Button'
 import { Badge, EmptyState, ProgressBar, ProgressRing, Stat } from '@/components/ui/display'
 import { Input } from '@/components/ui/inputs'
@@ -171,15 +172,14 @@ export function SavingsTab({ today }: { today: string }) {
 
 export function RecurringTab({ today }: { today: string }) {
   const items = useCollection('recurring')
+  const transactions = useCollection('transactions')
   const fmt = useFormatters()
   const summary = recurringSummary(items)
   const sorted = useMemo(() => [...items].sort((a, b) => (a.active !== b.active ? (a.active ? -1 : 1) : a.nextDate.localeCompare(b.nextDate))), [items])
   const logNow = (id: string) => {
     const r = items.find((x) => x.id === id)
     if (!r) return
-    actions.create('transactions', { kind: r.kind, amount: r.amount, date: r.nextDate <= today ? r.nextDate : today, category: r.category, description: r.name, recurringId: r.id })
-    actions.update('recurring', r.id, { nextDate: advanceDate(r.nextDate, r.frequency) }, { action: 'logged', detail: 'Logged as a transaction' })
-    toast({ title: `${r.name} logged`, description: `Next due ${fmt.date(advanceDate(r.nextDate, r.frequency))}` })
+    logRecurring(r, today, fmt.date)
   }
   return (
     <div className="space-y-4">
@@ -202,6 +202,14 @@ export function RecurringTab({ today }: { today: string }) {
                     <p className="text-[12px] text-ink-subtle">
                       {r.category} · {FREQUENCIES.label(r.frequency)} · ≈ {fmt.money(monthlyEquivalent(r), { showPence: false })}/month
                     </p>
+                    {(() => {
+                      const h = recurringHistory(transactions, r.id, today)
+                      return (
+                        <p className="text-[12px] text-ink-muted" data-testid="recurring-history">
+                          {h.last ? `Last logged ${fmt.date(h.last.date)} · ${fmt.money(h.thisYear, { showPence: false })} this year (${h.payments.length} payment${h.payments.length === 1 ? '' : 's'})` : 'Not logged yet'}
+                        </p>
+                      )
+                    })()}
                   </div>
                   <div className="text-right">
                     <p className={`font-mono text-[13.5px] tabular ${r.kind === 'income' ? 'text-ok' : 'text-ink'}`}>

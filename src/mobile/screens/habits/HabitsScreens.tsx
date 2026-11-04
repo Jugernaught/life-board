@@ -18,6 +18,7 @@ import { deleteRecord } from '@/components/editor/useDeleteRecord'
 import { checklistAdd, checklistRows } from '../../components/Checklist'
 import { StatGrid, StatTile } from '../../components/Stats'
 import { nav } from '../../nav/navigator'
+import { useShowsHeaderAdd, useTabContext } from '../../nav/tabContext'
 import { CheckCircle, Chips, Segmented, StarRating } from '../../ui/controls'
 import { ActionCell, Cell, EmptyRow, Section } from '../../ui/List'
 import { NavButton, Screen } from '../../ui/Screen'
@@ -111,6 +112,8 @@ function GoalRow({ goal, today }: { goal: Goal; today: string }) {
 
 export function HabitsScreen() {
   const [seg, setSeg] = useState<'habits' | 'goals'>('habits')
+  const showAdd = useShowsHeaderAdd()
+  useEffect(() => useTabContext.getState().set({ habitsSegment: seg }), [seg])
   const today = useToday()
   const habits = useCollection('habits')
   const goals = useCollection('goals')
@@ -128,9 +131,11 @@ export function HabitsScreen() {
       large
       testId="screen-habits"
       trailing={
-        <NavButton label={seg === 'habits' ? 'New habit' : 'New goal'} testId="habits-add" onClick={() => editor.create(seg === 'habits' ? 'habits' : 'goals')}>
-          <Plus size={26} />
-        </NavButton>
+        showAdd && (
+          <NavButton label={seg === 'habits' ? 'New habit' : 'New goal'} testId="habits-add" onClick={() => editor.create(seg === 'habits' ? 'habits' : 'goals')}>
+            <Plus size={26} />
+          </NavButton>
+        )
       }
       header={
         <Segmented

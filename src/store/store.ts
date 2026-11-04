@@ -64,12 +64,12 @@ export interface AppState {
   storage?: StorageInfo
   save: { status: SaveStatus; lastSavedAt?: string; error?: string }
 
-  create<K extends CollectionKey>(key: K, input: Partial<InputOf<K>>, opts?: { silent?: boolean }): Collections[K]
+  create<K extends CollectionKey>(key: K, input: Partial<InputOf<K>>, opts?: { silent?: boolean; linked?: boolean }): Collections[K]
   update<K extends CollectionKey>(
     key: K,
     id: string,
     patch: Partial<InputOf<K>> | ((current: Collections[K]) => Partial<InputOf<K>>),
-    opts?: { action?: ActivityAction; silent?: boolean; detail?: string },
+    opts?: { action?: ActivityAction; silent?: boolean; detail?: string; spawned?: { key: CollectionKey; id: string } },
   ): Collections[K] | undefined
   remove<K extends CollectionKey>(key: K, id: string): UndoToken<K> | undefined
   undo(token: UndoToken): void
@@ -195,7 +195,8 @@ export function createAppStore(initial: Database = createEmptyDatabase()) {
             now,
           )
         }
-        const history = opts?.silent ? s.history : pushHistory(s.history, { id: uid(), kind: 'create', key, recordId: final.id, label: titleOf(key, final), at: Date.now() })
+        // `linked` records are undone together with the change they belong to (see update's `spawned`).
+        const history = opts?.silent || opts?.linked ? s.history : pushHistory(s.history, { id: uid(), kind: 'create', key, recordId: final.id, label: titleOf(key, final), at: Date.now() })
         return { db, history }
       })
       return final
@@ -243,7 +244,7 @@ export function createAppStore(initial: Database = createEmptyDatabase()) {
           label: titleOf(key, final),
           action: resolvedAction,
           at: Date.now(),
-          spawned: spawn ? { key: 'tasks', id: spawn.id } : undefined,
+          spawned: spawn ? { key: 'tasks', id: spawn.id } : opts?.spawned,
         })
         return { db, history }
       })
@@ -394,12 +395,12 @@ export function useDatabase(): Database {
 
 /** Imperative access for event handlers (no re-render subscription). */
 export const actions = {
-  create: <K extends CollectionKey>(key: K, input: Partial<InputOf<K>>, opts?: { silent?: boolean }) => appStore.getState().create(key, input, opts),
+  create: <K extends CollectionKey>(key: K, input: Partial<InputOf<K>>, opts?: { silent?: boolean; linked?: boolean }) => appStore.getState().create(key, input, opts),
   update: <K extends CollectionKey>(
     key: K,
     id: string,
     patch: Partial<InputOf<K>> | ((current: Collections[K]) => Partial<InputOf<K>>),
-    opts?: { action?: ActivityAction; silent?: boolean; detail?: string },
+    opts?: { action?: ActivityAction; silent?: boolean; detail?: string; spawned?: { key: CollectionKey; id: string } },
   ) => appStore.getState().update(key, id, patch, opts),
   remove: <K extends CollectionKey>(key: K, id: string) => appStore.getState().remove(key, id),
   undo: (token: UndoToken) => appStore.getState().undo(token),

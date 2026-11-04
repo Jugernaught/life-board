@@ -148,3 +148,24 @@ export function targetStatus(target: FinancialTarget, transactions: Transaction[
   const ratio = target.amount ? actual / target.amount : 0
   return { target, actual, kind, ratio, met: kind === 'minimum' ? actual >= target.amount : actual <= target.amount }
 }
+
+export interface RecurringHistory {
+  /** Logged payments, newest first. */
+  payments: Transaction[]
+  last?: Transaction
+  /** Total logged in the calendar year of `today`. */
+  thisYear: number
+  total: number
+}
+
+/** The payments logged for a recurring item (bill, subscription, salary), via their link. */
+export function recurringHistory(transactions: readonly Transaction[], recurringId: string, today: string): RecurringHistory {
+  const payments = transactions.filter((t) => t.recurringId === recurringId).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
+  const year = today.slice(0, 4)
+  return {
+    payments,
+    last: payments[0],
+    thisYear: sum(payments.filter((p) => p.date.startsWith(year)).map((p) => p.amount)),
+    total: sum(payments.map((p) => p.amount)),
+  }
+}

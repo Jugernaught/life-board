@@ -11,6 +11,7 @@ import { deleteRecord } from '@/components/editor/useDeleteRecord'
 import { useJournalDraft } from '@/features/journal/useJournalDraft'
 import { CheckInCard } from '../../components/CheckInCard'
 import { nav } from '../../nav/navigator'
+import { useShowsHeaderAdd } from '../../nav/tabContext'
 import { actionSheet } from '../../ui/ActionSheet'
 import { Chips, SearchField } from '../../ui/controls'
 import { Cell, EmptyRow, Section } from '../../ui/List'
@@ -50,6 +51,7 @@ export function JournalScreen() {
   const today = useToday()
   const sorted = useMemo(() => [...entries].sort((a, b) => (a.date === b.date ? (a.createdAt < b.createdAt ? 1 : -1) : a.date < b.date ? 1 : -1)), [entries])
   const todays = sorted.filter((e) => e.date === today)
+  const showAdd = useShowsHeaderAdd()
   return (
     <Screen
       title="Journal"
@@ -57,9 +59,11 @@ export function JournalScreen() {
       testId="screen-journal"
       subtitle={`${entries.length} entr${entries.length === 1 ? 'y' : 'ies'} · ${streak(entries, today)} day streak`}
       trailing={
-        <NavButton label="Write" testId="journal-write" onClick={() => nav.push(`journal/write/${today}`)}>
-          <PenLine size={23} />
-        </NavButton>
+        showAdd && (
+          <NavButton label="Write" testId="journal-write" onClick={() => nav.push(`journal/write/${today}`)}>
+            <PenLine size={23} />
+          </NavButton>
+        )
       }
     >
       <Section header="Today" footer="Private: stored only on this device. Saves as you type.">

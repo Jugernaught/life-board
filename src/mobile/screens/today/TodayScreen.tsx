@@ -25,6 +25,7 @@ import { TaskRow } from '../../components/TaskRow'
 import { openRecord } from '../../editor/openRecord'
 import { GettingStartedSection } from './GettingStarted'
 import { nav } from '../../nav/navigator'
+import { useShowsHeaderAdd } from '../../nav/tabContext'
 import { CheckCircle } from '../../ui/controls'
 import { ActionCell, Cell, EmptyRow, Section, SeeAll } from '../../ui/List'
 import { NavButton, Screen } from '../../ui/Screen'
@@ -111,6 +112,7 @@ export default function TodayScreen() {
   const dueDone = db.tasks.filter((t) => t.status === 'done' && t.dueDate === today).length
   const name = db.settings.displayName
   const planned = db.settings.planDayLast === today
+  const showAdd = useShowsHeaderAdd()
   const intention = db.settings.intention?.date === today ? db.settings.intention.text : undefined
 
   return (
@@ -124,13 +126,19 @@ export default function TodayScreen() {
         </>
       }
       trailing={
-        <NavButton onClick={() => showQuickAdd()} label="New" testId="today-add">
-          <Plus size={26} />
-        </NavButton>
+        showAdd && (
+          <NavButton onClick={() => showQuickAdd()} label="New" testId="today-add">
+            <Plus size={26} />
+          </NavButton>
+        )
       }
       testId="screen-today"
     >
-      <InstallHint />
+      <div className="mx-4 mb-7 flex rounded-[12px] bg-[var(--ios-cell)] px-1.5 py-2.5" data-testid="today-rings">
+        <Ring label="Priorities" done={priorities.filter((p) => p.status === 'done').length} total={priorities.length} tone="cyan" onClick={() => document.getElementById('today-priorities')?.scrollIntoView({ behavior: 'smooth' })} />
+        <Ring label="Habits" done={habits.done} total={habits.total} tone="lime" onClick={() => nav.push('habits')} />
+        <Ring label="Due today" done={dueDone} total={dueDone + dueAll.length} tone="magenta" onClick={() => nav.push('plan')} />
+      </div>
 
       {intention ? (
         <button type="button" onClick={() => planDay.show()} className="mx-4 mb-5 flex w-[calc(100%-2rem)] items-start gap-2 text-left" data-testid="m-today-intention">
@@ -138,21 +146,17 @@ export default function TodayScreen() {
           <span className="ios-body text-ink">{intention}</span>
         </button>
       ) : null}
-      <GettingStartedSection />
-      {!planned && (
-        <Section>
-          <Cell icon={Sunrise} iconTone="amber" title="Plan Your Day" subtitle="Two minutes: catch up, pick priorities, set an intention" chevron onClick={() => planDay.show()} testId="m-plan-day" />
-        </Section>
-      )}
-
-      <div className="mx-4 mb-7 flex rounded-[12px] bg-[var(--ios-cell)] px-1.5 py-2.5" data-testid="today-rings">
-        <Ring label="Priorities" done={priorities.filter((p) => p.status === 'done').length} total={priorities.length} tone="cyan" onClick={() => document.getElementById('today-priorities')?.scrollIntoView({ behavior: 'smooth' })} />
-        <Ring label="Habits" done={habits.done} total={habits.total} tone="lime" onClick={() => nav.push('habits')} />
-        <Ring label="Due today" done={dueDone} total={dueDone + dueAll.length} tone="magenta" onClick={() => nav.push('plan')} />
-      </div>
 
       <div id="today-priorities">
-        <Section header="Today's priorities" footer={priorities.length ? undefined : 'Pick the few things that matter most. Swipe a task left and tap Priority, or add one here.'}>
+        <Section
+          header="Today's priorities"
+          headerAction={
+            !planned && (
+              <button type="button" onClick={() => planDay.show()} className="ios-subhead -mx-2 -my-3 flex min-h-11 items-center gap-1 px-2 text-accent active:opacity-50" data-testid="m-plan-day">
+                <Sunrise size={15} aria-hidden /> Plan Your Day
+              </button>
+            )
+          } footer={priorities.length ? undefined : 'Pick the few things that matter most. Swipe a task left and tap Priority, or add one here.'}>
           {priorities.map((t) => (
             <TaskRow key={t.id} task={t} today={today} />
           ))}
@@ -200,6 +204,10 @@ export default function TodayScreen() {
       </Section>
 
       <CheckInCard today={today} />
+
+      {/* Setting-up help comes after the day itself. */}
+      <GettingStartedSection />
+      <InstallHint />
 
       <Section header="This week" plain>
         <StatGrid className="!mx-0 !mb-0">

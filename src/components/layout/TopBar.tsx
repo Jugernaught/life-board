@@ -13,6 +13,8 @@ import { Menu } from '@/components/ui/Menu'
 import { useUI } from '@/components/command/uiStore'
 import { Logo } from './Sidebar'
 
+const IS_MAC = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
+
 export function TopBar() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
@@ -47,14 +49,17 @@ export function TopBar() {
         >
           <Search size={14} />
           <span className="min-w-0 flex-1 truncate text-left">Search or jump to…</span>
-          <Kbd>Ctrl</Kbd>
+          <Kbd>{IS_MAC ? '⌘' : 'Ctrl'}</Kbd>
           <Kbd>K</Kbd>
         </button>
         <IconButton icon={Search} label="Search" onClick={() => setPalette(true)} className="md:hidden" />
+        {/* The Command Centre shows a large clock of its own. */}
+        {pathname !== '/' && (
         <div className="hidden items-baseline gap-1.5 px-2 font-mono text-[12px] text-ink-muted tabular sm:flex" aria-label="Current time">
           <span className="text-ink">{formatTime(format(now, 'HH:mm'), settings.timeFormat)}</span>
           <span className="text-ink-subtle">{format(now, 'EEE d MMM')}</span>
         </div>
+        )}
         <Menu
           label="Appearance"
           trigger={(p) => <IconButton icon={Palette} label="Appearance" {...p} data-testid="appearance-menu" />}
@@ -78,6 +83,8 @@ export function TopBar() {
         <Button variant="primary" size="sm" icon={Plus} onClick={() => showQuickAdd()} className="max-sm:hidden" title="Quick add (N)">
           New
         </Button>
+        {/* Phones: the same action as an icon, so adding never depends on the navigation drawer. */}
+        <Button variant="primary" size="sm" icon={Plus} aria-label="Quick add" title="Quick add" onClick={() => showQuickAdd()} className="sm:hidden" />
         <IconButton icon={Plus} label="Quick add" variant="subtle" onClick={() => showQuickAdd()} className="sm:hidden" />
       </div>
     </header>

@@ -1,10 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { NavLink } from 'react-router'
-import { ChevronsLeft, ChevronsRight, Plus, Search, X } from 'lucide-react'
+import { ChevronsLeft, ChevronsRight, X } from 'lucide-react'
 import { NAV_ITEMS, type NavItem } from '@/app/navigation'
 import { initials, cn } from '@/lib/utils'
 import { actions, useSettings } from '@/store/store'
-import { Kbd } from '@/components/ui/display'
 import { useUI } from '@/components/command/uiStore'
 import { SaveStatus } from './SaveStatus'
 
@@ -92,7 +91,6 @@ function NavRow({ item, index, collapsed, onNavigate }: { item: NavItem; index: 
 
 function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
   const settings = useSettings()
-  const { setPalette, showQuickAdd } = useUI()
   const groups: { id: NavItem['group']; label: string }[] = [
     { id: 'core', label: 'Overview' },
     { id: 'life', label: 'Life modules' },
@@ -102,41 +100,6 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
     <div className="flex h-full flex-col">
       <div className={cn('flex h-16 shrink-0 items-center', collapsed ? 'justify-center px-2' : 'px-4')}>
         <Logo collapsed={collapsed} />
-      </div>
-      <div className={cn('flex shrink-0 gap-1.5 pb-3', collapsed ? 'flex-col items-center px-2' : 'px-3')}>
-        <button
-          type="button"
-          onClick={() => {
-            onNavigate?.()
-            setPalette(true)
-          }}
-          className={cn(
-            'flex h-9 items-center gap-2 rounded-[var(--radius-btn)] border border-line bg-ink/[0.04] text-[13px] text-ink-muted transition-colors hover:border-line-strong hover:text-ink',
-            collapsed ? 'w-9 justify-center' : 'flex-1 px-2.5',
-          )}
-          aria-label="Search and commands"
-          title="Search and commands (Ctrl K)"
-        >
-          <Search size={15} />
-          {!collapsed && (
-            <>
-              <span className="flex-1 text-left">Search…</span>
-              <Kbd>⌘K</Kbd>
-            </>
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            onNavigate?.()
-            showQuickAdd()
-          }}
-          className="chamfer-sm flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-btn-primary)] bg-accent-fill text-on-accent shadow-[var(--glow-md)] transition hover:brightness-110"
-          aria-label="Quick add"
-          title="Quick add (N)"
-        >
-          <Plus size={17} strokeWidth={2.5} />
-        </button>
       </div>
       <nav aria-label="Main" className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
         {groups.map((g) => (

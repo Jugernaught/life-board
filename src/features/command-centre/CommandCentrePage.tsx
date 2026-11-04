@@ -1,7 +1,7 @@
 import { type ComponentType, useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import { motion } from 'framer-motion'
-import { LayoutGrid, Plus, Settings2, Sparkles, Sunrise } from 'lucide-react'
+import { LayoutGrid, Settings2, Sparkles, Sunrise } from 'lucide-react'
 import type { WidgetId, WidgetSize } from '@/data/types'
 import { useNow, useToday } from '@/hooks/useNow'
 import { buildAgenda } from '@/selectors/agenda'
@@ -13,7 +13,6 @@ import { useDatabase, useSettings } from '@/store/store'
 import { Button } from '@/components/ui/Button'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { EmptyState } from '@/components/ui/display'
-import { useUI } from '@/components/command/uiStore'
 import { planDay } from '@/features/planday/model'
 import { GettingStartedCard } from '@/features/start/GettingStarted'
 import { CustomiseDashboard } from './CustomiseDashboard'
@@ -125,7 +124,6 @@ function Hero({ today }: { today: string }) {
 export default function CommandCentrePage() {
   const today = useToday()
   const settings = useSettings()
-  const { showQuickAdd } = useUI()
   const [customising, setCustomising] = useState(false)
   const visible = settings.dashboard.filter((w) => w.visible)
   return (
@@ -134,14 +132,9 @@ export default function CommandCentrePage() {
       <GettingStartedCard />
       <div className="mb-4 flex items-center justify-between gap-2">
         <p className="eyebrow">Widgets · {visible.length} shown</p>
-        <div className="flex gap-2">
-          <Button size="sm" variant="ghost" icon={Settings2} onClick={() => setCustomising(true)}>
-            Customise
-          </Button>
-          <Button size="sm" icon={Plus} onClick={() => showQuickAdd()}>
-            Quick add
-          </Button>
-        </div>
+        <Button size="sm" variant="ghost" icon={Settings2} onClick={() => setCustomising(true)}>
+          Customise
+        </Button>
       </div>
       {visible.length === 0 ? (
         <EmptyState icon={LayoutGrid} title="All widgets are hidden" action={<Button onClick={() => setCustomising(true)}>Choose widgets</Button>} />

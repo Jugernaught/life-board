@@ -7,6 +7,7 @@ import { editor } from '@/components/editor/editorStore'
 import { useUI } from '@/components/command/uiStore'
 import { nav, screenScrollers, useNav } from './navigator'
 import type { TabId } from './paths'
+import { hasFloatingAction, useTabContext } from './tabContext'
 
 export const TABS: { id: TabId; label: string; icon: typeof Sun }[] = [
   { id: 'today', label: 'Today', icon: Sun },
@@ -20,11 +21,14 @@ export const TABS: { id: TabId; label: string; icon: typeof Sun }[] = [
 function useAccessory(tab: TabId) {
   const today = useToday()
   const { showQuickAdd } = useUI()
+  const ctx = useTabContext()
   switch (tab) {
     case 'plan':
-      return { label: 'New task', icon: Plus, run: () => showQuickAdd('tasks', { dueDate: today }) }
+      return ctx.planMode === 'calendar'
+        ? { label: 'New event', icon: Plus, run: () => editor.create('events', { date: ctx.planDate ?? today }) }
+        : { label: 'New task', icon: Plus, run: () => showQuickAdd('tasks', { dueDate: today }) }
     case 'habits':
-      return { label: 'New habit', icon: Plus, run: () => editor.create('habits') }
+      return ctx.habitsSegment === 'goals' ? { label: 'New goal', icon: Plus, run: () => editor.create('goals') } : { label: 'New habit', icon: Plus, run: () => editor.create('habits') }
     case 'journal':
       return { label: 'Write today’s entry', icon: PenLine, run: () => nav.push(`journal/write/${today}`) }
     case 'more':
@@ -57,7 +61,7 @@ export function TabBar() {
   const tasks = useCollection('tasks')
   const overdue = tasks.filter((t) => t.status !== 'done' && t.dueDate && t.dueDate < today).length
   const accessory = useAccessory(tab)
-  const floating = style !== 'clean'
+  const floating = hasFloatingAction(style)
 
   const onTap = (id: TabId) => {
     if (id !== tab) return switchTab(id)
