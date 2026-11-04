@@ -70,6 +70,18 @@ If you rename or restructure data, bump `SCHEMA_VERSION` in `schema.ts` and add 
 3. Add a form config and register it in `src/forms/registry.ts`.
 4. Build the screen in `src/features/…`.
 
+## The iPhone app (`/m/`)
+
+A second Vite entry (`m/index.html` → `src/mobile/main.tsx`) renders a separate iOS-style shell over the **same** data layer — `src/data`, `src/lib`, `src/selectors`, `src/store`, `src/storage` and the form configs are shared unchanged, and both apps open the same IndexedDB database. Only the UI is separate:
+
+- `src/mobile/nav/` — the navigator. `paths.ts` lists every screen path (first segment = tab); `navigator.ts` keeps one stack per tab (push on top within a tab, pop back to a screen already in the stack, rebuild the stack when opening another tab's screen), mirrors the top screen into the URL hash, and is unit-tested. `StackView` animates push/pop with parallax and handles the left-edge swipe; tabs mount the first time they are opened, then stay mounted so scroll position and state survive.
+- `src/mobile/ui/` — the UI kit: `Screen` (large titles, nav bar with UIKit-style back label), grouped lists, `SwipeRow`, `Sheet`, `ActionSheet` (also renders the shared confirm dialog), segmented control, switch, chips, star rating.
+- `src/mobile/editor/` — the shared editor store rendered as bottom sheets (with an unsaved-changes guard) and Quick Add.
+- `src/mobile/screens/` — one folder per section. Screens are lazy-loaded; charts live only in screens that draw them so the chart library isn't part of the first load.
+- `src/mobile/ios.css` — iOS tokens scoped to `<html data-shell="ios">`, so the desktop styles are untouched. Safe areas go through `--safe-*` variables (tests inject notch values); `--kb` is the on-screen keyboard height from `visualViewport`.
+- Offline: a Vite plugin in `vite.config.ts` writes `/m/sw.js` at build time with a precache list of everything the iPhone entry can load (network-first for the page, cache-first for hashed assets, `ignoreVary` because module scripts are requested with an `Origin` header).
+- Code splitting (`vite.config.ts`): React, charts, animation, router and other vendor code go into separate long-lived chunks; groups don't pull in their dependencies, so React never ends up inside the charts chunk.
+
 ## Styling
 
 Design tokens (colours, fonts, radius) are CSS variables declared in `src/styles/index.css` inside Tailwind's `@theme`. Light theme and accent presets override those variables via `data-theme` / `data-accent` attributes on `<html>` (set by `ThemeController`). Reusable visual utilities (`panel`, `hud`, `chamfer`, `glow-ring`, `eyebrow`) live in the same file. Chart series colours (`--color-chart-1…6`) were validated for colour-vision deficiency and contrast in both themes.
@@ -77,4 +89,4 @@ Design tokens (colours, fonts, radius) are CSS variables declared in `src/styles
 ## Testing
 
 - `src/**/*.test.ts(x)` — Vitest unit and component tests (jsdom; `fake-indexeddb` for the IndexedDB adapter).
-- `e2e/*.spec.ts` — Playwright browser tests against a production build. `e2e/fixtures/sampleData.ts` builds a sample backup **for tests only**; it is never bundled into the app.
+- `e2e/*.spec.ts` — Playwright browser tests against a production build: `core`/`sections` on desktop, `mobile` (desktop app) on an Android phone, `ios` (the iPhone app) on iPhone SE, 15 Pro and 16 Pro Max. `e2e/fixtures/sampleData.ts` builds a sample backup **for tests only**; it is never bundled into the app.

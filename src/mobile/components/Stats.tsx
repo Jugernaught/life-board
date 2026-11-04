@@ -57,11 +57,15 @@ export function StatTile({ label, value, sub, tone, current, previous, invert, f
   )
 }
 
-/** Thin progress line for list rows. */
-export function ProgressLine({ value, tone, className }: { value: number | null; tone?: Tone; className?: string }) {
+/**
+ * Thin progress line for list rows. Decorative by default (rows show the
+ * number as text); pass `label` when the line is the only place it appears.
+ */
+export function ProgressLine({ value, tone, className, label }: { value: number | null; tone?: Tone; className?: string; label?: string }) {
   const pct = value === null ? 0 : Math.max(0, Math.min(100, value))
+  const a11y = label ? { role: 'progressbar', 'aria-label': label, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': value === null ? undefined : Math.round(pct) } : { 'aria-hidden': true }
   return (
-    <span className={cn('block h-1 overflow-hidden rounded-full bg-[var(--ios-fill)]', className)} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={value === null ? undefined : Math.round(pct)}>
+    <span className={cn('block h-1 overflow-hidden rounded-full bg-[var(--ios-fill)]', className)} {...a11y}>
       <span className="block h-full rounded-full transition-[width] duration-500" style={{ width: `${pct}%`, background: tone ? toneColor(tone) : 'var(--color-accent)' }} />
     </span>
   )

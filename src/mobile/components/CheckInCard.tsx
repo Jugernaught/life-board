@@ -29,7 +29,7 @@ export function CheckInCard({ today, date = today }: { today: string; date?: str
               className="flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-[10px] bg-[var(--ios-fill)] active:opacity-60"
             >
               <span className="text-[20px] leading-none">{'emoji' in o ? o.emoji : o.value}</span>
-              <span className="text-[11px] leading-tight text-ink-subtle">{o.label}</span>
+              <span className="text-[11px] leading-tight text-ink-muted">{o.label}</span>
             </button>
           ))}
         </div>

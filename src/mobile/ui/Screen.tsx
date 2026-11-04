@@ -83,7 +83,7 @@ export function Screen({
   testId?: string
 }) {
   const route = useRoute()
-  const scroller = useRef<HTMLDivElement>(null)
+  const scroller = useRef<HTMLElement>(null)
   const [scrolled, setScrolled] = useState(false)
   const [titleHidden, setTitleHidden] = useState(!large)
 
@@ -143,7 +143,7 @@ export function Screen({
         </div>
       </header>
 
-      <div
+      <main
         ref={scroller}
         className={cn('ios-scroll relative flex-1', className)}
         style={{
@@ -167,7 +167,7 @@ export function Screen({
         {/* Grouped lists start a little below the bar, as in iOS Settings. */}
         {!large && !header && <div className="h-4" aria-hidden />}
         {children}
-      </div>
+      </main>
       {bottomBar && (
         <div className="ios-bar ios-hairline-t absolute inset-x-0 z-20 px-4 py-2" style={{ bottom: 'calc(var(--tabbar-h) + var(--kb))' }}>
           {bottomBar}

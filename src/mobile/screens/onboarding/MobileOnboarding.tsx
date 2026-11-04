@@ -20,7 +20,7 @@ export function MobileOnboarding() {
     toast({ title: name.trim() ? `Welcome, ${name.trim()}` : 'Welcome to LIFE OS' })
   }
   return (
-    <div className="absolute inset-0 flex flex-col bg-[var(--ios-grouped)]" style={{ paddingTop: 'calc(var(--safe-top) + 24px)', paddingBottom: 'calc(var(--safe-bottom) + 16px)' }} data-testid="m-onboarding">
+    <main className="absolute inset-0 flex flex-col bg-[var(--ios-grouped)]" style={{ paddingTop: 'calc(var(--safe-top) + 24px)', paddingBottom: 'calc(var(--safe-bottom) + 16px)' }} data-testid="m-onboarding">
       <div className="ios-scroll min-h-0 flex-1">
         <AnimatePresence mode="wait">
           <motion.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }}>
@@ -147,6 +147,6 @@ export function MobileOnboarding() {
           )}
         </div>
       </div>
-    </div>
+    </main>
   )
 }

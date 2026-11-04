@@ -82,7 +82,7 @@ export function FinanceScreen() {
           <button type="button" aria-label="Previous month" onClick={() => setMonth(monthKey(addMonthsISO(`${month}-01`, -1)))} className="-ml-2 flex size-11 items-center justify-center text-accent">
             <ChevronLeft size={22} />
           </button>
-          <button type="button" onClick={() => setMonth(monthKey(today))} className="ios-headline flex-1 text-center text-ink">
+          <button type="button" onClick={() => setMonth(monthKey(today))} className="ios-headline min-h-11 flex-1 text-center text-ink" aria-label={`${formatMonthKey(month, 'MMMM yyyy')} — show this month`}>
             {formatMonthKey(month, 'MMMM yyyy')}
           </button>
           <button type="button" aria-label="Next month" onClick={() => setMonth(monthKey(addMonthsISO(`${month}-01`, 1)))} className="-mr-2 flex size-11 items-center justify-center text-accent">

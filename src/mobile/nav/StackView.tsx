@@ -171,6 +171,7 @@ function Layer({ x, role, width, children }: { x: MotionValue<number>; role: 'to
       style={{ x, visibility: role === 'buried' ? 'hidden' : 'visible', boxShadow: role === 'top' ? '-10px 0 30px rgb(0 0 0 / 0.18)' : undefined, zIndex: role === 'top' ? 2 : role === 'under' ? 1 : 0 }}
       aria-hidden={role !== 'top'}
       inert={role !== 'top'}
+      data-stack-role={role}
     >
       {children}
       {role === 'under' && <motion.div className="pointer-events-none absolute inset-0 z-30 bg-black" style={{ opacity: dim }} />}

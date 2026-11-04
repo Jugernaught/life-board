@@ -74,15 +74,18 @@ self.addEventListener('fetch', (event) => {
           if (response.ok) caches.open(CACHE).then((cache) => cache.put('/m/', response.clone()))
           return response
         })
-        .catch(() => caches.match('/m/').then((hit) => hit || Response.error())),
+        .catch(() => caches.match('/m/', { ignoreVary: true }).then((hit) => hit || Response.error())),
     )
     return
   }
 
-  // Hashed build files never change: cache first.
+  // Hashed build files never change: cache first. ignoreVary because module
+  // scripts are requested with an Origin header the precache request didn't
+  // have, and servers commonly send "Vary: Origin" — without it, lazily loaded
+  // screens would miss the cache and fail offline.
   if (url.pathname.startsWith('/assets/') || url.pathname.startsWith('/m/') || url.pathname === '/favicon.svg') {
     event.respondWith(
-      caches.match(request).then(
+      caches.match(request, { ignoreVary: true }).then(
         (hit) =>
           hit ||
           fetch(request).then((response) => {
@@ -106,17 +109,26 @@ export default defineConfig({
     alias: { '@': r('./src') },
   },
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       input: { main: r('./index.html'), mobile: r('./m/index.html') },
       output: {
-        // Split the large charting/animation libraries into their own cached chunks.
-        manualChunks(id: string) {
-          if (!id.includes('node_modules')) return undefined
-          if (id.includes('recharts') || id.includes('d3-') || id.includes('victory')) return 'charts'
-          if (id.includes('framer-motion') || id.includes('motion-dom') || id.includes('motion-utils')) return 'motion'
-          if (id.includes('react-router')) return 'router'
-          if (id.includes('@fontsource')) return undefined
-          return 'vendor'
+        // Split large libraries into their own long-lived cached chunks. Each
+        // group takes only the modules it names (not their dependencies), so
+        // React never lands in the charts chunk and the chart library loads
+        // only on screens that draw charts.
+        codeSplitting: {
+          includeDependenciesRecursively: false,
+          groups: [
+            { name: 'react', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/, priority: 50 },
+            {
+              name: 'charts',
+              test: /node_modules[\\/](recharts|victory-vendor|d3-[^\\/]+|internmap|decimal\.js-light|@reduxjs[\\/]toolkit|redux|redux-thunk|reselect|immer|react-redux|es-toolkit|eventemitter3|tiny-invariant|react-is|use-sync-external-store)[\\/]/,
+              priority: 40,
+            },
+            { name: 'motion', test: /node_modules[\\/](framer-motion|motion-dom|motion-utils)[\\/]/, priority: 30 },
+            { name: 'router', test: /node_modules[\\/]react-router/, priority: 30 },
+            { name: 'vendor', test: /node_modules[\\/](?!@fontsource)/, priority: 10 },
+          ],
         },
       },
     },

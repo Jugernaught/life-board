@@ -7,7 +7,7 @@ import { Toaster } from '@/components/ui/toast'
 import { MobileEditorHost } from './editor/MobileEditorHost'
 import { QuickAddSheet } from './editor/QuickAddSheet'
 import { useNav, syncHash } from './nav/navigator'
-import { TAB_IDS } from './nav/paths'
+import { TAB_IDS, type TabId } from './nav/paths'
 import { StackView } from './nav/StackView'
 import { TabBar } from './nav/TabBar'
 import { MobileOnboarding } from './screens/onboarding/MobileOnboarding'
@@ -54,6 +54,8 @@ function Stage() {
   const tab = useNav((s) => s.tab)
   const sheetOpen = useSheetDepth((s) => s.depth > 0)
   useEffect(() => syncHash(), [])
+  const [visited, setVisited] = useState<ReadonlySet<TabId>>(() => new Set([tab]))
+  if (!visited.has(tab)) setVisited(new Set([...visited, tab]))
   return (
     <motion.div
       className="absolute inset-0 overflow-hidden"
@@ -61,7 +63,8 @@ function Stage() {
       transition={{ type: 'spring', stiffness: 380, damping: 40 }}
       style={{ transformOrigin: '50% 0%' }}
     >
-      {TAB_IDS.map((t) => (
+      {/* Like UITabBarController, a tab's screens load the first time it's opened, then stay mounted. */}
+      {TAB_IDS.filter((t) => visited.has(t)).map((t) => (
         <StackView key={t} tab={t} active={t === tab} />
       ))}
       <TabBar />

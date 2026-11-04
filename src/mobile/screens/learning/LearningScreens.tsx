@@ -48,7 +48,7 @@ function TimerCard() {
           <p className="font-display text-[44px] leading-none font-light tracking-tight text-ink tabular-nums" role="timer" aria-live="off" data-testid="study-timer-time">
             {t.hh}:{t.mm}:{t.ss}
           </p>
-          <button type="button" onClick={pickSkill} className="ios-subhead mt-1.5 max-w-full truncate text-accent" data-testid="study-timer-skill">
+          <button type="button" onClick={pickSkill} className="ios-subhead -mb-3 -ml-1 flex min-h-11 max-w-full items-center truncate px-1 text-accent" data-testid="study-timer-skill">
             {skill ? skill.name : 'Choose a skill'}
           </button>
         </div>

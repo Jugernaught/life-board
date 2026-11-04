@@ -42,7 +42,7 @@ export const ROUTES: Record<RoutePattern, RouteDef> = {
   'journal/entry/:id': { component: named(journal, 'JournalEntryScreen'), title: (p, db) => { const e = db.journal.find((j) => j.id === p.id); return e ? e.title || formatDate(e.date, 'd MMM yyyy') : 'Entry' } },
   'journal/write/:date': { component: named(journal, 'JournalWriteScreen'), title: (p) => formatDate(p.date, 'd MMM yyyy') },
   'journal/history': { component: named(journal, 'JournalHistoryScreen'), title: 'All Entries' },
-  'journal/checkins': { component: named(journal, 'CheckInsScreen'), title: 'Mood & Energy' },
+  'journal/checkins': { component: named(() => import('../screens/journal/CheckInsScreen'), 'CheckInsScreen'), title: 'Mood & Energy' },
   more: { component: named(() => import('../screens/more/MoreScreen'), 'MoreScreen'), title: 'More' },
   'more/projects': { component: named(projects, 'ProjectsScreen'), title: 'Projects' },
   'more/projects/:id': { component: named(projects, 'ProjectDetailScreen'), title: (p, db) => db.projects.find((x) => x.id === p.id)?.name ?? 'Project' },

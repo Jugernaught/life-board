@@ -1,4 +1,4 @@
-import { type ComponentType, type ReactNode, Children, isValidElement } from 'react'
+import { type ComponentType, type ReactNode, Children, isValidElement, useId } from 'react'
 import { ChevronRight } from 'lucide-react'
 import type { Tone } from '@/data/constants'
 import { toneColor } from '@/lib/tone'
@@ -9,12 +9,22 @@ type IconType = ComponentType<{ size?: number; className?: string; strokeWidth?:
 /** iOS "inset grouped" section: a rounded group of rows with an optional header and footer. */
 export function Section({ header, footer, children, className, headerAction, plain }: { header?: ReactNode; footer?: ReactNode; children: ReactNode; className?: string; headerAction?: ReactNode; plain?: boolean }) {
   const items = Children.toArray(children).filter(Boolean)
+  const headerId = useId()
   return (
     <section className={cn('mx-4 mb-7', className)}>
       {(header || headerAction) && (
         <div className="mb-1.5 flex items-end justify-between gap-2 px-4">
-          {header && <h2 className="ios-footnote font-normal tracking-[0.01em] text-ink-subtle uppercase">{header}</h2>}
-          {headerAction}
+          {header && (
+            <h2 id={headerId} className="ios-footnote font-normal tracking-[0.01em] text-ink-subtle uppercase">
+              {header}
+            </h2>
+          )}
+          {/* Named by the header, so VoiceOver reads "Budgets, See All" rather than a bare "See All". */}
+          {headerAction && (
+            <div role="group" aria-labelledby={header ? headerId : undefined}>
+              {headerAction}
+            </div>
+          )}
         </div>
       )}
       {plain ? (
@@ -36,8 +46,9 @@ export function Section({ header, footer, children, className, headerAction, pla
 
 /** Header-style "See All" link for a section. */
 export function SeeAll({ onClick, label = 'See All' }: { onClick: () => void; label?: string }) {
+  // Looks like a text link; the hit area is a full 44pt (negative margins keep the layout).
   return (
-    <button type="button" onClick={onClick} className="ios-subhead -mb-0.5 text-accent active:opacity-50">
+    <button type="button" onClick={onClick} className="ios-subhead -mx-2 -my-3 flex min-h-11 items-center px-2 text-accent active:opacity-50">
       {label}
     </button>
   )
@@ -73,7 +84,7 @@ export interface CellProps {
 
 /** A list row (44pt minimum). Tappable when `onClick` is given. */
 export function Cell({ title, subtitle, detail, icon, iconTone, leading, trailing, chevron, onClick, destructive, tint, className, testId, ariaLabel, multiline }: CellProps) {
-  const content = (
+  const body = (
     <>
       {icon ? <IconTile icon={icon} tone={iconTone} /> : leading}
       <span className="min-w-0 flex-1 py-[11px]">
@@ -81,19 +92,36 @@ export function Cell({ title, subtitle, detail, icon, iconTone, leading, trailin
         {subtitle && <span className={cn('ios-subhead mt-0.5 block text-ink-subtle', multiline ? 'line-clamp-3' : 'truncate')}>{subtitle}</span>}
       </span>
       {detail !== undefined && detail !== null && <span className="ios-body max-w-[45%] shrink-0 truncate text-right text-ink-subtle">{detail}</span>}
-      {trailing}
-      {chevron && <ChevronRight size={18} className="-mr-1 shrink-0 text-[var(--color-ink-subtle)] opacity-60" aria-hidden />}
     </>
   )
+  const chevronIcon = chevron && <ChevronRight size={18} className="-mr-1 shrink-0 text-[var(--color-ink-subtle)] opacity-60" aria-hidden />
   const cls = cn('flex min-h-11 w-full items-center gap-3 px-4 text-left', className)
   const style = { '--sep-inset': icon || leading ? '60px' : '16px' } as React.CSSProperties
-  return onClick ? (
-    <button type="button" onClick={onClick} className={cn(cls, 'ios-press')} style={style} data-testid={testId} aria-label={ariaLabel}>
-      {content}
-    </button>
-  ) : (
-    <div className={cls} style={style} data-testid={testId}>
-      {content}
+  if (!onClick) {
+    return (
+      <div className={cls} style={style} data-testid={testId}>
+        {body}
+        {trailing}
+        {chevronIcon}
+      </div>
+    )
+  }
+  if (!trailing) {
+    return (
+      <button type="button" onClick={onClick} className={cn(cls, 'ios-press')} style={style} data-testid={testId} aria-label={ariaLabel}>
+        {body}
+        {chevronIcon}
+      </button>
+    )
+  }
+  // A trailing control (e.g. an "open link" button) sits beside the row's button, never inside it.
+  return (
+    <div className="flex w-full items-center" style={style}>
+      <button type="button" onClick={onClick} className={cn(cls, 'ios-press min-w-0 flex-1 pr-2')} data-testid={testId} aria-label={ariaLabel}>
+        {body}
+        {chevronIcon}
+      </button>
+      <div className="shrink-0 pr-2">{trailing}</div>
     </div>
   )
 }

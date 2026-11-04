@@ -2,7 +2,7 @@
 
 This file tracks the iPhone version of LIFE OS so work can be resumed at any point. Update it as each stage changes.
 
-_Last updated: stage 6 in progress (More sections)._
+_Last updated: all stages complete — implemented, tested on three iPhone sizes, documented._
 
 ---
 
@@ -117,24 +117,51 @@ src/mobile/
 ## 5. Completed work
 
 - [x] Audit, architecture decision, plan (this file)
-- [x] Stage 1 — shared code: `useJournalDraft` and `useStudyTimer` hooks extracted (desktop now uses them), `mobileTheme` setting, top-placed toasts, exported confirm store, `EntityForm` `autoFocus` / `onDirtyChange` props
-- [x] Stage 2 — `m/index.html` entry, multi-page Vite build, generated offline service worker (`/m/sw.js`), web app manifest, home-screen icons
-- [x] Stage 3 — iOS tokens (`src/mobile/ios.css`, light + dark, AA contrast), UI kit: Screen (large titles), lists, swipe rows, sheets, action sheets, segmented control, switch, search, chips, keyboard inset
-- [x] Stage 4 — navigator (per-tab stacks, hash sync, unit tested), stack view (parallax push/pop, edge-swipe back), tab bar (badge, re-tap to root/top), sheet editor host with unsaved-changes guard, quick add
-- [x] Stage 5 — Today, Plan (week strip, month grid, list/hours timeline, tasks), Habits (habits, goals, habit/goal detail, weekly review), Journal (editor, history, mood & energy)
-- [x] Onboarding, recovery screen, More (with global search)
-- [x] Projects, Finances
+- [x] **Stage 1 — shared code (additive only):** `useJournalDraft` and `useStudyTimer` hooks extracted (desktop now uses them too), `mobileTheme` setting, top-placed toasts, exported confirm store, `EntityForm` `autoFocus` / `onDirtyChange`, `formatBytes` GB unit, read-only `Heatmap` is keyboard-focusable
+- [x] **Stage 2 — build:** `m/index.html` entry, multi-page Vite build, generated offline service worker (`/m/sw.js`), web app manifest, Home Screen icons, Vercel/Netlify rewrites and headers for `/m/`
+- [x] **Stage 3 — design system:** iOS tokens (`src/mobile/ios.css`, light + dark, WCAG AA), UI kit: Screen with large titles, grouped lists, swipe rows, sheets, action sheets, segmented control, switch, search, chips, star rating, keyboard inset
+- [x] **Stage 4 — navigation:** per-tab stacks (UIKit semantics), hash restore, parallax push/pop, edge-swipe back, tab bar (badge, re-tap to root/top), lazy tab mounting, sheet editor with unsaved-changes guard, quick add, UIKit-style back labels
+- [x] **Stage 5 — core tabs:** Today, Plan (week strip, month grid, list/hours timeline, tasks), Habits (habits, goals, details, weekly review), Journal (editor, history, mood & energy)
+- [x] **Stage 6 — More:** Projects, Career & Education (paths with scoring, courses → modules → assessments, applications, interview practice, companies, CV & portfolio, qualifications), Finances, Fitness, Learning (focus timer, skills with proficiency & roadmap), Library, Social, Notes, Analytics (ranges incl. custom, comparisons, targets, trends, areas, shareable reports), Settings, Targets, Categories, Data & Backups (export via share sheet, validated import preview, backups, protection, erase/reset)
+- [x] **Stage 7 — onboarding & links:** iPhone onboarding and recovery screens, install hint, desktop banner on phones and a Settings link to `/m/`, link back to desktop
+- [x] **Stage 8 — tests & audits:**
+  - `e2e/ios.spec.ts`: 15 tests × iPhone SE (light), 15 Pro (dark), 16 Pro Max (light) = **45 passing**
+  - desktop + Android suites still **19/19 passing**; unit tests **80/80**
+  - axe-core audit of every screen, detail screens and sheets in light and dark: **0 violations**
+  - visual review of the screens on iPhone SE (light) and 15 Pro (dark) with sample data
+- [x] **Stage 9 — fixes and docs:** everything found below was fixed; `docs/IPHONE.md`, README and `docs/ARCHITECTURE.md` updated
+
+### Bugs found by testing, all fixed
+
+| Found by | Problem | Fix |
+| --- | --- | --- |
+| Offline e2e | Lazily loaded screens failed offline: module scripts carry an `Origin` header and the precached responses had `Vary: Origin`, so the cache missed | Service worker matches with `ignoreVary` (safe: hashed files never change) |
+| Performance e2e | Rolldown's chunk groups pulled React into the **charts** chunk, so both apps downloaded the 433 KB chart library on first load | Explicit code-splitting groups without recursive dependency capture; charts now load only on chart screens (desktop benefits too) |
+| Performance e2e | All five tabs mounted at start, so the Journal tab's chart loaded on Today | Tabs mount on first visit (like UITabBarController); Mood & Energy chart in its own module |
+| Visual review | Long back labels overlapped titles on iPhone SE | Nav bar grid with equal side columns; back label measures itself and falls back to “Back”, then chevron only |
+| Visual review | Separators under swipe rows were hidden; red delete action showed through rounded corners | Separator above the row layer; actions invisible until the row moves |
+| Visual review | Chip rows touched the screen edge; selected chip could be off-screen | Consistent padding; selected chip scrolls into view |
+| Layout e2e | “See All”, “Choose a skill” and month title buttons were 20–22 px tall | 44 pt hit areas without changing the look |
+| axe | Content outside landmarks; unnamed progress bars; a link nested inside a row button; 4.45:1 caption contrast; non-focusable scroll area | `main` per screen; decorative progress lines hidden from assistive tech; trailing controls beside (not inside) row buttons; higher-contrast caption; focusable read-only heatmap |
+| Review | “This week” learning compared a part-way week with all of last week | Compares with the same days of last week |
+| Review | Stat deltas showed raw minutes/pence | `StatTile` takes a formatter |
+| Review | Opening a linked record (course → module) dropped the previous screen from the stack | In-tab pushes always go on top; existing screens are popped back to |
+| Review | Long action sheets could overflow on iPhone SE | Scrollable, height-capped action sheets |
 
 ## 6. Outstanding tasks
 
-- [ ] Fitness, Learning, Career, Library, Social, Notes, Analytics, Settings & Data screens (temporary placeholders exist, marked `TEMP_STUB`)
-- [ ] Desktop ↔ iPhone links
-- [ ] Tests and audits (stage 8), fixes (stage 9), docs
+None for this scope. Possible next steps are listed in section 8.
 
-## 7. Known bugs
+## 7. Known limitations (not bugs)
 
-_None open._ (Fixed: bars too translucent; Plan day heading too long on narrow phones.)
+- **Tested in Chromium with iPhone profiles, not real Safari.** WebKit isn't installable here. Things to confirm on a real iPhone: keyboard behaviour in sheets (`visualViewport`), standalone status bar colour, rubber-band scrolling, the share sheet (`navigator.share` with files).
+- **Separate storage** for the Home Screen app vs Safari (iOS rule) — explained in the app and in `docs/IPHONE.md`.
+- **No haptics, push notifications, widgets, Siri or Apple Health** — need a native app or a server.
+- **Drag-and-drop** (project board, calendar blocks) is replaced by pickers in sheets — HTML drag-and-drop doesn't work with touch on iOS.
 
-## 8. Next implementation steps
+## 8. Next steps (optional)
 
-Write the remaining More screens, replacing every `TEMP_STUB` file.
+1. Try it on a real iPhone: deploy, open `/m/` in Safari, Add to Home Screen, and check the four WebKit items above.
+2. Web push reminders (needs a small push server; iOS 16.4+ supports it for installed web apps).
+3. If App Store distribution is wanted later: wrap `/m/` with Capacitor (needs a Mac with Xcode and an Apple Developer account).
+4. Sync between iPhone and computer via the Supabase adapter described in `docs/SUPABASE.md`.

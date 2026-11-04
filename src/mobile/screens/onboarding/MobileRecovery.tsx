@@ -7,7 +7,7 @@ import { shareJsonFile } from '../../components/share'
 export function MobileRecovery() {
   const error = useApp((s) => s.loadError)
   return (
-    <div className="absolute inset-0 flex flex-col justify-center bg-[var(--ios-grouped)] px-6" style={{ paddingTop: 'var(--safe-top)', paddingBottom: 'var(--safe-bottom)' }}>
+    <main className="absolute inset-0 flex flex-col justify-center bg-[var(--ios-grouped)] px-6" style={{ paddingTop: 'var(--safe-top)', paddingBottom: 'var(--safe-bottom)' }}>
       <AlertOctagon size={44} className="text-bad" />
       <h1 className="ios-title2 mt-4 text-ink">Your data couldn’t be loaded</h1>
       <p className="ios-body mt-2 text-ink-subtle">To protect it, nothing has been changed or overwritten.</p>
@@ -22,6 +22,6 @@ export function MobileRecovery() {
       <button type="button" className="ios-body mt-2 h-11 text-accent" onClick={() => window.location.reload()}>
         Try Again
       </button>
-    </div>
+    </main>
   )
 }
