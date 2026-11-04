@@ -141,6 +141,17 @@ You can describe your life once in a JSON profile and turn it into an ordinary L
      "careerPaths": [{ "key": "path", "name": "Data science" }]
    }
    ```
+   More sections, all optional:
+   ```json
+   {
+     "events":   [{ "key": "dentist", "title": "Dentist", "date": "2030-02-03", "start": "09:00", "end": "09:30", "location": "High St" }],
+     "projects": [{ "key": "app", "name": "Side app", "kind": "business", "objectives": ["Ship MVP"], "milestones": [{ "title": "Beta", "dueDate": "2030-03-01" }] }],
+     "notes":    [{ "key": "app-notes", "title": "App ideas", "body": "...", "projectKey": "app", "pinned": true }],
+     "routines": [{ "key": "am", "name": "Morning", "timeOfDay": "morning", "days": "every day", "steps": ["Water", "Stretch"] }]
+   }
+   ```
+   Goals also take `milestones`, habits take `days` (e.g. `["mon", "thu"]`) or `"schedule": "weekly"` with `timesPerWeek`, and career paths take a `roadmap`. Events with no `start` are all-day. To bring in a calendar, convert its export into `events` entries and use each event's own id as the `key`, so re-imports update rather than duplicate.
+
    A few things to know, because the data model has limits:
    - **Timetable:** calendar events have no repeat rule, so each slot is written out as one dated event per week between `teachingStart` and `teachingEnd`.
    - **End dates:** recurring items have no end date, so `endDate` / `remainingPayments` is worked out and written into the item's notes ("3 payments remaining, last on …"). Switch the item off when it ends.

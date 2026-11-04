@@ -231,3 +231,104 @@ describe('CLI', () => {
     expect(() => main(['--bogus'])).toThrow(/Unknown argument/)
   })
 })
+
+describe('enum lists stay in step with the app', () => {
+  it('every value list in the script matches src/data/constants.ts exactly', async () => {
+    const constants = (await import('@/data/constants')) as unknown as Record<string, { values: readonly string[] }>
+    const { ENUMS } = await import('./build-seed.mjs')
+    for (const [name, values] of Object.entries(ENUMS as Record<string, string[]>)) {
+      expect(constants[name], `${name} is missing from constants.ts`).toBeDefined()
+      expect([...values], name).toEqual([...constants[name].values])
+    }
+  })
+})
+
+describe('events, projects, notes, routines, milestones and roadmaps', () => {
+  const extras = () => ({
+    ...fakeProfile(),
+    events: [
+      { key: 'gcal-abc-123', title: 'Placeholder lecture', date: '2030-03-20', start: '11:00', end: '12:00', area: 'career', location: 'Room 1' },
+      { key: 'deadline', title: 'Hand-in', date: '2030-03-22', kind: 'deadline', priority: 'urgent' },
+    ],
+    projects: [
+      {
+        key: 'side-project',
+        name: 'Side project',
+        kind: 'business',
+        status: 'active',
+        startDate: '2030-03-01',
+        deadline: '2030-06-01',
+        objectives: ['Ship an MVP', { title: 'Find a first user', done: true }],
+        milestones: [{ title: 'Prototype', dueDate: '2030-04-01' }],
+        resources: [{ title: 'Docs', url: 'https://example.com/docs' }],
+      },
+    ],
+    notes: [{ key: 'readme', title: 'About this project', body: 'Placeholder text', projectKey: 'side-project', pinned: true, tags: ['demo'] }],
+    routines: [
+      { key: 'am', name: 'Morning', days: 'every day', steps: ['Water', 'Stretch'] },
+      { key: 'gym', name: 'Gym', timeOfDay: 'afternoon', days: ['fri', 'mon', 'mon'], steps: ['Squat 3 x 5'] },
+    ],
+    goals: [{ key: 'g', title: 'Example goal', milestones: ['Step one', { title: 'Step two', dueDate: '2030-05-01' }] }],
+    habits: [
+      { key: 'h-days', name: 'Train', days: ['mon', 'thu'] },
+      { key: 'h-weekly', name: 'Call home', schedule: 'weekly', timesPerWeek: 2 },
+    ],
+    careerPaths: [{ key: 'c', name: 'Example path', status: 'active', roadmap: ['Learn the basics', { title: 'Apply', dueDate: '2030-09-01' }] }],
+  })
+  const seed = () => build(extras()).backup.data as Record<string, Rec[]>
+
+  it('still validates strictly with zero rejected records', () => {
+    const result = validateDatabase(build(extras()).backup, { strict: true })
+    expect(result.rejected).toEqual([])
+    expect(result.ok).toBe(true)
+  })
+
+  it('maps events, defaulting to an all-day event when no start time is given', () => {
+    const events = seed().events
+    expect(events.find((e) => e.id === 'seed-events-gcal-abc-123')).toMatchObject({ startTime: '11:00', endTime: '12:00', allDay: false, location: 'Room 1', kind: 'event' })
+    expect(events.find((e) => e.id === 'seed-events-deadline')).toMatchObject({ allDay: true, kind: 'deadline', priority: 'urgent' })
+  })
+
+  it('builds projects with checklists and links notes to them', () => {
+    const [project] = seed().projects
+    expect(project).toMatchObject({ kind: 'business', status: 'active', deadline: '2030-06-01' })
+    expect(project.objectives).toEqual([
+      { id: 'seed-projects-side-project-objectives-1', title: 'Ship an MVP', done: false },
+      { id: 'seed-projects-side-project-objectives-2', title: 'Find a first user', done: true },
+    ])
+    expect(project.milestones).toEqual([{ id: 'seed-projects-side-project-milestones-1', title: 'Prototype', done: false, dueDate: '2030-04-01' }])
+    expect(seed().notes[0]).toMatchObject({ projectId: project.id, pinned: true, tags: ['demo'] })
+  })
+
+  it('turns day names into sorted, de-duplicated weekday numbers', () => {
+    const routines = seed().routines
+    expect(routines.find((r) => r.id === 'seed-routines-am')!.days).toEqual([0, 1, 2, 3, 4, 5, 6])
+    expect(routines.find((r) => r.id === 'seed-routines-gym')).toMatchObject({ days: [1, 5], timeOfDay: 'afternoon', steps: [{ id: 'seed-routines-gym-step-1', title: 'Squat 3 x 5' }] })
+    const habits = seed().habits
+    expect(habits.find((h) => h.id === 'seed-habits-h-days')).toMatchObject({ schedule: 'days', days: [1, 4] })
+    expect(habits.find((h) => h.id === 'seed-habits-h-weekly')).toMatchObject({ schedule: 'weekly', timesPerWeek: 2 })
+  })
+
+  it('uses milestone progress for goals that have milestones, and adds roadmaps to career paths', () => {
+    const goal = seed().goals.find((g) => g.id === 'seed-goals-g')!
+    expect(goal).toMatchObject({ progressMode: 'milestones' })
+    expect((goal.milestones as unknown[]).length).toBe(2)
+    expect((seed().careerPaths.find((c) => c.id === 'seed-careerPaths-c')!.roadmap as { dueDate?: string }[])[1].dueDate).toBe('2030-09-01')
+  })
+
+  const bad: [string, (p: ReturnType<typeof extras>) => void, RegExp][] = [
+    ['note → unknown project', (p) => (p.notes[0].projectKey = 'nope'), /unknown project "nope"/],
+    ['bad weekday', (p) => (p.routines[1].days = ['funday']), /is not a day name/],
+    ['empty routine', (p) => (p.routines[0].steps = []), /needs at least one step/],
+    ['bad resource url', (p) => (p.projects[0].resources[0].url = 'example.com'), /must start with http/],
+    ['event end before start', (p) => (p.events[0].end = '10:00'), /end: must be after start/],
+    ['days schedule without days', (p) => ((p.habits[1] as Record<string, unknown>).schedule = 'days'), /days: is required/],
+    ['deadline before start', (p) => (p.projects[0].deadline = '2029-01-01'), /deadline: is before startDate/],
+    ['weight out of range', (p) => ((p.education.assessments[0] as Record<string, unknown>).weight = 120), /weight: must be a number from 0 to 100/],
+  ]
+  it.each(bad)('rejects %s', (_n, mutate, message) => {
+    const p = extras()
+    mutate(p)
+    expect(() => build(p)).toThrow(message)
+  })
+})

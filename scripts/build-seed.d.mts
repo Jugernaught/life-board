@@ -2,6 +2,8 @@
 
 export declare const SEED_SCHEMA_VERSION: number
 export declare const SCRIPT_PATH: string
+/** Allowed values mirrored from src/data/constants.ts. */
+export declare const ENUMS: Record<string, readonly string[]>
 
 export declare class ProfileError extends Error {
   constructor(path: string, message: string)

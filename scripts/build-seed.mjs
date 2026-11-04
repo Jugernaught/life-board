@@ -30,8 +30,36 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 /** Must match SCHEMA_VERSION in src/data/schema.ts (a unit test checks this). */
 export const SEED_SCHEMA_VERSION = 1
 
+/**
+ * Allowed values, mirrored from src/data/constants.ts (this script can't
+ * import the app's TypeScript). A unit test checks every list against the app
+ * so they can never drift apart.
+ */
+export const ENUMS = {
+  LIFE_AREAS: ['career', 'business', 'finance', 'health', 'learning', 'wellbeing', 'social', 'culture', 'personal'],
+  PRIORITIES: ['low', 'medium', 'high', 'urgent'],
+  EVENT_KINDS: ['event', 'block', 'deadline'],
+  PROJECT_STATUSES: ['planning', 'active', 'on_hold', 'completed'],
+  PROJECT_KINDS: ['business', 'personal', 'experiment', 'client', 'creative', 'other'],
+  ACCENT_COLORS: ['cyan', 'violet', 'magenta', 'lime', 'amber', 'info'],
+  CAREER_PATH_STATUSES: ['exploring', 'active', 'paused', 'archived'],
+  QUALIFICATION_KINDS: ['degree', 'diploma', 'certificate', 'licence', 'award', 'other'],
+  PROGRESS_STATUSES: ['planned', 'in_progress', 'completed', 'paused'],
+  MODULE_STATUSES: ['upcoming', 'in_progress', 'completed'],
+  ASSESSMENT_KINDS: ['assignment', 'exam', 'coursework', 'presentation', 'project', 'quiz'],
+  ASSESSMENT_STATUSES: ['not_started', 'in_progress', 'submitted', 'graded'],
+  TRANSACTION_KINDS: ['income', 'expense'],
+  FREQUENCIES: ['weekly', 'fortnightly', 'monthly', 'quarterly', 'yearly'],
+  TIMES_OF_DAY: ['morning', 'afternoon', 'evening', 'anytime'],
+  GOAL_HORIZONS: ['daily', 'weekly', 'monthly', 'quarterly', 'yearly'],
+  GOAL_TERMS: ['short', 'long'],
+  GOAL_STATUSES: ['active', 'completed', 'paused', 'abandoned'],
+  PROGRESS_MODES: ['manual', 'milestones', 'numeric'],
+  HABIT_SCHEDULES: ['daily', 'days', 'weekly'],
+}
+const E = ENUMS
 const DATE_FORMATS = ['dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd', 'd MMM yyyy']
-const FREQUENCIES = ['weekly', 'fortnightly', 'monthly', 'quarterly', 'yearly']
+const FREQUENCIES = E.FREQUENCIES
 const FREQUENCY_PER_MONTH = { weekly: 52 / 12, fortnightly: 26 / 12, monthly: 1, quarterly: 1 / 3, yearly: 1 / 12 }
 const WEEKDAYS = { sun: 0, mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6 }
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -177,6 +205,43 @@ function oneOf(obj, field, path, allowed, fallback) {
   return v
 }
 
+function pct(obj, field, path) {
+  const v = obj?.[field]
+  if (v === undefined || v === null) return undefined
+  if (typeof v !== 'number' || v < 0 || v > 100) throw new ProfileError(`${path}.${field}`, 'must be a number from 0 to 100')
+  return v
+}
+
+/** ["mon", "Wednesday"] or "every day" → [1, 3] / [0..6]. */
+function weekdays(obj, field, path) {
+  const v = obj?.[field]
+  if (v === undefined || v === null) return undefined
+  if (typeof v === 'string' && /^(every ?day|daily|all)$/i.test(v.trim())) return [0, 1, 2, 3, 4, 5, 6]
+  if (!Array.isArray(v) || !v.length) throw new ProfileError(`${path}.${field}`, 'must be a list of day names such as ["mon", "thu"], or "every day"')
+  const days = v.map((d, i) => {
+    const n = WEEKDAYS[String(d).toLowerCase().slice(0, 3)]
+    if (n === undefined) throw new ProfileError(`${path}.${field}[${i}]`, `is not a day name (got ${JSON.stringify(d)})`)
+    return n
+  })
+  return [...new Set(days)].sort((a, b) => a - b)
+}
+
+/** Checklist rows (milestones, objectives, roadmaps): strings or { title, dueDate?, done? }, with stable ids. */
+function checkItems(obj, field, path, parentId) {
+  const v = obj?.[field]
+  if (v === undefined || v === null) return []
+  if (!Array.isArray(v)) throw new ProfileError(`${path}.${field}`, 'must be a list')
+  return v.map((item, i) => {
+    const p = `${path}.${field}[${i}]`
+    const row = typeof item === 'string' ? { title: item } : item
+    if (!isObject(row)) throw new ProfileError(p, 'must be text or an object with a title')
+    const out = { id: `${parentId}-${field}-${i + 1}`, title: str(row, 'title', p, { required: true }), done: row.done === true }
+    const due = date(row, 'dueDate', p)
+    if (due) out.dueDate = due
+    return out
+  })
+}
+
 // ----------------------------------------------------------------- builder --
 
 function money(minor, currency) {
@@ -242,7 +307,7 @@ export function buildSeed(profile, options = {}) {
       name: str(c, 'name', 'education.course', { required: true }),
       institution: str(c, 'institution', 'education.course', { max: 500 }),
       level: str(c, 'level', 'education.course', { max: 500 }),
-      status: oneOf(c, 'status', 'education.course', ['planned', 'in_progress', 'completed', 'paused'], 'in_progress'),
+      status: oneOf(c, 'status', 'education.course', E.PROGRESS_STATUSES, 'in_progress'),
       startDate: date(c, 'startDate', 'education.course'),
       endDate: date(c, 'endDate', 'education.course'),
       notes: str(c, 'notes', 'education.course', { max: 50_000 }),
@@ -254,8 +319,8 @@ export function buildSeed(profile, options = {}) {
     push('qualifications', q.key, p, {
       title: str(q, 'title', p, { required: true }),
       institution: str(q, 'institution', p, { max: 500 }),
-      kind: oneOf(q, 'kind', p, ['degree', 'diploma', 'certificate', 'licence', 'award', 'other'], 'certificate'),
-      status: oneOf(q, 'status', p, ['planned', 'in_progress', 'completed', 'paused'], 'planned'),
+      kind: oneOf(q, 'kind', p, E.QUALIFICATION_KINDS, 'certificate'),
+      status: oneOf(q, 'status', p, E.PROGRESS_STATUSES, 'planned'),
       startDate: date(q, 'startDate', p),
       completionDate: date(q, 'completionDate', p),
       grade: str(q, 'grade', p, { max: 500 }),
@@ -273,7 +338,7 @@ export function buildSeed(profile, options = {}) {
       code: str(m, 'code', p, { max: 500 }),
       courseId,
       term: str(m, 'term', p, { max: 500 }),
-      status: oneOf(m, 'status', p, ['upcoming', 'in_progress', 'completed'], 'in_progress'),
+      status: oneOf(m, 'status', p, E.MODULE_STATUSES, 'in_progress'),
       notes: str(m, 'notes', p, { max: 50_000 }),
     })
     moduleIds.set(m.key, id)
@@ -297,13 +362,13 @@ export function buildSeed(profile, options = {}) {
     }
     push('assessments', a.key, p, {
       title: str(a, 'title', p, { required: true }),
-      kind: oneOf(a, 'kind', p, ['assignment', 'exam', 'coursework', 'presentation', 'project', 'quiz'], 'assignment'),
+      kind: oneOf(a, 'kind', p, E.ASSESSMENT_KINDS, 'assignment'),
       moduleId: moduleRef(a.moduleKey, `${p}.moduleKey`),
       dueDate,
       dueTime: a.dueTime === undefined ? undefined : clock(a, 'dueTime', p),
-      weight: a.weight,
-      status: oneOf(a, 'status', p, ['not_started', 'in_progress', 'submitted', 'graded'], 'not_started'),
-      score: a.score,
+      weight: pct(a, 'weight', p),
+      status: oneOf(a, 'status', p, E.ASSESSMENT_STATUSES, 'not_started'),
+      score: pct(a, 'score', p),
       notes,
     })
   })
@@ -373,7 +438,7 @@ export function buildSeed(profile, options = {}) {
   const recurring = list(fin, 'recurring', 'finance').map((r, i) => {
     const p = `finance.recurring[${i}]`
     const frequency = oneOf(r, 'frequency', p, FREQUENCIES, 'monthly')
-    const kind = oneOf(r, 'kind', p, ['income', 'expense'], 'expense')
+    const kind = oneOf(r, 'kind', p, E.TRANSACTION_KINDS, 'expense')
     const amount = toMinor(r.amount, `${p}.amount`)
     let dayOfMonth
     if (r.dayOfMonth !== undefined) {
@@ -470,35 +535,125 @@ export function buildSeed(profile, options = {}) {
     })
   })
 
+  // --- calendar events ---
+  list(profile, 'events', '').forEach((ev, i) => {
+    const p = `events[${i}]`
+    const allDay = ev.allDay === true || ev.start === undefined
+    const startTime = allDay ? undefined : clock(ev, 'start', p)
+    const endTime = allDay || ev.end === undefined ? undefined : clock(ev, 'end', p)
+    if (startTime && endTime && endTime <= startTime) throw new ProfileError(`${p}.end`, 'must be after start')
+    push('events', ev.key, p, {
+      title: str(ev, 'title', p, { required: true }),
+      description: str(ev, 'description', p, { max: 50_000 }),
+      kind: oneOf(ev, 'kind', p, E.EVENT_KINDS, 'event'),
+      area: oneOf(ev, 'area', p, E.LIFE_AREAS, 'personal'),
+      priority: oneOf(ev, 'priority', p, E.PRIORITIES),
+      date: date(ev, 'date', p, { required: true }),
+      allDay,
+      startTime,
+      endTime,
+      location: str(ev, 'location', p, { max: 500 }),
+    })
+  })
+
+  // --- projects (before notes, which can link to them) ---
+  const projectIds = new Map()
+  list(profile, 'projects', '').forEach((pr, i) => {
+    const p = `projects[${i}]`
+    const id = `seed-projects-${pr.key}`
+    const startDate = date(pr, 'startDate', p)
+    const deadline = date(pr, 'deadline', p)
+    if (startDate && deadline && deadline < startDate) throw new ProfileError(`${p}.deadline`, 'is before startDate')
+    push('projects', pr.key, p, {
+      name: str(pr, 'name', p, { required: true }),
+      description: str(pr, 'description', p, { max: 50_000 }),
+      status: oneOf(pr, 'status', p, E.PROJECT_STATUSES, 'planning'),
+      kind: oneOf(pr, 'kind', p, E.PROJECT_KINDS, 'personal'),
+      priority: oneOf(pr, 'priority', p, E.PRIORITIES, 'medium'),
+      area: oneOf(pr, 'area', p, E.LIFE_AREAS, 'business'),
+      color: oneOf(pr, 'color', p, E.ACCENT_COLORS, 'cyan'),
+      startDate,
+      deadline,
+      objectives: checkItems(pr, 'objectives', p, id),
+      milestones: checkItems(pr, 'milestones', p, id),
+      resources: list(pr, 'resources', p).map((r, j) => {
+        const rp = `${p}.resources[${j}]`
+        const link = str(r, 'url', rp, { max: 2000 })
+        if (link && !/^https?:\/\/\S+$/i.test(link)) throw new ProfileError(`${rp}.url`, 'must start with http:// or https://')
+        return { id: `${id}-resources-${j + 1}`, title: str(r, 'title', rp, { required: true }), ...(link ? { url: link } : {}), ...(r.note ? { note: str(r, 'note', rp, { max: 500 }) } : {}) }
+      }),
+    })
+    projectIds.set(pr.key, id)
+  })
+
+  list(profile, 'notes', '').forEach((n, i) => {
+    const p = `notes[${i}]`
+    if (n.projectKey !== undefined && !projectIds.has(n.projectKey)) throw new ProfileError(`${p}.projectKey`, `refers to unknown project "${n.projectKey}"`)
+    push('notes', n.key, p, {
+      title: str(n, 'title', p, { required: true }),
+      body: str(n, 'body', p, { max: 50_000 }) ?? '',
+      area: oneOf(n, 'area', p, E.LIFE_AREAS, 'personal'),
+      pinned: n.pinned === true,
+      projectId: n.projectKey === undefined ? undefined : projectIds.get(n.projectKey),
+      tags: Array.isArray(n.tags) ? n.tags.map((t) => String(t).trim()).filter(Boolean) : [],
+    })
+  })
+
+  // --- routines (checklists on chosen days) ---
+  list(profile, 'routines', '').forEach((r, i) => {
+    const p = `routines[${i}]`
+    const id = `seed-routines-${r.key}`
+    const rawSteps = r.steps
+    if (!Array.isArray(rawSteps) || !rawSteps.length) throw new ProfileError(`${p}.steps`, 'needs at least one step')
+    push('routines', r.key, p, {
+      name: str(r, 'name', p, { required: true }),
+      timeOfDay: oneOf(r, 'timeOfDay', p, E.TIMES_OF_DAY, 'morning'),
+      days: weekdays(r, 'days', p) ?? [0, 1, 2, 3, 4, 5, 6],
+      steps: rawSteps.map((st, j) => {
+        const title = typeof st === 'string' ? st.trim() : st?.title
+        if (!title || typeof title !== 'string' || title.length > 200) throw new ProfileError(`${p}.steps[${j}]`, 'must be text of 1–200 characters')
+        return { id: `${id}-step-${j + 1}`, title }
+      }),
+      active: r.active !== false,
+      log: {},
+    })
+  })
+
   // --- goals, habits, career ---
-  const AREAS = ['career', 'business', 'finance', 'health', 'learning', 'wellbeing', 'social', 'culture', 'personal']
   list(profile, 'goals', '').forEach((g, i) => {
     const p = `goals[${i}]`
+    const id = `seed-goals-${g.key}`
+    const milestones = checkItems(g, 'milestones', p, id)
     push('goals', g.key, p, {
       title: str(g, 'title', p, { required: true }),
       description: str(g, 'description', p, { max: 50_000 }),
-      horizon: oneOf(g, 'horizon', p, ['weekly', 'monthly', 'quarterly', 'yearly', 'life'], 'monthly'),
-      term: oneOf(g, 'term', p, ['short', 'long'], 'short'),
-      area: oneOf(g, 'area', p, AREAS, 'personal'),
-      status: 'active',
+      horizon: oneOf(g, 'horizon', p, E.GOAL_HORIZONS, 'monthly'),
+      term: oneOf(g, 'term', p, E.GOAL_TERMS, 'short'),
+      area: oneOf(g, 'area', p, E.LIFE_AREAS, 'personal'),
+      status: oneOf(g, 'status', p, E.GOAL_STATUSES, 'active'),
       targetDate: date(g, 'targetDate', p),
-      progressMode: 'manual',
-      progress: 0,
-      milestones: [],
+      progressMode: oneOf(g, 'progressMode', p, E.PROGRESS_MODES, milestones.length ? 'milestones' : 'manual'),
+      progress: pct(g, 'progress', p) ?? 0,
+      milestones,
       history: [],
     })
   })
 
   list(profile, 'habits', '').forEach((h, i) => {
     const p = `habits[${i}]`
+    const days = weekdays(h, 'days', p)
+    const schedule = oneOf(h, 'schedule', p, E.HABIT_SCHEDULES, days ? 'days' : 'daily')
+    if (schedule === 'days' && !days) throw new ProfileError(`${p}.days`, 'is required when schedule is "days"')
+    const timesPerWeek = h.timesPerWeek ?? 3
+    if (!Number.isInteger(timesPerWeek) || timesPerWeek < 1 || timesPerWeek > 7) throw new ProfileError(`${p}.timesPerWeek`, 'must be a whole number from 1 to 7')
     push('habits', h.key, p, {
       name: str(h, 'name', p, { required: true }),
       description: str(h, 'description', p, { max: 500 }),
-      area: oneOf(h, 'area', p, AREAS, 'personal'),
-      schedule: oneOf(h, 'schedule', p, ['daily', 'weekdays', 'custom', 'weekly'], 'daily'),
-      days: [],
-      timesPerWeek: 3,
-      color: 'cyan',
+      area: oneOf(h, 'area', p, E.LIFE_AREAS, 'personal'),
+      schedule,
+      days: days ?? [],
+      timesPerWeek,
+      color: oneOf(h, 'color', p, E.ACCENT_COLORS, 'cyan'),
       startDate: date(h, 'startDate', p) ?? today,
       log: [],
       archived: false,
@@ -507,19 +662,21 @@ export function buildSeed(profile, options = {}) {
 
   list(profile, 'careerPaths', '').forEach((c, i) => {
     const p = `careerPaths[${i}]`
+    const id = `seed-careerPaths-${c.key}`
     push('careerPaths', c.key, p, {
       name: str(c, 'name', p, { required: true }),
       targetRole: str(c, 'targetRole', p, { max: 500 }),
       description: str(c, 'description', p, { max: 50_000 }),
-      status: oneOf(c, 'status', p, ['exploring', 'active', 'paused', 'archived'], 'exploring'),
-      color: 'cyan',
-      roadmap: [],
+      status: oneOf(c, 'status', p, E.CAREER_PATH_STATUSES, 'exploring'),
+      color: oneOf(c, 'color', p, E.ACCENT_COLORS, 'cyan'),
+      targetDate: date(c, 'targetDate', p),
+      roadmap: checkItems(c, 'roadmap', p, id),
       scores: {},
       notes: str(c, 'notes', p, { max: 50_000 }),
     })
   })
 
-  const known = new Set(['settings', 'education', 'finance', 'goals', 'habits', 'careerPaths'])
+  const known = new Set(['settings', 'education', 'finance', 'events', 'projects', 'notes', 'routines', 'goals', 'habits', 'careerPaths'])
   for (const k of Object.keys(profile)) if (!known.has(k)) warnings.push(`Ignored unknown top-level key "${k}".`)
 
   const counts = {}

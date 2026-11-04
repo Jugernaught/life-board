@@ -19,6 +19,7 @@ const SHOTS = resolve('private/screenshots')
 
 test.skip(!existsSync(SEED), `No private seed at ${SEED} — run npm run seed:build first`)
 test.use({ deviceScaleFactor: 2 })
+test.setTimeout(180_000) // visits every seeded section
 
 test('private seed imports cleanly with Merge and shows up across the app', async ({ page }) => {
   const backup = JSON.parse(readFileSync(SEED, 'utf8'))
@@ -72,7 +73,26 @@ test('private seed imports cleanly with Merge and shows up across the app', asyn
   for (const r of ((data.recurring ?? []) as { name: string }[]).slice(0, 3)) await expect(page.getByText(r.name).first()).toBeVisible()
   await page.screenshot({ path: `${SHOTS}/finance-recurring.png`, fullPage: true })
 
+  // --- every other section that has seeded records: check a title shows up, then screenshot ---
+  const sections: { path: string; shot: string; collection: string; field: string }[] = [
+    { path: '/schedule', shot: 'schedule', collection: 'events', field: 'title' },
+    { path: '/goals', shot: 'goals', collection: 'goals', field: 'title' },
+    { path: '/goals?tab=habits', shot: 'habits', collection: 'habits', field: 'name' },
+    { path: '/fitness?tab=routines', shot: 'routines', collection: 'routines', field: 'name' },
+    { path: '/projects', shot: 'projects', collection: 'projects', field: 'name' },
+    { path: '/career?tab=paths', shot: 'career-paths', collection: 'careerPaths', field: 'name' },
+    { path: '/career?tab=education', shot: 'education', collection: 'modules', field: 'name' },
+  ]
+  for (const s of sections) {
+    const rows = (data[s.collection] ?? []) as Record<string, string>[]
+    if (!rows.length) continue
+    await page.goto(s.path)
+    if (s.collection !== 'events') await expect(page.getByText(rows[0][s.field], { exact: false }).first()).toBeVisible()
+    await page.screenshot({ path: `${SHOTS}/${s.shot}.png`, fullPage: true })
+  }
+
   // --- a reload keeps everything (it was really saved) ---
+  await page.goto('/finance?tab=recurring')
   await page.reload()
   await expect(page.getByText(((data.recurring ?? []) as { name: string }[])[0]?.name ?? '').first()).toBeVisible()
 
