@@ -29,7 +29,7 @@ export function Panel({ title, eyebrow, icon: Icon, actions, children, className
           )}
           <div className="min-w-0 flex-1">
             {eyebrow && <p className="eyebrow mb-0.5">{eyebrow}</p>}
-            {title && <h3 className="truncate font-display text-[14.5px] font-semibold tracking-wide text-ink">{title}</h3>}
+            {title && <h2 className="truncate font-display text-[14.5px] font-semibold tracking-wide text-ink">{title}</h2>}
           </div>
           {actions && <div className="flex shrink-0 items-center gap-1">{actions}</div>}
         </header>

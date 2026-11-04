@@ -119,7 +119,7 @@ export function ChartCard<T>({
     <section className={cn('panel flex min-w-0 flex-col p-4', className)}>
       <header className="mb-3 flex items-start gap-2">
         <div className="min-w-0 flex-1">
-          <h3 className="font-display text-[14.5px] font-semibold tracking-wide text-ink">{title}</h3>
+          <h2 className="font-display text-[14.5px] font-semibold tracking-wide text-ink">{title}</h2>
           {description && <p className="mt-0.5 text-[12.5px] text-ink-subtle">{description}</p>}
         </div>
         {actions}

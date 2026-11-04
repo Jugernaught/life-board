@@ -28,7 +28,7 @@
   /* Text */
   --color-ink: #e7edf5;
   --color-ink-muted: #9ba7b8;
-  --color-ink-subtle: #6b778a;
+  --color-ink-subtle: #818b9b;
 
   /* Neon palette */
   --color-cyan: #19e6ff;
@@ -80,7 +80,8 @@
   }
 }
 
-/* Light theme — same structure, tuned for readability on bright screens. */
+/* Light theme — same structure, tuned for readability on bright screens.
+   Text colours meet WCAG AA (4.5:1) on every light surface. */
 :root[data-theme='light'] {
   --color-canvas: #eef1f6;
   --color-canvas-2: #e6eaf1;
@@ -92,20 +93,20 @@
   --color-line-strong: rgb(15 23 42 / 0.17);
   --color-ink: #0c1424;
   --color-ink-muted: #46546a;
-  --color-ink-subtle: #6a778b;
-  --color-cyan: #0791ad;
+  --color-ink-subtle: #5b6777;
+  --color-cyan: #077188;
   --color-violet: #6b45e6;
   --color-magenta: #c2187a;
-  --color-lime: #4d8a12;
-  --color-amber: #b07800;
-  --color-accent: #0791ad;
+  --color-lime: #417210;
+  --color-amber: #8a5f00;
+  --color-accent: #077188;
   --color-accent-2: #6b45e6;
   --color-accent-3: #c2187a;
   --color-on-accent: #ffffff;
-  --color-ok: #0f9d68;
-  --color-warn: #b07800;
-  --color-bad: #d6334f;
-  --color-info: #2f6fd6;
+  --color-ok: #0f774f;
+  --color-warn: #8a5f00;
+  --color-bad: #be2e47;
+  --color-info: #2b63be;
   --color-chart-1: #00929f;
   --color-chart-2: #b12b6e;
   --color-chart-3: #56932b;

@@ -66,7 +66,7 @@ function NavRow({ item, index, collapsed, onNavigate }: { item: NavItem; index: 
           {!collapsed && (
             <>
               <span className="min-w-0 flex-1 truncate">{item.label}</span>
-              <span className={cn('font-mono text-[10px] tabular', isActive ? 'text-accent/70' : 'text-ink-subtle/60')}>{String(index + 1).padStart(2, '0')}</span>
+              <span aria-hidden className={cn('font-mono text-[10px] tabular', isActive ? 'text-accent/70' : 'text-ink-subtle/60')}>{String(index + 1).padStart(2, '0')}</span>
             </>
           )}
         </>
@@ -163,6 +163,7 @@ export function Sidebar() {
         initial={false}
         animate={{ width: collapsed ? 72 : 264 }}
         transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+        aria-label="Sidebar"
         className="relative z-30 hidden h-dvh shrink-0 border-r border-line bg-canvas/70 backdrop-blur-xl lg:sticky lg:top-0 lg:block"
       >
         <SidebarContent collapsed={collapsed} />

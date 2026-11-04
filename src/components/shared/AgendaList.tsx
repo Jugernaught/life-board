@@ -63,7 +63,7 @@ export function AgendaList({ items, today, maxDays }: { items: AgendaItem[]; tod
         <div key={d}>
           <p className="eyebrow mb-1 flex items-center gap-2 px-2">
             <span className={cn(d === today && 'text-accent')}>{relativeDay(d, today)}</span>
-            <span className="text-ink-subtle/60">{formatDate(d, 'EEE d MMM')}</span>
+            <span className="text-ink-subtle">{formatDate(d, 'EEE d MMM')}</span>
           </p>
           <div className="-mx-0">
             {byDay[d].map((item) => (

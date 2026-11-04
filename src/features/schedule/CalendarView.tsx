@@ -91,7 +91,7 @@ export function CalendarView({ today }: { today: string }) {
             </div>
           )}
         </div>
-        <aside className="space-y-4">
+        <aside className="space-y-4" aria-label="Day details and upcoming commitments">
           {mode === 'day' && (
             <Panel
               title={`Tasks due ${cursor === today ? 'today' : formatDate(cursor, 'EEE d MMM')}`}
