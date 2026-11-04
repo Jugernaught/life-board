@@ -1,0 +1,278 @@
+/*
+ * LIFE OS for iPhone — design tokens and base styles.
+ *
+ * Builds on the shared design system (index.css) and overrides its tokens
+ * with an iOS palette, scoped to <html data-shell="ios">. The desktop app
+ * never sets that attribute, so it is unaffected.
+ *
+ * Colours follow iOS system colours (light/dark), using Apple's
+ * higher-contrast variants where text needs WCAG AA (4.5:1).
+ */
+@import '../styles/index.css';
+
+:root[data-shell='ios'] {
+  /* Safe areas are read through variables so tests can simulate a notch. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  /* Height of the on-screen keyboard (set from visualViewport in JS). */
+  --kb: 0px;
+  --navbar-h: 44px;
+  --tabbar-h: calc(50px + var(--safe-bottom));
+
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace;
+
+  /* Dark appearance (default) */
+  --color-canvas: #000000;
+  --color-canvas-2: #000000;
+  --color-panel: #1c1c1e;
+  --color-panel-2: #2c2c2e;
+  --color-panel-3: #3a3a3c;
+  --color-overlay: rgb(0 0 0 / 0.48);
+  --color-line: rgb(84 84 88 / 0.6);
+  --color-line-strong: rgb(84 84 88 / 0.95);
+  --color-ink: #ffffff;
+  --color-ink-muted: #aeaeb2;
+  --color-ink-subtle: #98989f;
+
+  --color-cyan: #19e6ff;
+  --color-violet: #bf5af2;
+  --color-magenta: #ff375f;
+  --color-lime: #30d158;
+  --color-amber: #ff9f0a;
+  --color-accent: #19e6ff;
+  --color-accent-2: #bf5af2;
+  --color-accent-3: #ff375f;
+  --color-on-accent: #00151a;
+  --color-ok: #30d158;
+  --color-warn: #ff9f0a;
+  --color-bad: #ff453a;
+  --color-info: #409cff;
+
+  /* iOS-specific */
+  --ios-fill: rgb(118 118 128 / 0.24);
+  --ios-fill-2: rgb(118 118 128 / 0.32);
+  --ios-bar: rgb(20 20 22 / 0.9);
+  --ios-switch-on: #30d158;
+  --ios-seg-selected: #636366;
+  --ios-grouped: #000000;
+  --ios-cell: #1c1c1e;
+  --ios-cell-pressed: #2c2c2e;
+
+  --radius-panel: 12px;
+  color-scheme: dark;
+}
+
+:root[data-shell='ios'][data-theme='light'] {
+  --color-canvas: #f2f2f7;
+  --color-canvas-2: #f2f2f7;
+  --color-panel: #ffffff;
+  --color-panel-2: #f2f2f7;
+  --color-panel-3: #e5e5ea;
+  --color-overlay: rgb(0 0 0 / 0.3);
+  --color-line: rgb(60 60 67 / 0.29);
+  --color-line-strong: rgb(60 60 67 / 0.45);
+  --color-ink: #000000;
+  --color-ink-muted: #3c3c43;
+  --color-ink-subtle: #636366;
+
+  --color-cyan: #077188;
+  --color-violet: #8944ab;
+  --color-magenta: #d30f45;
+  --color-lime: #1e7b34;
+  --color-amber: #a05a00;
+  --color-accent: #077188;
+  --color-accent-2: #8944ab;
+  --color-accent-3: #d30f45;
+  --color-on-accent: #ffffff;
+  --color-ok: #1e7b34;
+  --color-warn: #a05a00;
+  --color-bad: #d70015;
+  --color-info: #0040dd;
+
+  --ios-fill: rgb(118 118 128 / 0.12);
+  --ios-fill-2: rgb(118 118 128 / 0.2);
+  --ios-bar: rgb(249 249 249 / 0.9);
+  --ios-switch-on: #34c759;
+  --ios-seg-selected: #ffffff;
+  --ios-grouped: #f2f2f7;
+  --ios-cell: #ffffff;
+  --ios-cell-pressed: #e5e5ea;
+  color-scheme: light;
+}
+
+/* Accent presets keep their meaning on iPhone. */
+:root[data-shell='ios'][data-accent='violet'] {
+  --color-accent: var(--color-violet);
+}
+:root[data-shell='ios'][data-accent='magenta'] {
+  --color-accent: var(--color-magenta);
+}
+:root[data-shell='ios'][data-accent='lime'] {
+  --color-accent: var(--color-lime);
+}
+:root[data-shell='ios'][data-accent='violet'],
+:root[data-shell='ios'][data-accent='magenta'],
+:root[data-shell='ios'][data-accent='lime'] {
+  --color-on-accent: #ffffff;
+}
+
+/* ----------------------------------------------------------------- base */
+:root[data-shell='ios'],
+:root[data-shell='ios'] body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: var(--ios-grouped);
+}
+:root[data-shell='ios'] body {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  letter-spacing: -0.012em;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+:root[data-shell='ios'] #root {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+/* Text people write or read should stay selectable. */
+:root[data-shell='ios'] input,
+:root[data-shell='ios'] textarea,
+:root[data-shell='ios'] [data-selectable] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+:root[data-shell='ios'] * {
+  scrollbar-width: none;
+}
+:root[data-shell='ios'] *::-webkit-scrollbar {
+  display: none;
+}
+
+/*
+ * iOS zooms the page when an input under 16px gets focus. Every editable
+ * control in the iPhone app is at least 16px, and at least 44pt tall.
+ */
+:root[data-shell='ios'] input:not([type='checkbox']):not([type='radio']):not([type='range']),
+:root[data-shell='ios'] textarea,
+:root[data-shell='ios'] select {
+  font-size: 16px !important;
+}
+:root[data-shell='ios'] input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']),
+:root[data-shell='ios'] select {
+  min-height: 44px;
+  border-radius: 10px;
+}
+:root[data-shell='ios'] textarea {
+  border-radius: 10px;
+}
+:root[data-shell='ios'] :focus-visible {
+  outline-width: 2px;
+  outline-offset: 1px;
+}
+
+/* Shared desktop visual effects are flattened into iOS surfaces. */
+:root[data-shell='ios'] .panel {
+  background: var(--ios-cell);
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: var(--radius-panel);
+}
+:root[data-shell='ios'] .hud::before,
+:root[data-shell='ios'] .hud::after {
+  display: none;
+}
+:root[data-shell='ios'] .chamfer,
+:root[data-shell='ios'] .chamfer-sm {
+  clip-path: none;
+  border-radius: 10px;
+}
+:root[data-shell='ios'] .glow-ring {
+  box-shadow: none;
+}
+:root[data-shell='ios'] .eyebrow {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 0.01em;
+}
+
+/* ---------------------------------------------------------- utilities */
+@utility ios-bar {
+  background: var(--ios-bar);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+@utility ios-hairline-b {
+  box-shadow: inset 0 -0.5px 0 var(--color-line-strong);
+}
+@utility ios-hairline-t {
+  box-shadow: inset 0 0.5px 0 var(--color-line-strong);
+}
+@utility ios-press {
+  transition: background-color 120ms;
+  &:active {
+    background-color: var(--ios-cell-pressed);
+  }
+}
+@utility ios-scroll {
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+@utility ios-large-title {
+  font-family: var(--font-display);
+  font-size: 34px;
+  line-height: 41px;
+  font-weight: 700;
+  letter-spacing: 0.012em;
+}
+@utility ios-title2 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+@utility ios-headline {
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+  letter-spacing: -0.024em;
+}
+@utility ios-body {
+  font-size: 17px;
+  line-height: 22px;
+  letter-spacing: -0.024em;
+}
+@utility ios-subhead {
+  font-size: 15px;
+  line-height: 20px;
+  letter-spacing: -0.016em;
+}
+@utility ios-footnote {
+  font-size: 13px;
+  line-height: 18px;
+  letter-spacing: -0.006em;
+}
+@utility ios-caption {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-shell='ios'] * {
+    scroll-behavior: auto !important;
+  }
+}

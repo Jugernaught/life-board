@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Lock, Plus, Trash2 } from 'lucide-react'
 import { ENERGY_SCALE, MOOD_SCALE, REFLECTION_PROMPTS, type PromptKey } from '@/data/constants'
-import type { JournalEntry } from '@/data/types'
 import { addDaysISO, formatDate } from '@/lib/dates'
-import { cn, debounce } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { actions, useCollection, useSettings } from '@/store/store'
 import { Button, IconButton } from '@/components/ui/Button'
 import { Input, Textarea } from '@/components/ui/inputs'
@@ -11,10 +10,7 @@ import { Panel } from '@/components/ui/Panel'
 import { ScaleInput, TagInput } from '@/components/ui/pickers'
 import { toast } from '@/components/ui/toast'
 import { deleteRecord } from '@/components/editor/useDeleteRecord'
-
-type Draft = Pick<JournalEntry, 'title' | 'body' | 'prompts' | 'lessons' | 'challenges' | 'achievements' | 'tags'>
-const emptyDraft = (): Draft => ({ title: '', body: '', prompts: {}, lessons: '', challenges: '', achievements: '', tags: [] })
-const words = (t: string) => (t.trim() ? t.trim().split(/\s+/).length : 0)
+import { useJournalDraft } from './useJournalDraft'
 
 /**
  * The writing surface. Text is saved automatically a moment after you stop
@@ -25,69 +21,17 @@ export function JournalEditor({ date, setDate, today, entryId, setEntryId }: { d
   const entries = useCollection('journal')
   const checkIns = useCollection('checkIns')
   const settings = useSettings()
-  const dayEntries = useMemo(() => entries.filter((e) => e.date === date).sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1)), [entries, date])
-  const current = dayEntries.find((e) => e.id === entryId) ?? (entryId === 'new' ? undefined : dayEntries[0])
-  const [draft, setDraft] = useState<Draft>(emptyDraft)
-  const [status, setStatus] = useState<'idle' | 'pending' | 'saved'>('idle')
+  const { draft, change, status, current, dayEntries, flush, wordCount: total } = useJournalDraft({ date, entryId, setEntryId })
   const [showExtra, setShowExtra] = useState(false)
-  const idRef = useRef<string | undefined>(current?.id)
-  const dateRef = useRef(date)
-
-  // Load the entry when the day/entry changes. When the change is just this
-  // editor's own draft becoming a saved entry, keep the text on screen as is.
   useEffect(() => {
-    if (current && current.id === idRef.current && date === dateRef.current && status !== 'idle') return
-    idRef.current = current?.id
-    dateRef.current = date
-    setDraft(current ? { title: current.title ?? '', body: current.body, prompts: current.prompts ?? {}, lessons: current.lessons ?? '', challenges: current.challenges ?? '', achievements: current.achievements ?? '', tags: current.tags } : emptyDraft())
     setShowExtra(!!(current?.lessons || current?.challenges || current?.achievements))
-    setStatus('idle')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [current?.id, date])
-
-  const persist = useMemo(
-    () =>
-      debounce((d: Draft) => {
-        const clean = {
-          title: d.title?.trim() || undefined,
-          body: d.body,
-          prompts: Object.fromEntries(Object.entries(d.prompts ?? {}).filter(([, v]) => v && String(v).trim())),
-          lessons: d.lessons?.trim() || undefined,
-          challenges: d.challenges?.trim() || undefined,
-          achievements: d.achievements?.trim() || undefined,
-          tags: d.tags,
-        }
-        const hasContent = clean.body.trim() || clean.title || Object.keys(clean.prompts).length || clean.lessons || clean.challenges || clean.achievements
-        try {
-          if (idRef.current) actions.update('journal', idRef.current, clean)
-          else if (hasContent) {
-            const created = actions.create('journal', { ...clean, date: dateRef.current })
-            idRef.current = created.id
-            setEntryId(created.id)
-          }
-          setStatus('saved')
-        } catch (e) {
-          toast({ title: 'Could not save entry', description: String((e as Error).message), tone: 'error' })
-        }
-      }, 700),
-    [setEntryId],
-  )
-  // Flush pending writes when switching entry/day or leaving the page.
-  useEffect(() => () => persist.flush(), [persist, date, entryId])
-
-  const change = (patch: Partial<Draft>) => {
-    setDraft((d) => {
-      const next = { ...d, ...patch }
-      setStatus('pending')
-      persist(next)
-      return next
-    })
-  }
+  const persist = { flush }
 
   const dayCheckIns = checkIns.filter((c) => c.date === date).sort((a, b) => (a.at < b.at ? 1 : -1))
   const [mood, setMood] = useState<number | undefined>()
   const [energy, setEnergy] = useState<number | undefined>()
-  const total = words(draft.body) + Object.values(draft.prompts ?? {}).reduce<number>((n, v) => n + words(String(v ?? '')), 0)
 
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">

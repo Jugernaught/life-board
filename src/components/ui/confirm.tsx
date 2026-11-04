@@ -21,7 +21,8 @@ interface ConfirmState {
   close: (ok: boolean) => void
 }
 
-const useConfirmStore = create<ConfirmState>((set, get) => ({
+/** Exported so the iPhone version can render confirmations as an action sheet. */
+export const useConfirmStore = create<ConfirmState>((set, get) => ({
   request: undefined,
   open: (o) =>
     new Promise<boolean>((resolve) => {

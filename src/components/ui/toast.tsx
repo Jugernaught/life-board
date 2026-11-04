@@ -45,13 +45,16 @@ export const toast = (t: Parameters<ToastState['push']>[0]) => useToasts.getStat
 const icons = { success: CheckCircle2, error: XCircle, info: Info, warning: AlertTriangle }
 const colors = { success: 'var(--color-ok)', error: 'var(--color-bad)', info: 'var(--color-accent)', warning: 'var(--color-warn)' }
 
-export function Toaster() {
+export function Toaster({ placement = 'bottom' }: { placement?: 'bottom' | 'top' }) {
   const { toasts, dismiss } = useToasts()
   return (
     <div
       aria-live="polite"
       aria-atomic="false"
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-[80] flex flex-col items-center gap-2 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-end"
+      className={cn(
+        'pointer-events-none fixed inset-x-0 z-[80] flex flex-col items-center gap-2 p-4',
+        placement === 'bottom' ? 'bottom-0 pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-end' : 'top-0 pt-[calc(var(--safe-top,0px)+0.5rem)]',
+      )}
     >
       <AnimatePresence initial={false}>
         {toasts.map((t) => {
@@ -60,7 +63,7 @@ export function Toaster() {
             <motion.div
               key={t.id}
               layout
-              initial={{ opacity: 0, y: 16, scale: 0.97 }}
+              initial={{ opacity: 0, y: placement === 'bottom' ? 16 : -16, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, x: 24, transition: { duration: 0.15 } }}
               transition={{ type: 'spring', stiffness: 500, damping: 36 }}
