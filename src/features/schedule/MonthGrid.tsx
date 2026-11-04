@@ -69,7 +69,7 @@ export function MonthGrid({ cursor, items, today, onPickDay }: { cursor: string;
                 onClick={() => onPickDay(d)}
                 className={cn(
                   'mb-1 flex size-6 items-center justify-center rounded-md font-mono text-[11.5px] tabular transition-colors hover:bg-panel-3',
-                  d === today ? 'bg-accent text-on-accent hover:bg-accent' : inMonth ? 'text-ink-muted' : 'text-ink-subtle/50',
+                  d === today ? 'bg-accent-fill text-on-accent hover:bg-accent-fill' : inMonth ? 'text-ink-muted' : 'text-ink-subtle/50',
                 )}
                 aria-label={`Open ${formatDate(d, 'EEEE d MMMM')}`}
               >

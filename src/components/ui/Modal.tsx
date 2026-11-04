@@ -87,7 +87,7 @@ function ModalInner({ onClose, title, description, children, footer, size = 'md'
   return (
     <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-6" role="presentation">
       <motion.div
-        className="absolute inset-0 bg-overlay backdrop-blur-[3px]"
+        className="absolute inset-0 bg-overlay backdrop-blur-[2px]"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -107,7 +107,7 @@ function ModalInner({ onClose, title, description, children, footer, size = 'md'
         exit={{ opacity: 0, y: 16, scale: 0.98 }}
         transition={{ type: 'spring', stiffness: 420, damping: 34, mass: 0.8 }}
         className={cn(
-          'panel hud relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-b-none border-line-strong bg-panel/95 outline-none sm:max-h-[86vh] sm:rounded-b-[var(--radius-panel)]',
+          'float hud relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-b-none outline-none sm:max-h-[86vh] sm:rounded-b-[var(--radius-window)]',
           widths[size],
           className,
         )}
@@ -116,7 +116,7 @@ function ModalInner({ onClose, title, description, children, footer, size = 'md'
           <div className="flex items-start gap-3 border-b border-line px-5 pt-4 pb-3.5">
             <div className="min-w-0 flex-1">
               {title && (
-                <h2 id={`${id}-title`} className="font-display text-[17px] font-semibold tracking-wide text-ink">
+                <h2 id={`${id}-title`} className="title text-[17px] font-semibold text-ink">
                   {title}
                 </h2>
               )}
@@ -133,7 +133,7 @@ function ModalInner({ onClose, title, description, children, footer, size = 'md'
         <div data-modal-body className={cn('min-h-0 flex-1 overflow-y-auto px-5 py-4', bodyClassName)}>
           {children}
         </div>
-        {footer && <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line bg-panel-2/40 px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">{footer}</div>}
+        {footer && <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line bg-ink/[0.025] px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">{footer}</div>}
       </motion.div>
     </div>
   )

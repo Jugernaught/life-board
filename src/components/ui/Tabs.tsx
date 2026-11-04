@@ -29,8 +29,8 @@ export function Tabs<T extends string>({ tabs, value, onChange, className }: { t
               aria-selected={active}
               onClick={() => onChange(t.id)}
               className={cn(
-                'relative flex h-10 items-center gap-2 px-3 text-[13.5px] font-medium whitespace-nowrap transition-colors',
-                active ? 'text-ink' : 'text-ink-subtle hover:text-ink-muted',
+                'relative z-0 flex h-10 items-center gap-2 px-3 text-[13.5px] font-medium whitespace-nowrap transition-colors',
+                active ? 'text-ink' : 'text-ink-muted hover:text-ink',
               )}
             >
               {Icon && <Icon size={15} className={active ? 'text-accent' : ''} />}
@@ -38,8 +38,16 @@ export function Tabs<T extends string>({ tabs, value, onChange, className }: { t
               {typeof t.count === 'number' && t.count > 0 && <span className="rounded bg-ink/[0.07] px-1.5 py-px font-mono text-[10.5px] text-ink-muted">{t.count}</span>}
               {active && (
                 <motion.span
+                  layoutId={`tab-bg-${group}`}
+                  className="absolute inset-x-0.5 inset-y-1.5 -z-10 rounded-[var(--tab-radius)] bg-[var(--tab-active-bg)]"
+                  transition={{ type: 'spring', stiffness: 500, damping: 40 }}
+                />
+              )}
+              {active && (
+                <motion.span
                   layoutId={`tab-${group}`}
-                  className="absolute inset-x-2 -bottom-px h-[2px] rounded-full bg-accent shadow-[0_0_10px_var(--color-accent)]"
+                  className="absolute inset-x-2 -bottom-px h-[2px] rounded-full bg-accent shadow-[var(--glow-sm)]"
+                  style={{ opacity: 'var(--tab-underline)' }}
                   transition={{ type: 'spring', stiffness: 500, damping: 40 }}
                 />
               )}

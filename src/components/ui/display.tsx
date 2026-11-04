@@ -2,7 +2,7 @@ import type { ComponentType, ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowDownRight, ArrowUpRight, Minus } from 'lucide-react'
 import type { Tone } from '@/data/constants'
-import { toneColor, toneTint } from '@/lib/tone'
+import { toneColor, toneText, toneTint } from '@/lib/tone'
 import { cn } from '@/lib/utils'
 
 type IconType = ComponentType<{ className?: string; size?: number; strokeWidth?: number; style?: React.CSSProperties }>
@@ -11,10 +11,10 @@ export function Badge({ tone = 'muted', children, dot, className, title }: { ton
   return (
     <span
       title={title}
-      className={cn('inline-flex h-[22px] max-w-full shrink-0 items-center gap-1.5 truncate rounded-md border px-2 text-[11.5px] leading-none font-medium whitespace-nowrap', className)}
-      style={{ color: toneColor(tone), background: toneTint(tone, 12), borderColor: toneTint(tone, 26) }}
+      className={cn('inline-flex h-[22px] max-w-full shrink-0 items-center gap-1.5 truncate rounded-[var(--radius-badge)] border px-2 text-[11.5px] leading-none font-medium whitespace-nowrap', className)}
+      style={{ color: toneText(tone), background: toneTint(tone, 12), borderColor: toneTint(tone, 26) }}
     >
-      {dot && <span className="size-1.5 shrink-0 rounded-full" style={{ background: toneColor(tone), boxShadow: `0 0 6px ${toneColor(tone)}` }} />}
+      {dot && <span className="size-1.5 shrink-0 rounded-full" style={{ background: toneColor(tone), boxShadow: `0 0 var(--dot-glow) ${toneColor(tone)}` }} />}
       <span className="truncate">{children}</span>
     </span>
   )
@@ -124,8 +124,8 @@ export function EmptyState({
   return (
     <div className={cn('flex flex-col items-center justify-center text-center', compact ? 'gap-2 px-4 py-6' : 'gap-3 px-6 py-12', className)}>
       {Icon && (
-        <div className={cn('relative flex items-center justify-center rounded-xl border border-line bg-panel-2/70 text-accent', compact ? 'size-10' : 'size-14')}>
-          <div className="absolute inset-0 rounded-xl bg-accent/5 blur-md" />
+        <div className={cn('relative flex items-center justify-center rounded-[calc(var(--radius-panel)-4px)] border border-line bg-accent/10 text-accent', compact ? 'size-10' : 'size-14')}>
+          <div className="cyber-only absolute inset-0 rounded-xl bg-accent/5 blur-md" />
           <Icon size={compact ? 18 : 24} strokeWidth={1.6} className="relative" />
         </div>
       )}
@@ -197,7 +197,7 @@ export function Stat({
         <p className="eyebrow truncate">{label}</p>
         {Icon && <Icon size={15} className="shrink-0" style={{ color: toneColor(tone) }} />}
       </div>
-      <p className="mt-2 truncate font-display text-[26px] leading-none font-semibold tracking-tight text-ink tabular">{value}</p>
+      <p className="title mt-2 truncate text-[26px] leading-none font-semibold text-ink tabular">{value}</p>
       {sub && <div className="mt-1.5 truncate text-[12px] text-ink-subtle">{sub}</div>}
       {children}
     </div>
@@ -205,7 +205,7 @@ export function Stat({
 }
 
 export function Dot({ tone, className }: { tone: Tone; className?: string }) {
-  return <span className={cn('inline-block size-2 shrink-0 rounded-full', className)} style={{ background: toneColor(tone), boxShadow: `0 0 6px ${toneColor(tone)}` }} />
+  return <span className={cn('inline-block size-2 shrink-0 rounded-full', className)} style={{ background: toneColor(tone), boxShadow: `0 0 var(--dot-glow) ${toneColor(tone)}` }} />
 }
 
 export function Spinner({ className }: { className?: string }) {

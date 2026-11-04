@@ -84,7 +84,7 @@ A second Vite entry (`m/index.html` → `src/mobile/main.tsx`) renders a separat
 
 ## Styling
 
-Design tokens (colours, fonts, radius) are CSS variables declared in `src/styles/index.css` inside Tailwind's `@theme`. Light theme and accent presets override those variables via `data-theme` / `data-accent` attributes on `<html>` (set by `ThemeController`). Reusable visual utilities (`panel`, `hud`, `chamfer`, `glow-ring`, `eyebrow`) live in the same file. Chart series colours (`--color-chart-1…6`) were validated for colour-vision deficiency and contrast in both themes.
+Four interchangeable themes — **Liquid Glass** (default), **Apple Clean**, **Cyberpunk** and **Minimal Dark** — are pure design tokens. `src/app/themes.ts` is the registry; `src/styles/themes.css` holds every token (palette, type, shape, the three materials `surface` / `chrome` / `float`, effects, layout, navigation, controls, motion) keyed by `data-style`, `data-theme`, `data-accent`, `data-transparency` and `data-effects` on `<html>` (set by `ThemeController`, or `useAppearance` on iPhone). Shared utilities in `src/styles/index.css` (`panel`, `chrome`, `float`, `glass-button`, `eyebrow`, `title`, `hud`, `chamfer`, `cyber-only`, `not-cyber`) consume them, so components never hard-code a theme. Token selectors aren't tied to `:root`, which lets the Appearance page render live previews of other themes. Chart series colours (`--color-chart-1…6`) were validated for colour-vision deficiency and contrast in light and dark. Full details, how to add a theme, and how contrast is verified: [`THEMES.md`](THEMES.md).
 
 ## Testing
 

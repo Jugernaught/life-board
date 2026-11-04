@@ -108,7 +108,7 @@ export function Screen({
   const inlineTitleVisible = !large || !titleHidden
 
   return (
-    <div className="absolute inset-0 flex flex-col bg-[var(--ios-grouped)]" data-testid={testId}>
+    <div className="absolute inset-0 flex flex-col [background:var(--ios-backdrop)]" data-testid={testId}>
       {/* Navigation bar */}
       <header
         className={cn('absolute inset-x-0 top-0 z-20 transition-[background-color,box-shadow] duration-200', scrolled || !large ? 'ios-bar ios-hairline-b' : 'bg-transparent')}
@@ -122,7 +122,7 @@ export function Screen({
                 <button
                   type="button"
                   onClick={() => nav.pop()}
-                  className="flex h-11 max-w-full min-w-11 items-center gap-0.5 pr-2 text-accent active:opacity-50"
+                  className="nav-btn flex h-11 max-w-full min-w-11 items-center gap-0.5 pr-2 text-accent active:opacity-50"
                   aria-label={`Back to ${route.backTitle ?? 'previous screen'}`}
                   data-testid="nav-back"
                 >
@@ -186,7 +186,7 @@ export function NavButton({ children, onClick, label, bold, disabled, testId }: 
       disabled={disabled}
       aria-label={label}
       data-testid={testId}
-      className={cn('flex h-11 min-w-11 items-center justify-center px-2 text-accent active:opacity-50 disabled:opacity-35', bold ? 'ios-headline' : 'ios-body')}
+      className={cn('nav-btn flex h-11 min-w-11 items-center justify-center px-2 text-accent active:opacity-50 disabled:opacity-35', bold ? 'ios-headline' : 'ios-body')}
     >
       {children}
     </button>

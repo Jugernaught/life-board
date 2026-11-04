@@ -5,6 +5,7 @@ A private, local-first **personal operating system**: one command centre for you
 - **Everything stays on your device.** Data is stored in your browser (IndexedDB). No account, no server, no tracking.
 - **Starts empty.** No sample data, no invented statistics. Every chart and number comes from your own entries.
 - **Never silently loses data.** Changes save automatically, deletions ask first and can be undone, and imports, restores and resets always take a safety backup first.
+- **Four complete themes** — *Liquid Glass* (the flagship: translucent floating navigation over a soft wallpaper), *Apple Clean*, *Cyberpunk* and *Minimal Dark* — switch instantly in Settings → Appearance with live previews. Every section, desktop and iPhone. See [`docs/THEMES.md`](docs/THEMES.md).
 - **A dedicated iPhone version** at `/m/` — bottom tabs, swipe gestures, sheets, light and dark mode — that installs on your Home Screen and works offline. Same data, same logic. See [`docs/IPHONE.md`](docs/IPHONE.md).
 
 ---
@@ -54,7 +55,7 @@ The first time you run browser tests on your own machine, install the browser on
 | 10 | **Reading & Media** | Books, articles, podcasts, films, documentaries and courses with status, dates, rating, progress, notes and key takeaways. Search, filters and yearly stats. |
 | 11 | **Social Life** | Social events, important dates (repeat yearly), people to reconnect with on a chosen rhythm, social commitments and goals, private reflections. Stores only what's needed — a first name is enough. |
 | 12 | **Analytics & Reports** | Any date range, this period vs previous, progress against your own targets, trends for tasks, habits, learning, fitness, money, mood and reading, category (life-area) comparisons, printable weekly/monthly reports with an 8-week/6-month history table, and the weekly review. No single "life score". |
-| 13 | **Settings** | Name, theme (dark/light/system) and accent, motion, currency, date/time formats, week start, working hours, default calendar view, dashboard widgets, personal targets, finance categories, privacy, and data: export, validated import with preview (merge or replace), backups and restore, reset. |
+| 13 | **Settings** | Name, **Appearance** (four themes with live previews, light/dark/automatic, accent colour, motion, ambient effects, reduce transparency), currency, date/time formats, week start, working hours, default calendar view, dashboard widgets, personal targets, finance categories, privacy, and data: export, validated import with preview (merge or replace), backups and restore, reset. |
 
 ### On iPhone
 

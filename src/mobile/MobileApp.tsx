@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { MotionConfig, motion } from 'framer-motion'
 import { MemoryRouter } from 'react-router'
 import { useApp, useSettings } from '@/store/store'
+import { applyAppearance, resolveAppearance } from '@/app/themes'
+import { useSystemDark } from '@/app/ThemeController'
 import { StartupNotice } from '@/app/StartupNotice'
 import { Toaster } from '@/components/ui/toast'
 import { MobileEditorHost } from './editor/MobileEditorHost'
@@ -17,36 +19,15 @@ import { ScreenLoading } from './ui/ScreenLoading'
 import { useSheetDepth } from './ui/sheetStore'
 import { useKeyboardInset } from './ui/useKeyboardInset'
 
-function useSystemDark() {
-  const [dark, setDark] = useState(() => window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? true)
-  useEffect(() => {
-    const mq = window.matchMedia?.('(prefers-color-scheme: dark)')
-    if (!mq) return
-    const on = () => setDark(mq.matches)
-    mq.addEventListener('change', on)
-    return () => mq.removeEventListener('change', on)
-  }, [])
-  return dark
-}
-
-/** Applies light/dark appearance (follows iOS by default), accent and motion. */
+/** Applies the visual style, light/dark (follows iOS by default), accent, motion and transparency. */
 function useAppearance() {
   const s = useSettings()
   const systemDark = useSystemDark()
-  const theme = s.mobileTheme === 'system' ? (systemDark ? 'dark' : 'light') : s.mobileTheme
+  const a = resolveAppearance(s, s.mobileTheme, systemDark)
   useEffect(() => {
-    const root = document.documentElement
-    root.dataset.theme = theme
-    root.dataset.accent = s.accent
-    root.dataset.motion = s.motion === 'reduced' ? 'reduced' : s.motion === 'full' ? 'full' : 'system'
-    root.style.colorScheme = theme
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#000000' : '#f2f2f7')
-    try {
-      localStorage.setItem('life-os:m-theme', s.mobileTheme)
-    } catch {
-      // Only affects the pre-paint colour on next launch.
-    }
-  }, [theme, s.accent, s.motion, s.mobileTheme])
+    applyAppearance(document.documentElement, a, { storageKey: 'life-os:m-appearance', modePref: s.mobileTheme, themeColorVar: '--ios-grouped' })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [a.style, a.mode, a.accent, a.motion, a.transparency, a.effects, s.mobileTheme])
   return s.motion
 }
 

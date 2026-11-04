@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en-GB" data-shell="ios" data-theme="dark">
+<html lang="en-GB" data-shell="ios" data-style="glass" data-theme="dark" data-accent="blue" data-transparency="full" data-effects="on">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -16,13 +16,18 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>LIFE OS</title>
     <script>
-      // Apply the last-used appearance before first paint (no white/black flash).
+      // Paint the last-used theme before the app loads (no flash of the wrong colours).
       ;(function () {
         try {
-          var pref = localStorage.getItem('life-os:m-theme') || 'system'
-          var dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-          document.documentElement.dataset.theme = dark ? 'dark' : 'light'
-          document.querySelector('meta[name="theme-color"]').setAttribute('content', dark ? '#000000' : '#f2f2f7')
+          var a = JSON.parse(localStorage.getItem('life-os:m-appearance') || 'null')
+          if (!a) a = { style: 'glass', pref: 'system', accent: 'blue', transparency: 'full', effects: 'on' }
+          var d = document.documentElement
+          var dark = a.pref === 'dark' || (a.pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          d.dataset.style = a.style
+          d.dataset.theme = dark ? 'dark' : 'light'
+          d.dataset.accent = a.accent
+          d.dataset.transparency = a.transparency
+          d.dataset.effects = a.effects
         } catch (e) {}
       })()
     </script>

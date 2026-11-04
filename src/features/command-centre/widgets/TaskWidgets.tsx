@@ -58,7 +58,7 @@ export function TodayWidget({ today, size }: WidgetProps & { size: WidgetSize })
         />
       ) : (
         <div className="-mx-2 max-h-80 overflow-y-auto">
-          {overdue.length > 0 && <p className="eyebrow px-2 pt-1 pb-1 text-bad/80">Overdue · {overdue.length}</p>}
+          {overdue.length > 0 && <p className="eyebrow px-2 pt-1 pb-1 text-[color-mix(in_oklab,var(--color-bad)_80%,var(--color-ink))]">Overdue · {overdue.length}</p>}
           <AnimatePresence initial={false}>
             {overdue.map((t) => (
               <TaskItem key={t.id} task={t} today={today} />
