@@ -60,9 +60,13 @@ export interface EntityFormProps {
   /** Only render these fields (Quick Add). */
   only?: string[]
   className?: string
+  /** Focus the first field on open (default true). */
+  autoFocus?: boolean
+  /** Called once with true when the person first changes something. */
+  onDirtyChange?: (dirty: boolean) => void
 }
 
-export function EntityForm({ config, initial, ctx, formId, onSubmit, only, className }: EntityFormProps) {
+export function EntityForm({ config, initial, ctx, formId, onSubmit, only, className, autoFocus = true, onDirtyChange }: EntityFormProps) {
   const [values, setValues] = useState<Values>(initial)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitted, setSubmitted] = useState(false)
@@ -72,7 +76,12 @@ export function EntityForm({ config, initial, ctx, formId, onSubmit, only, class
   const fields = useMemo(() => config.fields.filter((f) => !only || only.includes(f.name)), [config.fields, only])
   const visible = fields.filter((f) => !f.visible || f.visible(values))
 
+  const dirty = useRef(false)
   const setValue = (name: string, v: unknown) => {
+    if (!dirty.current) {
+      dirty.current = true
+      onDirtyChange?.(true)
+    }
     setValues((prev) => {
       const next = { ...prev, [name]: v }
       if (submitted) setErrors(validateForm(config, next, ctx).errors)
@@ -110,7 +119,7 @@ export function EntityForm({ config, initial, ctx, formId, onSubmit, only, class
           values={values}
           error={errors[f.name]}
           ctx={ctx}
-          autoFocus={f.autoFocus ?? i === 0}
+          autoFocus={autoFocus && (f.autoFocus ?? i === 0)}
           onChange={(v) => setValue(f.name, v)}
           setValue={setValue}
         />

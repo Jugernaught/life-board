@@ -583,6 +583,8 @@ export const settings = z.looseObject({
   displayName: z.string().max(60).default(''),
   onboarded: z.boolean().default(false),
   theme: z.enum(['dark', 'light', 'system']).default('dark'),
+  /** Appearance of the iPhone version (follows iOS by default). */
+  mobileTheme: z.enum(['system', 'light', 'dark']).default('system'),
   accent: z.enum(['cyan', 'violet', 'magenta', 'lime']).default('cyan'),
   effects: z.boolean().default(true),
   motion: z.enum(['system', 'full', 'reduced']).default('system'),

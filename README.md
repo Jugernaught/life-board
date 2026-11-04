@@ -5,6 +5,7 @@ A private, local-first **personal operating system**: one command centre for you
 - **Everything stays on your device.** Data is stored in your browser (IndexedDB). No account, no server, no tracking.
 - **Starts empty.** No sample data, no invented statistics. Every chart and number comes from your own entries.
 - **Never silently loses data.** Changes save automatically, deletions ask first and can be undone, and imports, restores and resets always take a safety backup first.
+- **A dedicated iPhone version** at `/m/` — bottom tabs, swipe gestures, sheets, light and dark mode — that installs on your Home Screen and works offline. Same data, same logic. See [`docs/IPHONE.md`](docs/IPHONE.md).
 
 ---
 
@@ -17,7 +18,7 @@ npm install        # download dependencies (first time only)
 npm run dev        # start the app
 ```
 
-Open **http://localhost:5173**. The first-time setup asks for your name and preferences (all optional — you can skip it).
+Open **http://localhost:5173** for the desktop version, or **http://localhost:5173/m/** for the iPhone version. The first-time setup asks for your name and preferences (all optional — you can skip it).
 
 > Your data lives in the browser profile you use. Opening LIFE OS in a different browser, or clearing site data, starts fresh — so **export a backup regularly** (Settings → Data & backups).
 
@@ -30,7 +31,7 @@ Open **http://localhost:5173**. The first-time setup asks for your name and pref
 | `npm run preview` | Serve the built version locally |
 | `npm run check` | Type-check, lint and run the unit tests |
 | `npm test` | Unit and component tests (Vitest) |
-| `npm run test:e2e` | Browser tests (Playwright) on desktop and phone sizes |
+| `npm run test:e2e` | Browser tests (Playwright) on desktop, an Android phone and three iPhone sizes |
 | `npm run test:all` | Everything above |
 
 The first time you run browser tests on your own machine, install the browser once with `npx playwright install chromium`.
@@ -54,6 +55,10 @@ The first time you run browser tests on your own machine, install the browser on
 | 11 | **Social Life** | Social events, important dates (repeat yearly), people to reconnect with on a chosen rhythm, social commitments and goals, private reflections. Stores only what's needed — a first name is enough. |
 | 12 | **Analytics & Reports** | Any date range, this period vs previous, progress against your own targets, trends for tasks, habits, learning, fitness, money, mood and reading, category (life-area) comparisons, printable weekly/monthly reports with an 8-week/6-month history table, and the weekly review. No single "life score". |
 | 13 | **Settings** | Name, theme (dark/light/system) and accent, motion, currency, date/time formats, week start, working hours, default calendar view, dashboard widgets, personal targets, finance categories, privacy, and data: export, validated import with preview (merge or replace), backups and restore, reset. |
+
+### On iPhone
+
+The iPhone version (`/m/`) is a separate app shell built for one-handed use: **Today · Plan · Habits · Journal · More** tabs, per-tab navigation with swipe-back, swipe actions on rows, bottom sheets for forms, iOS-style lists, light/dark following your phone, safe areas for the notch and home indicator, and offline support. Every section and record type is available. Install it with Safari → Share → *Add to Home Screen*. Details, gestures and limitations: [`docs/IPHONE.md`](docs/IPHONE.md).
 
 ### Keyboard shortcuts
 
@@ -120,7 +125,7 @@ These are deliberately **not** simulated. Each needs an outside service and some
 
 ## Deploying
 
-`npm run build` produces static files in `dist/` that any static host can serve (Netlify, Vercel, Cloudflare Pages, GitHub Pages…). Because LIFE OS uses normal URLs like `/finance`, the host must send unknown paths to `index.html` — `public/_redirects` (Netlify) and `vercel.json` (Vercel) already do this. Data still lives in each visitor's own browser; nothing is shared between visitors.
+`npm run build` produces static files in `dist/` that any static host can serve (Netlify, Vercel, Cloudflare Pages, GitHub Pages…). Because LIFE OS uses normal URLs like `/finance`, the host must send unknown paths to `index.html`, and `/m/...` paths to `m/index.html` — `public/_redirects` + `public/_headers` (Netlify) and `vercel.json` (Vercel) already do this, and keep the iPhone app's service worker (`/m/sw.js`) uncached so updates arrive. Data still lives in each visitor's own browser; nothing is shared between visitors.
 
 ### GitHub Pages
 
@@ -135,5 +140,7 @@ Pages on a private repo needs a paid GitHub plan (Pro, Team or Enterprise). On a
 
 ## Testing
 
-- **70 unit & component tests** (`npm test`) cover dates and money maths, streaks, budgets, grades, agenda building, analytics ranges, search ranking, schema validation and migration, all storage adapters, persistence (including crash recovery and never overwriting unreadable data), backups, imports, forms and delete/undo.
-- **19 browser tests** (`npm run test:e2e`) click through the real app on desktop and phone sizes: setup, every section, create/edit/complete/delete/undo, search, dashboard customisation, drag-and-drop on the calendar and project board, journal autosave, export/backup/restore and import validation.
+- **80 unit & component tests** (`npm test`) cover dates and money maths, streaks, budgets, grades, agenda building, analytics ranges, search ranking, schema validation and migration, all storage adapters, persistence (including crash recovery and never overwriting unreadable data), backups, imports, forms, delete/undo and the iPhone navigator.
+- **64 browser tests** (`npm run test:e2e`) run on a production build:
+  - **Desktop & Android (19):** setup, every section, create/edit/complete/delete/undo, search, dashboard customisation, drag-and-drop on the calendar and project board, journal autosave, export/backup/restore and import validation.
+  - **iPhone SE, 15 Pro and 16 Pro Max (15 each), light and dark:** onboarding, tab stacks, back button and edge-swipe, swipe-to-delete with confirm and undo, quick add, unsaved-changes guard, habits, journal autosave across reload, transactions, appearance, export/backups, recovery screen, offline start, desktop ↔ iPhone link, and a layout audit of every screen (no sideways scrolling, 16px inputs so iOS doesn't zoom, 24px+ touch targets, safe areas) plus a performance budget (no chart code on first load).

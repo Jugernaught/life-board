@@ -9,6 +9,7 @@ import { QuickAdd } from '@/components/command/QuickAdd'
 import { ShortcutsHelp } from '@/components/command/ShortcutsHelp'
 import { EditorHost } from '@/components/editor/EditorHost'
 import { BackgroundFX } from './BackgroundFX'
+import { MobileBanner } from './MobileBanner'
 import { Sidebar } from './Sidebar'
 import { TopBar } from './TopBar'
 
@@ -40,6 +41,7 @@ export function AppShell() {
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <TopBar />
+        <MobileBanner />
         {storageWarning && (
           <div role="status" className="no-print border-b border-warn/30 bg-warn/10 px-4 py-2 text-center text-[12.5px] text-warn sm:px-6">
             {storageWarning}

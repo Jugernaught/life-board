@@ -37,7 +37,8 @@ export function Heatmap({
   for (let i = 0; i < days.length; i += 7) cols.push(days.slice(i, i + 7))
   const rowLabels = weekStartsOn === 1 ? ['M', '', 'W', '', 'F', '', 'S'] : ['S', '', 'T', '', 'T', '', 'S']
   return (
-    <div className="flex gap-1.5 overflow-x-auto pb-1" role="grid" aria-label="Activity calendar">
+    // When read-only it has no buttons, so the scroll area itself takes focus for keyboard scrolling.
+    <div className="flex gap-1.5 overflow-x-auto pb-1" role="grid" aria-label="Activity calendar" tabIndex={onToggle ? undefined : 0}>
       <div className="flex shrink-0 flex-col gap-[3px] pt-4" aria-hidden>
         {rowLabels.map((l, i) => (
           <span key={i} className="font-mono text-[9px] leading-none text-ink-subtle" style={{ height: cell }}>

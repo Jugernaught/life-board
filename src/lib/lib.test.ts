@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { addDaysISO, diffDays, eachDay, eachMonth, formatTime, isISODate, nextYearlyOccurrence, parseISODate, relativeDay, spanMinutes, toISODate, weekStartISO } from './dates'
-import { delta, formatMinutes, formatMoney, moneyToInput, parseMoney } from './format'
+import { delta, formatBytes, formatMinutes, formatMoney, moneyToInput, parseMoney } from './format'
 import { cn, debounce, normalise, sortBy } from './utils'
 
 describe('dates', () => {
@@ -61,6 +61,15 @@ describe('money', () => {
     expect(delta(5, 0).pct).toBeNull()
     expect(formatMinutes(95)).toBe('1h 35m')
     expect(formatMinutes(60)).toBe('1h')
+  })
+})
+
+describe('formatBytes', () => {
+  it('picks a readable unit', () => {
+    expect(formatBytes(512)).toBe('512 B')
+    expect(formatBytes(2048)).toBe('2.0 KB')
+    expect(formatBytes(5 * 1024 * 1024)).toBe('5.0 MB')
+    expect(formatBytes(3 * 1024 ** 3)).toBe('3.0 GB')
   })
 })
 

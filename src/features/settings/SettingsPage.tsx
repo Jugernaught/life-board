@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Calendar, Database, Globe2, LayoutGrid, Lock, Palette, Plug, Plus, Target, Trash2, User, Wallet } from 'lucide-react'
+import { Calendar, Database, Globe2, LayoutGrid, Lock, Palette, Plug, Plus, Smartphone, Target, Trash2, User, Wallet } from 'lucide-react'
 import { DATE_FORMATS, formatDate, todayISO } from '@/lib/dates'
 import { CURRENCIES } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -149,6 +149,12 @@ export default function SettingsPage() {
               </Row>
               <Row label="Week starts on">
                 <Segmented value={String(s.weekStartsOn) as '0' | '1'} onChange={(v) => set({ weekStartsOn: Number(v) as 0 | 1 })} fullWidth ariaLabel="Week start" options={[{ value: '1', label: 'Monday' }, { value: '0', label: 'Sunday' }]} />
+              </Row>
+              <Row label="iPhone version" description="A separate touch-first version for iPhone at /m/ — same data on the same device and browser. Open it in Safari on your iPhone, then Share → Add to Home Screen.">
+                <a href={`${import.meta.env.BASE_URL}m/`} className="inline-flex h-9 items-center gap-2 rounded-lg border border-line bg-panel-2 px-3 text-[13px] text-ink hover:border-line-strong" data-testid="settings-open-mobile">
+                  <Smartphone size={15} className="text-accent" aria-hidden />
+                  Open iPhone version
+                </a>
               </Row>
               <Row label="First-time setup" description="Walk through the setup screens again. Your data is not affected.">
                 <Button onClick={() => set({ onboarded: false })}>Run setup again</Button>
