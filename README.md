@@ -39,6 +39,19 @@ The first time you run browser tests on your own machine, install the browser on
 
 ---
 
+### Windows app
+
+LIFE OS can be packaged as a Windows desktop app (Electron):
+
+```bash
+npm run electron:dev     # build and open the app in a desktop window
+npm run electron:build   # create release/LIFE OS Setup <version>.exe
+```
+
+The desktop app keeps its own local data, separate from the browser version. To move data across, use Settings → Data & backups → Export in the old one, then Import in the new one. The installer is unsigned, so Windows SmartScreen may show "unknown publisher" (choose More info → Run anyway).
+
+---
+
 ## What's inside
 
 | # | Section | Highlights |
