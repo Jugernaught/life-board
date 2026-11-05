@@ -313,9 +313,16 @@ test('recovery: unreadable stored data is never overwritten', async ({ page }) =
         req.onerror = () => resolve(false)
       }),
   )
+  // Leave the app before corrupting the data. While the app runs, a save can
+  // still be queued; on reload it would be stashed and (correctly) restored
+  // over the corruption, making this test flaky. A static same-origin page
+  // runs no app code, so nothing can write after this point.
+  await page.goto('/m/manifest.webmanifest')
   await page.evaluate(
     () =>
       new Promise<void>((resolve, reject) => {
+        // Corrupted data with no newer unsaved change waiting to be restored.
+        localStorage.removeItem('life-os:pending-save')
         const req = indexedDB.open('life-os', 1)
         req.onsuccess = () => {
           const tx = req.result.transaction('state', 'readwrite')
@@ -326,7 +333,7 @@ test('recovery: unreadable stored data is never overwritten', async ({ page }) =
         req.onerror = () => reject(req.error)
       }),
   )
-  await page.reload()
+  await page.goto('/m/')
   await expect(page.getByRole('heading', { name: /couldn’t be loaded/ })).toBeVisible()
   const stillThere = await page.evaluate(
     () =>
