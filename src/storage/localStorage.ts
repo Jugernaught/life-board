@@ -1,10 +1,10 @@
 import type { Database } from '@/data/types'
 import { type BackupMeta, type StorageAdapter, type StoredBackup, backupMeta } from './adapter'
+import { storageKey } from './brand'
 
-const PREFIX = 'life-os'
-const DB_KEY = `${PREFIX}:database`
-const INDEX_KEY = `${PREFIX}:backups`
-const backupKey = (id: string) => `${PREFIX}:backup:${id}`
+const DB_KEY = storageKey('database')
+const INDEX_KEY = storageKey('backups')
+const backupKey = (id: string) => storageKey(`backup:${id}`)
 
 /** Fallback when IndexedDB is unavailable. Limited to roughly 5 MB by browsers. */
 export class LocalStorageAdapter implements StorageAdapter {
@@ -14,7 +14,7 @@ export class LocalStorageAdapter implements StorageAdapter {
 
   static isAvailable(): boolean {
     try {
-      const k = `${PREFIX}:probe`
+      const k = storageKey('probe')
       localStorage.setItem(k, '1')
       localStorage.removeItem(k)
       return true

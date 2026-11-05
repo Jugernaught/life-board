@@ -105,7 +105,7 @@ export function SocialScreen() {
         <StatTile label="Commitments" value={openCommitments.length} sub="open" tone="violet" />
       </StatGrid>
 
-      <Section header="Reconnect" headerAction={<SeeAll onClick={() => nav.push('more/social/people')} />} footer={db.people.length ? undefined : 'A first name is enough — LIFE OS deliberately avoids storing sensitive details about other people.'}>
+      <Section header="Reconnect" headerAction={<SeeAll onClick={() => nav.push('more/social/people')} />} footer={db.people.length ? undefined : 'A first name is enough — ATLAS deliberately avoids storing sensitive details about other people.'}>
         {db.people.length === 0 && <EmptyRow>Add people you want to stay in touch with, and how often.</EmptyRow>}
         {db.people.length > 0 && due.length === 0 && <EmptyRow>You’re up to date with everyone.</EmptyRow>}
         {due.slice(0, 5).map(({ p }) => (
@@ -183,7 +183,7 @@ export function PeopleScreen() {
       }
     >
       {people.length === 0 && (
-        <Section footer="A first name is enough — LIFE OS deliberately avoids storing sensitive details about other people.">
+        <Section footer="A first name is enough — ATLAS deliberately avoids storing sensitive details about other people.">
           <EmptyRow>Add people you want to stay in touch with, and how often (e.g. every 30 days).</EmptyRow>
         </Section>
       )}

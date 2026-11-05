@@ -19,7 +19,7 @@ export function MobileOnboarding() {
   const file = useRef<HTMLInputElement>(null)
   const finish = () => {
     actions.updateSettings({ displayName: name.trim(), onboarded: true })
-    toast({ title: name.trim() ? `Welcome, ${name.trim()}` : 'Welcome to LIFE OS' })
+    toast({ title: name.trim() ? `Welcome, ${name.trim()}` : 'Welcome to ATLAS' })
   }
   return (
     <main className="absolute inset-0 flex flex-col bg-[var(--ios-grouped)]" style={{ paddingTop: 'calc(var(--safe-top) + 24px)', paddingBottom: 'calc(var(--safe-bottom) + 16px)' }} data-testid="m-onboarding">
@@ -29,7 +29,7 @@ export function MobileOnboarding() {
             {step === 0 && (
               <div className="px-6 pt-10">
                 <img src={`${import.meta.env.BASE_URL}m/icon-192.png`} alt="" className="size-20 rounded-[18px] shadow-lg" />
-                <h1 className="ios-large-title mt-6 text-ink">Welcome to LIFE OS</h1>
+                <h1 className="ios-large-title mt-6 text-ink">Welcome to ATLAS</h1>
                 <p className="ios-body mt-2 text-ink-subtle">Your goals, plans, habits, money, health, learning and journal — in one private place.</p>
                 <ul className="mt-8 space-y-5">
                   {[
@@ -127,7 +127,7 @@ export function MobileOnboarding() {
           ))}
         </div>
         <button type="button" onClick={() => (step < 2 ? setStep(step + 1) : finish())} className="ios-headline h-[50px] w-full rounded-[14px] bg-accent-fill text-on-accent active:opacity-80" data-testid="m-onboarding-next">
-          {step === 0 ? 'Get Started' : step === 1 ? 'Continue' : 'Start Using LIFE OS'}
+          {step === 0 ? 'Get Started' : step === 1 ? 'Continue' : 'Start Using ATLAS'}
         </button>
         <div className="mt-2 flex justify-between">
           {step === 0 ? (

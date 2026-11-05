@@ -1,13 +1,17 @@
-// LIFE OS — Windows desktop shell.
+// ATLAS — Windows desktop shell.
 // Serves the production build (dist/) through a privileged custom protocol so
 // BrowserRouter routes and IndexedDB behave exactly as they do on the web.
 const { app, BrowserWindow, protocol, net, shell, Menu } = require('electron')
 const path = require('node:path')
 const fs = require('node:fs')
 const { pathToFileURL } = require('node:url')
+const { resolveProfile, PRODUCT } = require('./profile.cjs')
 
 const SCHEME = 'app'
-const HOST = 'life-os'
+// Must run before the app is ready: it decides where storage lives.
+const profile = resolveProfile(app.getPath('appData'))
+app.setPath('userData', profile.userData)
+const HOST = profile.host
 const DIST = path.join(__dirname, '..', 'dist')
 
 protocol.registerSchemesAsPrivileged([
@@ -34,7 +38,7 @@ function createWindow() {
     minWidth: 960,
     minHeight: 640,
     backgroundColor: '#0b0d10',
-    title: 'LIFE OS',
+    title: PRODUCT,
     icon: path.join(__dirname, '..', 'build', 'icon.png'),
     webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true },
   })

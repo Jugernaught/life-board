@@ -7,8 +7,9 @@
 import { useEffect, useState } from 'react'
 import { editor } from '@/components/editor/editorStore'
 import { toast } from '@/components/ui/toast'
+import { storageKey } from '@/storage/brand'
 
-const KEY = 'life-os:study-timer'
+const KEY = storageKey('study-timer')
 
 export interface TimerState {
   running: boolean

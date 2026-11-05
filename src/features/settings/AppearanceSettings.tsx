@@ -134,7 +134,7 @@ export function AppearanceSettings() {
   return (
     <div className="space-y-4">
       <Panel title="Theme" icon={Palette}>
-        <p className="mb-4 text-[13px] text-ink-muted">Pick a look for the whole of LIFE OS — every section, on this computer and the iPhone version. Select one to preview it, then apply.</p>
+        <p className="mb-4 text-[13px] text-ink-muted">Pick a look for the whole of ATLAS — every section, on this computer and the iPhone version. Select one to preview it, then apply.</p>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" role="radiogroup" aria-label="Theme">
           {THEMES.map((t) => (
             <ThemeCard key={t.id} t={t} selected={selected === t.id} current={s.uiStyle === t.id} mode={live.mode} accent={s.accent} onSelect={() => setSelected(t.id)} />

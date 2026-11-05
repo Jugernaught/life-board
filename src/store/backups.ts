@@ -67,13 +67,13 @@ export function downloadJson(filename: string, value: unknown) {
 }
 
 export function exportDatabase(db: Database = appStore.getState().db) {
-  downloadJson(`life-os-backup-${todayISO()}.json`, makeBackupFile(db))
+  downloadJson(`atlas-backup-${todayISO()}.json`, makeBackupFile(db))
 }
 
 export async function downloadBackup(id: string) {
   const backup = await getBackup(id)
   if (!backup) throw new Error('Backup not found')
-  downloadJson(`life-os-${backup.reason}-${backup.createdAt.slice(0, 10)}.json`, makeBackupFile(backup.data))
+  downloadJson(`atlas-${backup.reason}-${backup.createdAt.slice(0, 10)}.json`, makeBackupFile(backup.data))
 }
 
 /** Read and validate a backup file without changing anything. */

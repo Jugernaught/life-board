@@ -32,7 +32,7 @@ export function TopBar() {
           <Logo collapsed />
         </div>
         <div className="hidden min-w-0 items-center gap-2 text-[13px] sm:flex">
-          <span className="cyber-only font-mono text-[11px] tracking-widest text-ink-subtle">LIFE//OS</span>
+          <span className="cyber-only font-mono text-[11px] tracking-widest text-ink-subtle">ATLAS</span>
           <span className="cyber-only text-ink-subtle/50">/</span>
           <span className="cyber-only truncate text-ink-muted">{current?.label}</span>
           {CurrentIcon && <CurrentIcon size={16} className="not-cyber shrink-0 text-accent" aria-hidden />}

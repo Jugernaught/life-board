@@ -212,7 +212,7 @@ export function FinanceOverview({ month }: { month: string }) {
         </Panel>
       </div>
       <p className="text-[12px] text-ink-subtle">
-        All figures are calculated from transactions you enter manually. LIFE OS does not connect to your bank — linking accounts would need a regulated Open Banking provider (e.g. TrueLayer or GoCardless) and a server.
+        All figures are calculated from transactions you enter manually. ATLAS does not connect to your bank — linking accounts would need a regulated Open Banking provider (e.g. TrueLayer or GoCardless) and a server.
       </p>
     </div>
   )

@@ -1,6 +1,6 @@
 # Architecture
 
-This document explains how LIFE OS is put together, so you (or a future contributor) can change it with confidence.
+This document explains how ATLAS is put together, so you (or a future contributor) can change it with confidence.
 
 ## Data flow
 
@@ -62,6 +62,21 @@ Because the field is optional/defaulted, no migration is needed.
 ## Changing the shape of data (migrations)
 
 If you rename or restructure data, bump `SCHEMA_VERSION` in `schema.ts` and add a function to `MIGRATIONS` in `src/data/validate.ts` that upgrades from the previous version. Migrations run on start-up and on import. Data from a *newer* version than the app understands is refused (with a clear message) rather than risk losing fields.
+
+## The LIFE OS → ATLAS rename
+
+The app used to be called LIFE OS, and everything it stored was named `life-os`. Everything is now named `atlas` (`src/storage/brand.ts` holds the prefix; use `storageKey('name')` for any new localStorage key). Existing users are moved across once, automatically, without any risk of an empty start:
+
+| What | Before | Now | How it moves |
+| --- | --- | --- | --- |
+| IndexedDB database | `life-os` | `atlas` | `migrateLegacyDatabase` (`src/storage/indexedDb.ts`): only if `atlas` is empty, copies state + every backup in one transaction, then deletes `life-os`. If the copy fails the app runs from `life-os` that session and retries next launch. It never creates `life-os` on a fresh install. |
+| localStorage keys | `life-os:*` | `atlas:*` | `migrateLegacyLocalStorage` (`src/storage/brand.ts`), run at the top of both entry points and again by `createStorage`. Removes the old key first so a near-quota value still fits, and puts it back if the write fails. An existing `atlas:*` value always wins. The pre-paint theme scripts in `index.html`/`m/index.html` read either name. |
+| Backup files | `"app": "life-os"`, `life-os-backup-*.json` | `"app": "atlas"`, `atlas-backup-*.json` | `unwrapBackup` accepts both ids (`LEGACY_BACKUP_APP_IDS`). |
+| iPhone offline cache | `life-os-m-*` | `atlas-m-*` | The service worker deletes old caches of either name. |
+| Desktop profile folder / origin | `%APPDATA%\LIFE OS`, `app://life-os` | `%APPDATA%\ATLAS`, `app://atlas` | `electron/profile.cjs`: an install that already has a LIFE OS profile keeps using that folder *and* origin (changing either would hide the data); inside it the web-side moves above apply. |
+| Windows `appId` | `app.lifeos.desktop` | unchanged | Kept on purpose: it identifies the installed app, so the ATLAS installer upgrades LIFE OS in place instead of installing beside it. Never shown to users. |
+
+Covered by `src/storage/brand.test.ts`, `electron/profile.test.ts` and `e2e/rename.spec.ts` (seeds a real browser with LIFE OS-era storage and opens ATLAS).
 
 ## Adding a new collection
 

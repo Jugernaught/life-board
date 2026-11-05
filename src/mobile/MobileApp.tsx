@@ -18,6 +18,7 @@ import { ActionSheetHost } from './ui/ActionSheet'
 import { ScreenLoading } from './ui/ScreenLoading'
 import { useSheetDepth } from './ui/sheetStore'
 import { useKeyboardInset } from './ui/useKeyboardInset'
+import { storageKey } from '@/storage/brand'
 
 /** Applies the visual style, light/dark (follows iOS by default), accent, motion and transparency. */
 function useAppearance() {
@@ -25,7 +26,7 @@ function useAppearance() {
   const systemDark = useSystemDark()
   const a = resolveAppearance(s, s.mobileTheme, systemDark)
   useEffect(() => {
-    applyAppearance(document.documentElement, a, { storageKey: 'life-os:m-appearance', modePref: s.mobileTheme, themeColorVar: '--ios-grouped' })
+    applyAppearance(document.documentElement, a, { storageKey: storageKey('m-appearance'), modePref: s.mobileTheme, themeColorVar: '--ios-grouped' })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [a.style, a.mode, a.accent, a.motion, a.transparency, a.effects, s.mobileTheme])
   return s.motion

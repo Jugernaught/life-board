@@ -54,7 +54,7 @@ export function MonthGrid({ cursor, items, today, onPickDay }: { cursor: string;
               onDrop={(e) => {
                 e.preventDefault()
                 setDragOver(null)
-                const id = e.dataTransfer.getData('text/life-os-event')
+                const id = e.dataTransfer.getData('text/atlas-event')
                 if (id) actions.update('events', id, { date: d }, { detail: `Moved to ${formatDate(d, 'EEE d MMM')}` })
               }}
               onDoubleClick={() => editor.create('events', { date: d })}
@@ -82,7 +82,7 @@ export function MonthGrid({ cursor, items, today, onPickDay }: { cursor: string;
                     type="button"
                     draggable={i.editable}
                     onDragStart={(e) => {
-                      e.dataTransfer.setData('text/life-os-event', i.sourceId)
+                      e.dataTransfer.setData('text/atlas-event', i.sourceId)
                       e.dataTransfer.effectAllowed = 'move'
                     }}
                     onClick={(e) => {

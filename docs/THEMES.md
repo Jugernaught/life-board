@@ -1,12 +1,12 @@
 # Themes and the design system
 
-LIFE OS has four complete, interchangeable visual styles. They apply to every section on desktop and on the iPhone version, switch instantly without a reload, and are saved with your settings.
+ATLAS has four complete, interchangeable visual styles. They apply to every section on desktop and on the iPhone version, switch instantly without a reload, and are saved with your settings.
 
 | Theme | Character | Light / dark |
 | --- | --- | --- |
 | **Liquid Glass** *(default)* | Floating translucent navigation and toolbars over a soft accent wallpaper, with light catching the edges. | Both |
 | **Apple Clean** | Neutral backgrounds, refined type, quiet cards, native-looking controls. Classic iOS tab bar on iPhone. | Both |
-| **Cyberpunk** | The original LIFE//OS identity — neon on near-black, HUD corners, chamfered buttons, monospaced captions. | Dark |
+| **Cyberpunk** | ATLAS’s original look — neon on near-black, HUD corners, chamfered buttons, monospaced captions. | Dark |
 | **Minimal Dark** | Deep charcoal, muted surfaces, restrained accents, almost no borders. | Dark |
 
 **Where to change it:** Settings → **Appearance** (desktop) shows a live preview of each theme before you apply it, with light/dark preview, accent colour, motion, ambient effects and *Reduce transparency*. The palette icon in the toolbar and the command palette (Ctrl K → "Appearance: …") switch instantly. On iPhone: More → Settings → **Theme**.

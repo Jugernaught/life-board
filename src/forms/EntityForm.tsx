@@ -1,6 +1,6 @@
 /**
  * Renders a form from a FormConfig and validates it against the record's
- * Zod schema. Every create/edit dialog in LIFE OS goes through this, so
+ * Zod schema. Every create/edit dialog in ATLAS goes through this, so
  * validation and error messages are consistent everywhere.
  */
 import { type FormEvent, useId, useMemo, useRef, useState } from 'react'

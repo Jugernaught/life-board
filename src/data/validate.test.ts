@@ -50,7 +50,7 @@ describe('validateDatabase', () => {
     expect(r.ok && (r.db.tasks[0] as Record<string, unknown>).futureField).toBe(42)
   })
 
-  it('rejects things that are not LIFE OS backups', () => {
+  it('rejects things that are not ATLAS backups', () => {
     expect(() => unwrapBackup([])).toThrow()
     expect(() => unwrapBackup({ hello: 'world' })).toThrow(/does not look like/)
     expect(validateDatabase('nope').ok).toBe(false)

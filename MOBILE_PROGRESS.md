@@ -1,6 +1,6 @@
-# LIFE OS for iPhone — progress log
+# ATLAS for iPhone — progress log
 
-This file tracks the iPhone version of LIFE OS so work can be resumed at any point. Update it as each stage changes.
+This file tracks the iPhone version of ATLAS so work can be resumed at any point. Update it as each stage changes.
 
 _Last updated: all stages complete — implemented, tested on three iPhone sizes, documented._
 

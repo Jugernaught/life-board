@@ -1,4 +1,4 @@
-# LIFE//OS
+# ATLAS
 
 A private, local-first **personal operating system**: one command centre for your goals, studies, career, projects, money, health, learning, writing, reading and relationships — with analytics calculated only from what you record.
 
@@ -21,7 +21,7 @@ npm run dev        # start the app
 
 Open **http://localhost:5173** for the desktop version, or **http://localhost:5173/m/** for the iPhone version. The first-time setup asks for your name and preferences (all optional — you can skip it).
 
-> Your data lives in the browser profile you use. Opening LIFE OS in a different browser, or clearing site data, starts fresh — so **export a backup regularly** (Settings → Data & backups).
+> Your data lives in the browser profile you use. Opening ATLAS in a different browser, or clearing site data, starts fresh — so **export a backup regularly** (Settings → Data & backups).
 
 ### Useful commands
 
@@ -34,6 +34,7 @@ Open **http://localhost:5173** for the desktop version, or **http://localhost:51
 | `npm test` | Unit and component tests (Vitest) |
 | `npm run test:e2e` | Browser tests (Playwright) on desktop, an Android phone and three iPhone sizes |
 | `npm run test:all` | Everything above |
+| `npm run icons` | Regenerate the favicon and every app/installer icon from the one vector mark in `scripts/generate-icons.mjs` |
 
 The first time you run browser tests on your own machine, install the browser once with `npx playwright install chromium`.
 
@@ -41,11 +42,11 @@ The first time you run browser tests on your own machine, install the browser on
 
 ### Windows app
 
-LIFE OS can be packaged as a Windows desktop app (Electron):
+ATLAS can be packaged as a Windows desktop app (Electron):
 
 ```bash
 npm run electron:dev     # build and open the app in a desktop window
-npm run electron:build   # create release/LIFE OS Setup <version>.exe
+npm run electron:build   # create release/ATLAS Setup <version>.exe
 ```
 
 The desktop app keeps its own local data, separate from the browser version. To move data across, use Settings → Data & backups → Export in the old one, then Import in the new one. The installer is unsigned, so Windows SmartScreen may show "unknown publisher" (choose More info → Run anyway).
@@ -123,7 +124,8 @@ More detail: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 - **Several tabs:** open tabs tell each other about saves and reload, so they don't overwrite each other.
 - **Backups:** one automatic backup per day (configurable), plus safety backups before any import, restore or reset. Restore, download or delete them in Settings → Data & backups.
 - **Export / import:** a single JSON file containing everything. Imports are fully validated and previewed (with counts and any invalid records listed) before anything changes; choose *merge* or *replace*.
-- **If stored data can't be read** (for example, it was written by a newer version), LIFE OS shows a recovery screen and does not overwrite anything; you can download the raw data.
+- **If stored data can't be read** (for example, it was written by a newer version), ATLAS shows a recovery screen and does not overwrite anything; you can download the raw data.
+- **Coming from LIFE OS?** ATLAS was previously called LIFE OS. Just open ATLAS in the same browser (or update the desktop app): your data, backups and settings move across automatically on first launch, and backup files exported by LIFE OS import as normal. Details in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#the-life-os--atlas-rename).
 
 ## Features that need external services (not active)
 
@@ -139,7 +141,7 @@ These are deliberately **not** simulated. Each needs an outside service and some
 
 ## Deploying
 
-`npm run build` produces static files in `dist/` that any static host can serve (Netlify, Vercel, Cloudflare Pages, GitHub Pages…). Because LIFE OS uses normal URLs like `/finance`, the host must send unknown paths to `index.html`, and `/m/...` paths to `m/index.html` — `public/_redirects` + `public/_headers` (Netlify) and `vercel.json` (Vercel) already do this, and keep the iPhone app's service worker (`/m/sw.js`) uncached so updates arrive. Data still lives in each visitor's own browser; nothing is shared between visitors.
+`npm run build` produces static files in `dist/` that any static host can serve (Netlify, Vercel, Cloudflare Pages, GitHub Pages…). Because ATLAS uses normal URLs like `/finance`, the host must send unknown paths to `index.html`, and `/m/...` paths to `m/index.html` — `public/_redirects` + `public/_headers` (Netlify) and `vercel.json` (Vercel) already do this, and keep the iPhone app's service worker (`/m/sw.js`) uncached so updates arrive. Data still lives in each visitor's own browser; nothing is shared between visitors.
 
 ### GitHub Pages
 

@@ -16,13 +16,13 @@
 import { createEmptyDatabase } from '@/data/defaults'
 import type { Database } from '@/data/types'
 import { totalRecords, validateDatabase } from '@/data/validate'
-import { type StorageAdapter, createStorage, requestPersistentStorage } from '@/storage'
+import { APP_KEY, type StorageAdapter, createStorage, requestPersistentStorage, storageKey } from '@/storage'
 import { debounce, uid } from '@/lib/utils'
 import { appStore } from './store'
 import { createBackup, pruneAutoBackups } from './backups'
 
 const SAVE_DELAY_MS = 250
-export const PENDING_KEY = 'life-os:pending-save'
+export const PENDING_KEY = storageKey('pending-save')
 const AUTO_BACKUP_INTERVAL_MS = 20 * 60 * 60 * 1000
 const TAB_ID = uid()
 
@@ -200,7 +200,7 @@ export async function initPersistence(options: InitOptions = {}): Promise<void> 
     }
     if ('BroadcastChannel' in window) {
       channel?.close()
-      channel = new BroadcastChannel('life-os')
+      channel = new BroadcastChannel(APP_KEY)
       channel.onmessage = (event) => {
         const msg = event.data as { type?: string; from?: string }
         // If this tab has its own unsaved change, it will save and notify the other tab instead.
