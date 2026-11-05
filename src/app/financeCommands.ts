@@ -7,6 +7,7 @@ import type { RecurringItem } from '@/data/types'
 import { advanceDate } from '@/selectors/finance'
 import { actions, appStore } from '@/store/store'
 import { toast } from '@/components/ui/toast'
+import { undoWithNotice } from './useChangeToasts'
 
 export function logRecurring(r: RecurringItem, today: string, formatDate: (d: string) => string) {
   const next = advanceDate(r.nextDate, r.frequency)
@@ -17,7 +18,7 @@ export function logRecurring(r: RecurringItem, today: string, formatDate: (d: st
     title: `${r.name} logged`,
     description: `Next due ${formatDate(next)}`,
     tone: 'success',
-    action: changeId ? { label: 'Undo', onClick: () => actions.undoChange(changeId) } : undefined,
+    action: changeId ? { label: 'Undo', onClick: () => undoWithNotice(changeId) } : undefined,
   })
   return tx
 }

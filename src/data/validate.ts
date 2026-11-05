@@ -3,8 +3,11 @@
  * when importing a backup file.
  */
 import { normaliseSettings } from './defaults'
-import { COLLECTION_KEYS, SCHEMA_VERSION, activityEntry, collectionSchemas, databaseSchema } from './schema'
-import type { Database } from './types'
+import { COLLECTION_KEYS, SCHEMA_VERSION, activityEntry, collectionSchemas, databaseSchema, deletionMarker } from './schema'
+import type { Database, DeletionMarker } from './types'
+
+/** Most recent activity entries kept (the log is a convenience, not a record). */
+export const ACTIVITY_LIMIT = 3000
 
 export const BACKUP_APP_ID = 'life-os'
 
@@ -117,6 +120,8 @@ export function validateDatabase(raw: unknown, { strict = true } = {}): Validati
 
   const activity = Array.isArray(migrated.activity) ? migrated.activity : []
   candidate.activity = activity.filter((a) => activityEntry.safeParse(a).success)
+  const deletions = Array.isArray(migrated.deletions) ? migrated.deletions : []
+  candidate.deletions = deletions.filter((d) => deletionMarker.safeParse(d).success)
 
   if (strict && rejected.length) {
     return { ok: false, error: `${rejected.length} record(s) failed validation.`, rejected }
@@ -139,32 +144,79 @@ export function countRecords(db: Partial<Database>): Record<string, number> {
 
 export const totalRecords = (db: Partial<Database>) => Object.values(countRecords(db)).reduce((a, b) => a + b, 0)
 
+type Versioned = { id: string; updatedAt: string; rev?: number }
+
+const revOf = (r: { rev?: number }) => r.rev ?? 0
+
+/** Which copy of the same record wins: the higher revision, then the later edit, then the current one. */
+export function newerCopy<T extends Versioned>(current: T, incoming: T): T {
+  if (revOf(incoming) !== revOf(current)) return revOf(incoming) > revOf(current) ? incoming : current
+  return (incoming.updatedAt ?? '') > (current.updatedAt ?? '') ? incoming : current
+}
+
+/** Deletion markers kept this long (a merge older than this can't be told apart from a new record). */
+export const DELETION_RETENTION_DAYS = 180
+const MAX_DELETIONS = 5000
+
+/** Combine two lists of deletion markers: one per record, the highest revision wins; old ones are pruned. */
+export function mergeDeletions(a: readonly DeletionMarker[], b: readonly DeletionMarker[], now = Date.now()): DeletionMarker[] {
+  const byKey = new Map<string, DeletionMarker>()
+  for (const m of [...a, ...b]) {
+    const k = `${m.key}:${m.id}`
+    const seen = byKey.get(k)
+    if (!seen || m.rev > seen.rev || (m.rev === seen.rev && m.at > seen.at)) byKey.set(k, m)
+  }
+  const cutoff = new Date(now - DELETION_RETENTION_DAYS * 86_400_000).toISOString()
+  return [...byKey.values()]
+    .filter((m) => m.at >= cutoff)
+    .sort((x, y) => (x.at < y.at ? 1 : -1))
+    .slice(0, MAX_DELETIONS)
+}
+
 /**
  * Merge an incoming database into the current one. Records are matched by
- * id; when both sides have the same record, the most recently updated copy
- * wins. Records that exist only on one side are always kept.
+ * id. When both sides have the record, the copy with the higher revision
+ * wins (then the later edit), so clock differences between devices don't
+ * decide. A record deleted on either side stays deleted, unless the other
+ * side edited it after the deletion (a higher revision than the marker).
  */
-export function mergeDatabases(current: Database, incoming: Database): { db: Database; added: number; updated: number; kept: number } {
+export function mergeDatabases(current: Database, incoming: Database): { db: Database; added: number; updated: number; kept: number; removed: number } {
   const db = { ...current } as Database
   let added = 0
   let updated = 0
   let kept = 0
+  let removed = 0
+  const deletions = mergeDeletions(current.deletions ?? [], incoming.deletions ?? [])
+  const deletedAt = new Map(deletions.map((m) => [`${m.key}:${m.id}`, m]))
+  const superseded = new Set<string>()
   for (const key of COLLECTION_KEYS) {
-    const byId = new Map<string, { id: string; updatedAt: string }>()
-    for (const r of current[key] as { id: string; updatedAt: string }[]) byId.set(r.id, r)
-    for (const r of incoming[key] as { id: string; updatedAt: string }[]) {
+    const byId = new Map<string, Versioned>()
+    for (const r of current[key] as Versioned[]) byId.set(r.id, r)
+    for (const r of incoming[key] as Versioned[]) {
       const existing = byId.get(r.id)
       if (!existing) {
         byId.set(r.id, r)
         added++
-      } else if ((r.updatedAt ?? '') > (existing.updatedAt ?? '')) {
+      } else if (newerCopy(existing, r) === r && r !== existing) {
         byId.set(r.id, r)
         updated++
       } else kept++
     }
-    ;(db as unknown as Record<string, unknown[]>)[key] = [...byId.values()]
+    const rows: Versioned[] = []
+    for (const r of byId.values()) {
+      const marker = deletedAt.get(`${key}:${r.id}`)
+      if (marker && revOf(r) <= marker.rev) {
+        removed++
+        continue
+      }
+      // Edited after it was deleted elsewhere: keep it, and forget the deletion.
+      if (marker) superseded.add(`${key}:${r.id}`)
+      rows.push(r)
+    }
+    ;(db as unknown as Record<string, unknown[]>)[key] = rows
   }
+  db.deletions = deletions.filter((m) => !superseded.has(`${m.key}:${m.id}`))
   const activityIds = new Set(current.activity.map((a) => a.id))
-  db.activity = [...current.activity, ...incoming.activity.filter((a) => !activityIds.has(a.id))].sort((a, b) => (a.at < b.at ? 1 : -1))
-  return { db, added, updated, kept }
+  db.activity = [...current.activity, ...incoming.activity.filter((a) => !activityIds.has(a.id))].sort((a, b) => (a.at < b.at ? 1 : -1)).slice(0, ACTIVITY_LIMIT)
+  return { db, added, updated, kept, removed }
 }

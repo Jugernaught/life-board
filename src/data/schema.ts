@@ -94,6 +94,12 @@ const base = {
   id: idSchema,
   createdAt: timestamp,
   updatedAt: timestamp,
+  /**
+   * Revision: 1 when created, +1 on every change. Merges compare revisions
+   * first, so the result doesn't depend on devices' clocks agreeing.
+   * Missing on data from before revisions existed (read as 0).
+   */
+  rev: z.number().int().min(0).optional(),
 }
 
 /** Build the stored-entity schema and the editable-fields ("input") schema together. */
@@ -704,9 +710,17 @@ const collectionsShape = Object.fromEntries(
   COLLECTION_KEYS.map((key) => [key, z.array(collectionSchemas[key].record).default([])]),
 ) as { [K in CollectionKey]: z.ZodDefault<z.ZodArray<(typeof collectionSchemas)[K]['record']>> }
 
+/**
+ * A record that was deleted, remembered so a merge (another tab, an import)
+ * doesn't bring it back. `rev` is the record's revision when it was deleted:
+ * a copy edited after that (a higher rev) survives the deletion.
+ */
+export const deletionMarker = z.looseObject({ key: z.string().min(1), id: idSchema, rev: z.number().int().min(0), at: timestamp })
+
 export const databaseSchema = z.looseObject({
   schemaVersion: z.number().int().min(1),
   settings,
   activity: z.array(activityEntry).default([]),
+  deletions: z.array(deletionMarker).default([]),
   ...collectionsShape,
 })

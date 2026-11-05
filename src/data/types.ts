@@ -85,16 +85,26 @@ export interface Collections {
 
 export type EntityOf<K extends keyof Collections> = Collections[K]
 /** The editable part of a record — everything except id and timestamps. */
-export type InputOf<K extends keyof Collections> = Omit<Collections[K], 'id' | 'createdAt' | 'updatedAt'>
+export type InputOf<K extends keyof Collections> = Omit<Collections[K], 'id' | 'createdAt' | 'updatedAt' | 'rev'>
+
+export interface DeletionMarker {
+  key: string
+  id: string
+  rev: number
+  at: string
+}
 
 export type Database = {
   schemaVersion: number
   settings: Settings
   activity: ActivityEntry[]
+  /** Records deleted recently (see DeletionMarker in schema.ts). */
+  deletions: DeletionMarker[]
 } & { [K in keyof Collections]: Collections[K][] }
 
 export interface BaseEntity {
   id: string
   createdAt: string
   updatedAt: string
+  rev?: number
 }

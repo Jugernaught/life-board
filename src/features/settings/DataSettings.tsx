@@ -46,7 +46,7 @@ function ImportPreview({ result, onClose }: { result: (ValidationResult & { file
     setBusy(true)
     try {
       const r = await applyImport(result.db as Db, mode)
-      toast({ title: 'Import complete', description: mode === 'merge' ? `${r.added ?? 0} added, ${r.updated ?? 0} updated. Safety backup saved.` : 'Data replaced. Safety backup saved.' })
+      toast({ title: 'Import complete', description: mode === 'merge' ? `${r.added ?? 0} added, ${r.updated ?? 0} updated.${r.removed ? ` ${r.removed} you’d deleted stay deleted (restore the safety backup or replace to bring them back).` : ''} Safety backup saved.` : 'Data replaced. Safety backup saved.' })
       onClose()
     } catch (e) {
       toast({ title: 'Import failed', description: (e as Error).message, tone: 'error' })
@@ -291,7 +291,11 @@ export function DataSettings() {
                   loading={busy === `restore-${b.id}`}
                   onClick={async () => {
                     if (await confirmAction({ title: 'Restore this backup?', message: `Your current data will be replaced with the backup from ${new Date(b.createdAt).toLocaleString()} (${b.recordCount} records). A safety backup of the current data is taken first.`, confirmLabel: 'Restore', tone: 'default' }))
-                      await run(`restore-${b.id}`, () => restoreBackup(b.id), 'Backup restored')
+                      await run(`restore-${b.id}`, async () => {
+                        const r = await restoreBackup(b.id)
+                        // Say so if some of the backup's records couldn't be read (they were left out).
+                        if (r.rejected) toast({ title: `${r.rejected} record(s) in this backup couldn’t be read`, description: 'They were left out. The backup itself is unchanged.', tone: 'warning' })
+                      }, 'Backup restored')
                   }}
                 >
                   Restore

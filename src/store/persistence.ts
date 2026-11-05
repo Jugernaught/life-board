@@ -15,7 +15,7 @@
  */
 import { createEmptyDatabase } from '@/data/defaults'
 import type { Database } from '@/data/types'
-import { totalRecords, validateDatabase } from '@/data/validate'
+import { mergeDatabases, totalRecords, validateDatabase } from '@/data/validate'
 import { type StorageAdapter, createStorage, requestPersistentStorage } from '@/storage'
 import { debounce, uid } from '@/lib/utils'
 import { appStore } from './store'
@@ -44,15 +44,77 @@ type Persisted = Database & { savedAt?: string }
 /** Saves started but not yet committed. Closing the page can abort them, so they're stashed too. */
 let inFlight = 0
 
-async function writeNow(db: Database) {
+// ------------------------------------------------- several tabs at once ---
+// Each tab holds the whole database in memory and saves it whole. Two rules
+// stop one tab silently overwriting another's changes:
+//  1. Writes are serialised across tabs with a Web Lock (where supported).
+//  2. Inside the lock, a tab checks the "last save" stamp. If another tab
+//     saved since this tab last loaded or saved, it merges that copy in first
+//     (mergeDatabases: higher revision wins; deletions are respected).
+
+const STAMP_KEY = 'life-os:save-stamp'
+const LOCK_NAME = 'life-os-db'
+/** `savedAt` of the copy this tab last loaded or wrote. */
+let lastSyncedAt = ''
+/** Another tab announced a save we haven't merged yet (used when localStorage is unavailable). */
+let otherTabSaved = false
+
+function readStamp(): { tab: string; savedAt: string } | null {
+  try {
+    const raw = localStorage.getItem(STAMP_KEY)
+    return raw ? (JSON.parse(raw) as { tab: string; savedAt: string }) : null
+  } catch {
+    return null
+  }
+}
+
+function writeStamp(savedAt: string) {
+  try {
+    localStorage.setItem(STAMP_KEY, JSON.stringify({ tab: TAB_ID, savedAt }))
+  } catch {
+    // Falls back to the BroadcastChannel flag.
+  }
+}
+
+function savedElsewhere(): boolean {
+  const stamp = readStamp()
+  if (stamp) return stamp.tab !== TAB_ID && stamp.savedAt > lastSyncedAt
+  return otherTabSaved
+}
+
+function withDbLock<T>(fn: () => Promise<T>): Promise<T> {
+  const locks = typeof navigator !== 'undefined' && 'locks' in navigator ? navigator.locks : undefined
+  return locks ? (locks.request(LOCK_NAME, fn) as Promise<T>) : fn()
+}
+
+async function writeNow(_scheduled: Database) {
   if (!adapter) return
+  const store = adapter
   appStore.setState((s) => ({ save: { ...s.save, status: 'saving' } }))
   inFlight++
   try {
-    const savedAt = new Date().toISOString()
-    await adapter.save({ ...db, savedAt } as Persisted)
-    clearPending(savedAt)
-    appStore.setState({ save: { status: 'saved', lastSavedAt: savedAt } })
+    await withDbLock(async () => {
+      // Always save the latest state (the scheduled copy may be a moment old).
+      let db = appStore.getState().db
+      if (savedElsewhere()) {
+        const raw = await store.load()
+        const stored = raw ? validateDatabase(raw, { strict: false }) : null
+        if (stored?.ok) {
+          delete (stored.db as Persisted).savedAt
+          db = mergeDatabases(db, stored.db).db
+          applyingExternal = true
+          appStore.setState({ db })
+          applyingExternal = false
+        }
+        otherTabSaved = false
+      }
+      const savedAt = new Date().toISOString()
+      await store.save({ ...db, savedAt } as Persisted)
+      lastSyncedAt = savedAt
+      writeStamp(savedAt)
+      clearPending(savedAt)
+    })
+    appStore.setState({ save: { status: 'saved', lastSavedAt: lastSyncedAt } })
     channel?.postMessage({ type: 'saved', from: TAB_ID })
   } catch (e) {
     appStore.setState((s) => ({ save: { ...s.save, status: 'error', error: (e as Error).message } }))
@@ -111,6 +173,7 @@ async function reloadFromStorage() {
   if (!raw) return
   const result = validateDatabase(raw, { strict: false })
   if (!result.ok) return
+  lastSyncedAt = (raw as Persisted).savedAt ?? lastSyncedAt
   delete (result.db as Persisted).savedAt
   applyingExternal = true
   appStore.getState().replaceDatabase(result.db)
@@ -140,6 +203,8 @@ export async function initPersistence(options: InitOptions = {}): Promise<void> 
     return
   }
 
+  lastSyncedAt = (raw as Persisted | null)?.savedAt ?? ''
+
   // Recover a change that was stashed while a previous page closed, if it is
   // newer than the copy IndexedDB managed to store.
   const pending = readPending()
@@ -149,6 +214,7 @@ export async function initPersistence(options: InitOptions = {}): Promise<void> 
       raw = pending.db
       try {
         await adapter.save({ ...(pending.db as Database), savedAt: pending.at } as Persisted)
+        lastSyncedAt = pending.at
       } catch {
         // Will be saved on the next change.
       }
@@ -157,6 +223,7 @@ export async function initPersistence(options: InitOptions = {}): Promise<void> 
   }
 
   let notice: string | undefined
+  let quarantined = false
   if (raw === null) {
     applyingExternal = true
     appStore.getState().replaceDatabase(createEmptyDatabase())
@@ -180,6 +247,7 @@ export async function initPersistence(options: InitOptions = {}): Promise<void> 
         data: raw as Database,
       })
       notice = `${result.rejected.length} record(s) could not be read and were set aside. An exact copy of the original data is in Settings → Data → Backups.`
+      quarantined = true
     }
     delete (result.db as Persisted).savedAt
     applyingExternal = true
@@ -194,6 +262,9 @@ export async function initPersistence(options: InitOptions = {}): Promise<void> 
     if (state.db === prev.db || applyingExternal || state.loadError) return
     scheduleSave(state.db)
   })
+  // Unreadable records were set aside (a copy is in Backups): store the cleaned
+  // data now, or every launch would set them aside — and back up — again.
+  if (quarantined) scheduleSave(appStore.getState().db)
 
   if (typeof window !== 'undefined') {
     if (!pageListenersAttached) {
@@ -209,8 +280,10 @@ export async function initPersistence(options: InitOptions = {}): Promise<void> 
       channel = new BroadcastChannel('life-os')
       channel.onmessage = (event) => {
         const msg = event.data as { type?: string; from?: string }
-        // If this tab has its own unsaved change, it will save and notify the other tab instead.
-        if (msg?.type === 'saved' && msg.from !== TAB_ID && !scheduleSave.pending()) void reloadFromStorage()
+        if (msg?.type !== 'saved' || msg.from === TAB_ID) return
+        // With a change of its own on the way, this tab merges the other tab's copy when it saves.
+        if (scheduleSave.pending() || inFlight > 0) otherTabSaved = true
+        else void reloadFromStorage()
       }
     }
   }
@@ -242,4 +315,6 @@ export function teardownPersistence() {
   channel?.close()
   channel = null
   adapter = null
+  lastSyncedAt = ''
+  otherTabSaved = false
 }

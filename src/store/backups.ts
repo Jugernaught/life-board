@@ -44,7 +44,8 @@ export async function pruneAutoBackups(keep: number): Promise<number> {
   return stale.length
 }
 
-export async function restoreBackup(id: string): Promise<void> {
+/** Restore a backup. Returns how many of its records couldn't be read and were left out (say so to the person). */
+export async function restoreBackup(id: string): Promise<{ rejected: number }> {
   const backup = await getBackup(id)
   if (!backup) throw new Error('Backup not found')
   const result = validateDatabase(backup.data, { strict: false })
@@ -52,6 +53,19 @@ export async function restoreBackup(id: string): Promise<void> {
   await createBackup('pre-restore', `Before restoring backup from ${new Date(backup.createdAt).toLocaleString()}`)
   appStore.getState().replaceDatabase(result.db)
   flushSave()
+  return { rejected: result.rejected.length }
+}
+
+/**
+ * Preferences about this device rather than your data: an import from another
+ * device (or browser) shouldn't change how this one looks and behaves.
+ */
+export const DEVICE_PREFERENCES = ['sidebarCollapsed', 'textScale', 'motion', 'reduceTransparency', 'effects'] as const
+
+export function keepDevicePreferences(incoming: Database['settings'], current: Database['settings']): Database['settings'] {
+  const out = { ...incoming }
+  for (const k of DEVICE_PREFERENCES) (out as Record<string, unknown>)[k] = current[k]
+  return out
 }
 
 export function downloadJson(filename: string, value: unknown) {
@@ -110,10 +124,11 @@ export async function inspectImportFile(file: File): Promise<ValidationResult & 
 
 export type ImportMode = 'replace' | 'merge'
 
-export async function applyImport(incoming: Database, mode: ImportMode): Promise<{ added?: number; updated?: number }> {
+export async function applyImport(incoming: Database, mode: ImportMode): Promise<{ added?: number; updated?: number; removed?: number }> {
   await createBackup('pre-import', mode === 'replace' ? 'Before replacing data with an import' : 'Before merging an import')
   if (mode === 'replace') {
-    appStore.getState().replaceDatabase({ ...incoming, settings: { ...incoming.settings, onboarded: true } })
+    const current = appStore.getState().db.settings
+    appStore.getState().replaceDatabase({ ...incoming, settings: { ...keepDevicePreferences(incoming.settings, current), onboarded: true } })
     flushSave()
     return {}
   }
@@ -121,7 +136,7 @@ export async function applyImport(incoming: Database, mode: ImportMode): Promise
   const merged = mergeDatabases(current, incoming)
   appStore.getState().replaceDatabase({ ...merged.db, settings: current.settings })
   flushSave()
-  return { added: merged.added, updated: merged.updated }
+  return { added: merged.added, updated: merged.updated, removed: merged.removed }
 }
 
 /** Erase all records (and optionally settings) after taking a safety backup. */

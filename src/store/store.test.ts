@@ -99,7 +99,7 @@ describe('undo history and repeating tasks', () => {
     s().update('tasks', t.id, { title: 'Write the report' })
     s().update('tasks', t.id, { status: 'done' })
     expect(s().db.tasks[0].status).toBe('done')
-    expect(s().undoLast()?.kind).toBe('update')
+    expect(s().undoLast()?.change.kind).toBe('update')
     expect(s().db.tasks[0]).toMatchObject({ status: 'todo', title: 'Write the report' })
     s().undoLast()
     expect(s().db.tasks[0].title).toBe('Write report')
@@ -152,5 +152,79 @@ describe('undo history and repeating tasks', () => {
     const token = s().remove('tasks', t.id)!
     s().undo(token)
     expect(s().history.some((c) => c.kind === 'delete')).toBe(false)
+  })
+})
+
+describe('revisions, deletion markers and safe undo', () => {
+  it('counts revisions and remembers deletions until they are undone', () => {
+    const s = fresh()
+    const t = s().create('tasks', { title: 'Plan trip' })
+    expect(t.rev).toBe(1)
+    expect(s().update('tasks', t.id, { title: 'Plan the trip' })?.rev).toBe(2)
+    s().remove('tasks', t.id)
+    expect(s().db.deletions).toEqual([expect.objectContaining({ key: 'tasks', id: t.id, rev: 2 })])
+    s().undoLast()
+    // Restoring is a new revision, above the deletion's — and the marker is gone.
+    expect(s().db.tasks[0]).toMatchObject({ id: t.id, title: 'Plan the trip', rev: 3 })
+    expect(s().db.deletions).toEqual([])
+  })
+
+  it('refuses to undo a change once the record has been changed again, without losing anything', () => {
+    const s = fresh()
+    const t = s().create('tasks', { title: 'Draft' })
+    s().update('tasks', t.id, { title: 'Draft v2' })
+    const titleChange = s().history.at(-1)!
+    s().update('tasks', t.id, { status: 'done' })
+    // Undoing the older title change would overwrite the completion: refused, nothing changes.
+    expect(s().undoChange(titleChange.id)).toBe(false)
+    expect(s().db.tasks[0]).toMatchObject({ title: 'Draft v2', status: 'done' })
+    // Newest first still works, step by step, all the way back to before it was added.
+    expect(s().undoLast()).toMatchObject({ undone: true })
+    expect(s().db.tasks[0]).toMatchObject({ title: 'Draft v2', status: 'todo' })
+    expect(s().undoLast()).toMatchObject({ undone: true })
+    expect(s().db.tasks[0].title).toBe('Draft')
+    expect(s().undoLast()).toMatchObject({ undone: true, change: expect.objectContaining({ kind: 'create' }) })
+    expect(s().db.tasks).toHaveLength(0)
+    expect(s().db.deletions.map((m) => m.id)).toEqual([t.id])
+  })
+
+  it('refuses to undo adding a record that was edited since, and drops the stale step', () => {
+    const s = fresh()
+    const n = s().create('notes', { title: 'Idea', body: '' })
+    const add = s().history.at(-1)!
+    s().update('notes', n.id, { body: 'Worked on it' }, { action: 'updated' })
+    expect(s().undoChange(add.id)).toBe(false)
+    expect(s().db.notes).toHaveLength(1)
+    // The repeating-task copy starts fresh at revision 1.
+    const r = s().create('tasks', { title: 'Water plants', repeat: { freq: 'daily', interval: 1, days: [] }, dueDate: '2026-11-05' })
+    s().update('tasks', r.id, { status: 'done' })
+    expect(s().db.tasks.find((x) => x.id !== r.id && x.title === 'Water plants')?.rev).toBe(1)
+  })
+})
+
+describe('completion rules apply on every path', () => {
+  it('library items and courses get (and lose) their finished date wherever they are changed', () => {
+    const s = fresh()
+    const today = new Date().toISOString().slice(0, 10)
+    const book = s().create('media', { title: 'Deep Work', status: 'in_progress' })
+    expect(book.completedDate).toBeUndefined()
+    expect(s().update('media', book.id, { status: 'completed' })?.completedDate).toBe(today)
+    // A date you chose is kept; abandoning keeps it; going back to "want" clears it.
+    expect(s().update('media', book.id, { completedDate: '2026-10-01' })?.completedDate).toBe('2026-10-01')
+    expect(s().update('media', book.id, { status: 'abandoned' })?.completedDate).toBe('2026-10-01')
+    expect(s().update('media', book.id, { status: 'want' })?.completedDate).toBeUndefined()
+    const course = s().create('learningCourses', { title: 'TypeScript', status: 'completed' })
+    expect(course.completedDate).toBe(today)
+    expect(s().update('learningCourses', course.id, { status: 'in_progress' })?.completedDate).toBeUndefined()
+  })
+
+  it('completing a goal records 100% in its history once', () => {
+    const s = fresh()
+    const g = s().create('goals', { title: 'Run 10k', progress: 40 })
+    const done = s().update('goals', g.id, { status: 'completed' })!
+    expect(done.history.at(-1)?.progress).toBe(100)
+    // Same day: a second change collapses into that point rather than adding another.
+    const again = s().update('goals', g.id, { description: 'Done in 58 min' })!
+    expect(again.history.filter((h) => h.progress === 100)).toHaveLength(1)
   })
 })

@@ -38,7 +38,7 @@ export function defaultSettings(): Settings {
 }
 
 export function createEmptyDatabase(): Database {
-  const db = { schemaVersion: SCHEMA_VERSION, settings: defaultSettings(), activity: [] } as unknown as Database
+  const db = { schemaVersion: SCHEMA_VERSION, settings: defaultSettings(), activity: [], deletions: [] } as unknown as Database
   for (const key of COLLECTION_KEYS) (db as unknown as Record<string, unknown[]>)[key] = []
   return db
 }

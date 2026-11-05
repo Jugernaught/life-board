@@ -141,3 +141,50 @@ describe('backups, import and reset', () => {
     expect(backups.find((b) => b.reason === 'pre-reset')?.recordCount).toBe(1)
   })
 })
+
+describe('several tabs, imports and restores', () => {
+  it('merges another tab’s save instead of overwriting it', async () => {
+    const adapter = new MemoryAdapter()
+    await initPersistence({ adapter })
+    appStore.getState().create('tasks', { title: 'Saved here' })
+    flushSave()
+    await tick()
+    // Another tab adds a task and saves the whole database (it never saw ours yet).
+    const theirs = { ...createEmptyDatabase(), tasks: [make('tasks', { title: 'Saved in the other tab', rev: 1 })], savedAt: '2999-01-01T00:00:00.000Z' }
+    await adapter.save(theirs as never)
+    localStorage.setItem('life-os:save-stamp', JSON.stringify({ tab: 'other-tab', savedAt: '2999-01-01T00:00:00.000Z' }))
+    // This tab makes its own change and saves: both tabs' work survives.
+    appStore.getState().create('tasks', { title: 'Then this' })
+    flushSave()
+    await tick()
+    await tick()
+    const saved = (await adapter.load()) as ReturnType<typeof createEmptyDatabase>
+    expect(saved.tasks.map((t) => t.title).sort()).toEqual(['Saved here', 'Saved in the other tab', 'Then this'])
+    expect(appStore.getState().db.tasks).toHaveLength(3)
+  })
+
+  it('saves the cleaned data once after setting unreadable records aside', async () => {
+    const adapter = new MemoryAdapter({ ...createEmptyDatabase(), tasks: [make('tasks', { title: 'good' }), { id: 'bad' }] })
+    await initPersistence({ adapter })
+    flushSave()
+    await tick()
+    expect(((await adapter.load()) as ReturnType<typeof createEmptyDatabase>).tasks).toHaveLength(1)
+  })
+
+  it('a replace-import keeps this device’s display preferences', async () => {
+    await initPersistence({ adapter: new MemoryAdapter() })
+    appStore.getState().updateSettings({ textScale: 110, sidebarCollapsed: true, displayName: 'Here' })
+    const incoming = { ...createEmptyDatabase(), settings: { ...createEmptyDatabase().settings, textScale: 125 as const, sidebarCollapsed: false, displayName: 'There' } }
+    await applyImport(incoming, 'replace')
+    const s = appStore.getState().db.settings
+    expect(s).toMatchObject({ textScale: 110, sidebarCollapsed: true, displayName: 'There', onboarded: true })
+  })
+
+  it('restoring a backup reports records it had to leave out', async () => {
+    const adapter = new MemoryAdapter()
+    await initPersistence({ adapter })
+    await adapter.putBackup({ id: 'b1', createdAt: new Date().toISOString(), reason: 'manual', sizeBytes: 1, recordCount: 2, data: { ...createEmptyDatabase(), tasks: [make('tasks', { title: 'ok' }), { id: 'broken' }] } as never })
+    expect(await restoreBackup('b1')).toEqual({ rejected: 1 })
+    expect(appStore.getState().db.tasks.map((t) => t.title)).toEqual(['ok'])
+  })
+})

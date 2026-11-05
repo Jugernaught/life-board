@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { make } from '@/test/factories'
 import { createEmptyDatabase, normaliseSettings } from './defaults'
 import { SCHEMA_VERSION, WIDGET_IDS } from './schema'
-import { makeBackupFile, mergeDatabases, unwrapBackup, validateDatabase } from './validate'
+import { ACTIVITY_LIMIT, makeBackupFile, mergeDatabases, mergeDeletions, unwrapBackup, validateDatabase } from './validate'
 
 describe('validateDatabase', () => {
   it('accepts an empty database and a wrapped backup file', () => {
@@ -85,5 +85,45 @@ describe('normaliseSettings robustness', () => {
     expect(s.currency).toBe('GBP')
     expect(s.theme).toBe('dark')
     expect(s.displayName).toBe('Kai')
+  })
+})
+
+describe('merging by revision, with deletions', () => {
+  const at = (h: number) => `2026-11-05T${String(h).padStart(2, '0')}:00:00.000Z`
+
+  it('prefers the higher revision even when that device’s clock is behind', () => {
+    const id = 'task-1'
+    const a = { ...createEmptyDatabase(), tasks: [make('tasks', { id, title: 'Edited twice here', rev: 3, updatedAt: at(9) })] }
+    // The other copy claims a later time (clock running fast) but saw fewer edits.
+    const b = { ...createEmptyDatabase(), tasks: [make('tasks', { id, title: 'Edited once there', rev: 2, updatedAt: at(18) })] }
+    expect(mergeDatabases(a, b).db.tasks[0].title).toBe('Edited twice here')
+    expect(mergeDatabases(b, a).db.tasks[0].title).toBe('Edited twice here')
+    // Equal revisions (or old data without them) fall back to the later edit.
+    const c = { ...createEmptyDatabase(), tasks: [make('tasks', { id, title: 'Later', updatedAt: at(12) })] }
+    const d = { ...createEmptyDatabase(), tasks: [make('tasks', { id, title: 'Earlier', updatedAt: at(10) })] }
+    expect(mergeDatabases(d, c).db.tasks[0].title).toBe('Later')
+  })
+
+  it('keeps deleted records deleted, unless they were edited after the deletion', () => {
+    const gone = make('tasks', { id: 'gone', title: 'Deleted here', rev: 2 })
+    const editedLater = make('tasks', { id: 'kept', title: 'Edited there after deletion', rev: 4 })
+    const here = { ...createEmptyDatabase(), deletions: [{ key: 'tasks', id: 'gone', rev: 2, at: new Date().toISOString() }, { key: 'tasks', id: 'kept', rev: 3, at: new Date().toISOString() }] }
+    const there = { ...createEmptyDatabase(), tasks: [gone, editedLater] }
+    const r = mergeDatabases(here, there)
+    expect(r.db.tasks.map((t) => t.id)).toEqual(['kept'])
+    expect(r.removed).toBe(1)
+    // The deletion that lost is forgotten; the one that won is kept (and travels with the data).
+    expect(r.db.deletions.map((m) => m.id)).toEqual(['gone'])
+    expect(mergeDatabases(there, here).db.tasks.map((t) => t.id)).toEqual(['kept'])
+  })
+
+  it('combines deletion lists, forgets very old ones, and caps the merged activity log', () => {
+    const old = { key: 'notes', id: 'n', rev: 1, at: '2020-01-01T00:00:00.000Z' }
+    const recent = { key: 'notes', id: 'm', rev: 1, at: new Date().toISOString() }
+    expect(mergeDeletions([old], [recent]).map((m) => m.id)).toEqual(['m'])
+    const many = Array.from({ length: ACTIVITY_LIMIT + 50 }, (_, i) => ({ id: `a${i}`, at: new Date(Date.UTC(2026, 0, 1, 0, i)).toISOString(), action: 'created', collection: 'tasks', entityId: 'x', label: 'x' }))
+    const a = { ...createEmptyDatabase(), activity: many.slice(0, 2000) } as never
+    const b = { ...createEmptyDatabase(), activity: many.slice(2000) } as never
+    expect(mergeDatabases(a, b).db.activity).toHaveLength(ACTIVITY_LIMIT)
   })
 })

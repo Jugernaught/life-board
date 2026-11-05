@@ -31,8 +31,22 @@ export function onCreate<K extends CollectionKey>(key: K, record: Collections[K]
     case 'careerMilestones':
       if (r.done && !r.doneAt) r.doneAt = now
       break
+    case 'media':
+    case 'learningCourses':
+      finishedDate(key, r)
+      break
   }
   return r as Collections[K]
+}
+
+/**
+ * Library items and courses carry the day they were finished. Set it when
+ * they're marked completed (keeping a date you chose), clear it when they go
+ * back to "want to" — the same rule the forms use, so every path agrees.
+ */
+function finishedDate(key: 'media' | 'learningCourses', r: AnyRecord) {
+  if (r.status === 'completed') r.completedDate = r.completedDate ?? todayISO()
+  else if (key === 'learningCourses' || r.status === 'want') r.completedDate = undefined
 }
 
 export function onUpdate<K extends CollectionKey>(
@@ -69,6 +83,7 @@ export function onUpdate<K extends CollectionKey>(
     case 'goals': {
       completion('status', (v) => v === 'completed', 'completedAt')
       const progressChanged =
+        p.status !== r.status ||
         p.progress !== r.progress ||
         p.currentValue !== r.currentValue ||
         JSON.stringify(p.milestones) !== JSON.stringify(r.milestones)
@@ -103,6 +118,14 @@ export function onUpdate<K extends CollectionKey>(
       break
     case 'careerMilestones':
       completion('done', (v) => v === true, 'doneAt')
+      break
+    case 'media':
+    case 'learningCourses':
+      if (p.status !== r.status) {
+        finishedDate(key, r)
+        if (r.status === 'completed') action = 'completed'
+        else if (p.status === 'completed') action = 'reopened'
+      }
       break
   }
   return { record: r as Collections[K], action, detail }

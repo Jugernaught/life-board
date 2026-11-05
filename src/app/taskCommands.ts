@@ -15,8 +15,9 @@ import type { FormContext } from '@/forms/types'
 const lastChangeId = () => appStore.getState().history.at(-1)?.id
 
 const undoAll = (ids: (string | undefined)[]) => () => {
-  // Newest first so each record goes back to exactly where it was.
-  for (const id of [...ids].reverse()) if (id) actions.undoChange(id)
+  // Newest first so each record goes back to exactly where it was; one notice if any had changed since.
+  const results = [...ids].reverse().map((id) => (id ? actions.undoChange(id) : true))
+  if (results.includes(false)) toast({ title: 'Some changes couldn’t be undone', description: 'They were changed again since — nothing newer was overwritten.', tone: 'warning' })
 }
 
 export function reschedule(task: Task, date: string | undefined, today: string) {
