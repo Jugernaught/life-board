@@ -19,7 +19,9 @@
     "test:e2e": "playwright test",
     "check": "npm run typecheck && npm run lint && npm run test",
     "test:all": "npm run check && npm run test:e2e",
-    "icons": "node scripts/generate-icons.mjs"
+    "icons": "node scripts/generate-icons.mjs",
+    "seed:build": "node scripts/build-seed.mjs",
+    "seed:validate": "vitest run scripts/validate-seed.test.ts"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.3.0",

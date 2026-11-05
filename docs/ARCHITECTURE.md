@@ -73,7 +73,7 @@ The app used to be called LIFE OS, and everything it stored was named `life-os`.
 | localStorage keys | `life-os:*` | `atlas:*` | `migrateLegacyLocalStorage` (`src/storage/brand.ts`), run at the top of both entry points and again by `createStorage`. Removes the old key first so a near-quota value still fits, and puts it back if the write fails. An existing `atlas:*` value always wins. The pre-paint theme scripts in `index.html`/`m/index.html` read either name. |
 | Backup files | `"app": "life-os"`, `life-os-backup-*.json` | `"app": "atlas"`, `atlas-backup-*.json` | `unwrapBackup` accepts both ids (`LEGACY_BACKUP_APP_IDS`). |
 | iPhone offline cache | `life-os-m-*` | `atlas-m-*` | The service worker deletes old caches of either name. |
-| Desktop profile folder / origin | `%APPDATA%\LIFE OS`, `app://life-os` | `%APPDATA%\ATLAS`, `app://atlas` | `electron/profile.cjs`: an install that already has a LIFE OS profile keeps using that folder *and* origin (changing either would hide the data); inside it the web-side moves above apply. |
+| Desktop profile folder / origin | `%APPDATA%\LIFE OS` (or `%APPDATA%\life-os` from an interim build), `app://life-os` | `%APPDATA%\ATLAS`, `app://atlas` | `electron/profile.cjs`: an install that already has a LIFE OS profile keeps using that folder *and* origin (changing either would hide the data); inside it the web-side moves above apply. |
 | Windows `appId` | `app.lifeos.desktop` | unchanged | Kept on purpose: it identifies the installed app, so the ATLAS installer upgrades LIFE OS in place instead of installing beside it. Never shown to users. |
 
 Covered by `src/storage/brand.test.ts`, `electron/profile.test.ts` and `e2e/rename.spec.ts` (seeds a real browser with LIFE OS-era storage and opens ATLAS).

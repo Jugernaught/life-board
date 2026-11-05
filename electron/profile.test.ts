@@ -25,6 +25,15 @@ describe('desktop profile across the LIFE OS → ATLAS rename', () => {
     }
   })
 
+  it('upgrade from a build that pinned %APPDATA%\\life-os: keeps that folder', () => {
+    expect(resolveProfile(APPDATA, fsWith('life-os', path.join('life-os', 'IndexedDB')))).toEqual({ userData: path.join(APPDATA, 'life-os'), host: 'life-os', legacy: true })
+  })
+
+  it('when both legacy folders exist, the one holding data wins', () => {
+    expect(resolveProfile(APPDATA, fsWith('life-os', 'LIFE OS', path.join('LIFE OS', 'Local Storage'))).userData).toBe(path.join(APPDATA, 'LIFE OS'))
+    expect(resolveProfile(APPDATA, fsWith('life-os', 'LIFE OS', path.join('life-os', 'IndexedDB'))).userData).toBe(path.join(APPDATA, 'life-os'))
+  })
+
   it('an empty ATLAS folder (e.g. created by a crash log) does not hide LIFE OS data', () => {
     expect(resolveProfile(APPDATA, fsWith('LIFE OS', 'ATLAS')).host).toBe('life-os')
   })
