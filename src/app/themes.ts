@@ -1,5 +1,5 @@
 /**
- * The theme registry: every visual style Atlas offers, and how settings
+ * The theme registry: every visual style ATLAS offers, and how settings
  * resolve to the attributes the CSS tokens key off.
  *
  *   <html data-style="glass" data-theme="light" data-accent="blue"
@@ -63,7 +63,7 @@ export const THEMES: readonly ThemeMeta[] = [
     id: 'cyber',
     name: 'Cyberpunk',
     tagline: 'Neon, HUD, after dark',
-    description: 'The original cyberpunk identity: neon cyan, electric violet and magenta over a dark grid.',
+    description: 'ATLAS’s original look: neon cyan, electric violet and magenta over a dark grid.',
     modes: ['dark'],
     accents: [
       { id: 'cyan', label: 'Cyan' },

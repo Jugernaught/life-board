@@ -19,7 +19,7 @@ export function ProjectCard({ project, tasks, today, draggable, compact }: { pro
     <article
       draggable={draggable}
       onDragStart={(e) => {
-        e.dataTransfer.setData('text/life-os-project', project.id)
+        e.dataTransfer.setData('text/atlas-project', project.id)
         e.dataTransfer.effectAllowed = 'move'
       }}
       className={cn('panel group relative flex cursor-pointer flex-col overflow-hidden p-4 transition-[border-color,transform] duration-200 hover:-translate-y-0.5 hover:border-line-strong', draggable && 'active:cursor-grabbing')}

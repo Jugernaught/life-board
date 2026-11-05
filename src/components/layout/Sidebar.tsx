@@ -21,8 +21,8 @@ export function Logo({ collapsed }: { collapsed?: boolean }) {
             </linearGradient>
           </defs>
           <path d="M8 2h20l6 6v20l-6 6H8l-6-6V8z" fill="none" stroke="url(#logo-g)" strokeWidth="1.5" />
-          <path d="M10.5 27 L18 9 L25.5 27 M13.6 20.5h8.8" fill="none" stroke="var(--color-accent)" strokeWidth="2.4" strokeLinecap="square" strokeLinejoin="miter" />
-          <circle cx="27" cy="10" r="2.2" fill="var(--color-accent-3)" />
+          <path d="M11.5 27 18 9.5 24.5 27M13.7 21.2h8.6" fill="none" stroke="var(--color-accent)" strokeWidth="2.4" strokeLinejoin="miter" />
+          <circle cx="25.5" cy="10.5" r="2.2" fill="var(--color-accent-3)" />
         </svg>
         <div className="absolute inset-1 rounded-md bg-accent/10 blur-md" />
       </div>
@@ -33,17 +33,17 @@ export function Logo({ collapsed }: { collapsed?: boolean }) {
         aria-hidden
       >
         <svg viewBox="0 0 36 36" className="size-6">
-          <path d="M11 26.5 L18 9.5 L25 26.5 M13.9 20.5h8.2" fill="none" stroke="#fff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="27" cy="10" r="2.4" fill="#fff" opacity="0.9" />
+          <path d="M11.5 26.5 18 10l6.5 16.5M14.2 20.8h7.6" fill="none" stroke="#fff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="26" cy="11" r="2.6" fill="#fff" opacity="0.9" />
         </svg>
       </div>
       {!collapsed && (
         <div className="min-w-0 leading-none">
           <p className="cyber-only font-display text-[17px] font-bold tracking-[0.12em] text-ink">
-            <span className="text-accent">A</span>TLAS
+            ATLAS<span className="text-accent">//</span>
           </p>
           <p className="cyber-only mt-1 font-mono text-[9.5px] tracking-[0.2em] text-ink-subtle">PERSONAL SYSTEM</p>
-          <p className="not-cyber title text-[15.5px] font-semibold text-ink">Atlas</p>
+          <p className="not-cyber title text-[15.5px] font-semibold text-ink">ATLAS</p>
           <p className="not-cyber mt-0.5 text-[11.5px] text-ink-subtle">Personal system</p>
         </div>
       )}

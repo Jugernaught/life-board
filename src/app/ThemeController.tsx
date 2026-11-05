@@ -2,6 +2,7 @@ import { type ReactNode, useEffect, useState } from 'react'
 import { MotionConfig } from 'framer-motion'
 import { useSettings } from '@/store/store'
 import { applyAppearance, resolveAppearance } from './themes'
+import { storageKey } from '@/storage/brand'
 
 export function useSystemDark() {
   const [dark, setDark] = useState(() => typeof window === 'undefined' || !window.matchMedia || window.matchMedia('(prefers-color-scheme: dark)').matches)
@@ -21,7 +22,7 @@ export function ThemeController({ children }: { children: ReactNode }) {
   const systemDark = useSystemDark()
   const a = resolveAppearance(s, s.theme, systemDark)
   useEffect(() => {
-    applyAppearance(document.documentElement, a, { storageKey: 'life-os:appearance', modePref: s.theme })
+    applyAppearance(document.documentElement, a, { storageKey: storageKey('appearance'), modePref: s.theme })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [a.style, a.mode, a.accent, a.motion, a.transparency, a.effects, s.theme])
   return <MotionConfig reducedMotion={s.motion === 'reduced' ? 'always' : s.motion === 'full' ? 'never' : 'user'}>{children}</MotionConfig>

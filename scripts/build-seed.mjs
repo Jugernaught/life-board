@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Build an Atlas backup file from a hand-written profile.
+ * Build an ATLAS backup file from a hand-written profile.
  *
  *   node scripts/build-seed.mjs [--in private/profile.json] [--out private/atlas-seed.json] [--today YYYY-MM-DD]
  *
- * The output is an ordinary Atlas backup, so it is loaded through the app's
+ * The output is an ordinary ATLAS backup, so it is loaded through the app's
  * normal Settings → Data & backups → Import flow, which validates every record
  * first. Nothing here runs inside the app, and the app never loads it on its
  * own: a new install still starts empty.
@@ -251,7 +251,7 @@ function money(minor, currency) {
 const joinNotes = (...parts) => parts.filter(Boolean).join('\n') || undefined
 
 /**
- * Turn a profile object into an Atlas backup file.
+ * Turn a profile object into an ATLAS backup file.
  *
  * @param {object} profile  Parsed profile JSON (see README → "Preloading your own data").
  * @param {{ now?: Date, today?: string }} [options]  `now` sets record timestamps; `today` (YYYY-MM-DD) anchors "next payment" dates. Both default to the current time.
@@ -682,7 +682,7 @@ export function buildSeed(profile, options = {}) {
   const counts = {}
   for (const [k, v] of Object.entries(data)) if (Array.isArray(v) && k !== 'activity') counts[k] = v.length
   return {
-    backup: { app: 'life-os', kind: 'backup', exportedAt: stamp, schemaVersion: SEED_SCHEMA_VERSION, data },
+    backup: { app: 'atlas', kind: 'backup', exportedAt: stamp, schemaVersion: SEED_SCHEMA_VERSION, data },
     summary: { counts, warnings },
   }
 }

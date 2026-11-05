@@ -1,5 +1,5 @@
 /**
- * Shared chart building blocks so every chart in Atlas reads the same:
+ * Shared chart building blocks so every chart in ATLAS reads the same:
  * a validated colour-blind-safe series palette, recessive grid and axes,
  * an HTML legend, a branded tooltip, and a table view for every chart.
  */

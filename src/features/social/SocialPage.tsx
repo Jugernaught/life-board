@@ -51,7 +51,7 @@ function PeopleTab({ today }: { today: string }) {
         <EmptyState
           icon={Users}
           title="No one added yet"
-          description="Add people you want to stay in touch with and how often. A first name is enough — Atlas deliberately avoids storing sensitive details about others."
+          description="Add people you want to stay in touch with and how often. A first name is enough — ATLAS deliberately avoids storing sensitive details about others."
           action={<Button variant="primary" icon={Plus} onClick={() => editor.create('people')}>Add person</Button>}
         />
       </Panel>

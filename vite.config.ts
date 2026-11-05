@@ -18,7 +18,7 @@ const r = (p: string) => fileURLToPath(new URL(p, import.meta.url))
  */
 function mobileServiceWorker(): Plugin {
   return {
-    name: 'life-os-mobile-sw',
+    name: 'atlas-mobile-sw',
     apply: 'build',
     enforce: 'post',
     generateBundle(_options, bundle) {
@@ -46,8 +46,8 @@ function mobileServiceWorker(): Plugin {
 }
 
 function serviceWorkerSource(version: string, precache: string[], base: string) {
-  return `/* Atlas for iPhone — service worker (generated at build time) */
-const CACHE = 'life-os-m-${version}'
+  return `/* ATLAS for iPhone — service worker (generated at build time) */
+const CACHE = 'atlas-m-${version}'
 const PRECACHE = ${JSON.stringify(precache)}
 const BASE = ${JSON.stringify(base)}
 
@@ -58,7 +58,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('life-os-m-') && k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => (k.startsWith('atlas-m-') || k.startsWith('life-os-m-')) && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim()),
   )
 })

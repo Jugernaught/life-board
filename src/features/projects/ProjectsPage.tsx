@@ -67,7 +67,7 @@ export default function ProjectsPage() {
           <EmptyState
             icon={FolderKanban}
             title="No projects yet"
-            description="Create a project for a business idea, side project or experiment. Add tasks and milestones and Atlas will track progress for you."
+            description="Create a project for a business idea, side project or experiment. Add tasks and milestones and ATLAS will track progress for you."
             action={
               <Button variant="primary" icon={Plus} onClick={() => editor.create('projects')}>
                 Create your first project
@@ -143,7 +143,7 @@ export default function ProjectsPage() {
                     onDrop={(e) => {
                       e.preventDefault()
                       setDropTarget(null)
-                      const id = e.dataTransfer.getData('text/life-os-project')
+                      const id = e.dataTransfer.getData('text/atlas-project')
                       if (id) actions.update('projects', id, { status: s.value })
                     }}
                     className={`rounded-[var(--radius-panel)] border border-dashed p-2 transition-colors ${dropTarget === s.value ? 'border-accent/60 bg-accent/5' : 'border-line'}`}

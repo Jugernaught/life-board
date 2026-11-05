@@ -277,7 +277,7 @@ test('data: export downloads a backup file; backups can be created', async ({ pa
   const download = page.waitForEvent('download')
   await page.getByTestId('data-export').click()
   const file = await download
-  expect(file.suggestedFilename()).toMatch(/^life-os-backup-\d{4}-\d{2}-\d{2}\.json$/)
+  expect(file.suggestedFilename()).toMatch(/^atlas-backup-\d{4}-\d{2}-\d{2}\.json$/)
   await page.getByTestId('data-backup-now').click()
   await expect(page.getByTestId('m-backup-row').first()).toBeVisible()
 })
@@ -346,7 +346,7 @@ test('recovery: unreadable stored data is never overwritten', async ({ page }) =
   await page.waitForFunction(
     () =>
       new Promise<boolean>((resolve) => {
-        const req = indexedDB.open('life-os', 1)
+        const req = indexedDB.open('atlas', 1)
         req.onsuccess = () => {
           const get = req.result.transaction('state').objectStore('state').get('database')
           get.onsuccess = () => resolve((get.result as { settings?: { onboarded?: boolean } } | undefined)?.settings?.onboarded === true)
@@ -355,21 +355,24 @@ test('recovery: unreadable stored data is never overwritten', async ({ page }) =
         req.onerror = () => resolve(false)
       }),
   )
-  // Leave the app before corrupting the data. While the app runs, a save can
-  // still be queued; on reload it would be stashed and (correctly) restored
-  // over the corruption, making this test flaky. A static same-origin page
-  // runs no app code, so nothing can write after this point.
-  await page.goto('/m/manifest.webmanifest')
+  // Corrupt storage from a blank page on the same origin, after the app has
+  // unloaded. Doing it under the running app races its own saves: a late
+  // debounced save, or the page-hide flush and write-ahead slot on reload,
+  // would rightly put the newer good data back and the test would flake.
+  await page.route('**/__blank', (route) => route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>blank</title>' }))
+  await page.goto('/__blank')
   await page.evaluate(
     () =>
       new Promise<void>((resolve, reject) => {
-        // Corrupted data with no newer unsaved change waiting to be restored.
-        localStorage.removeItem('life-os:pending-save')
-        const req = indexedDB.open('life-os', 1)
+        localStorage.removeItem('atlas:pending-save')
+        const req = indexedDB.open('atlas', 1)
         req.onsuccess = () => {
           const tx = req.result.transaction('state', 'readwrite')
-          tx.objectStore('state').put('this is not a LIFE OS database', 'database')
-          tx.oncomplete = () => resolve()
+          tx.objectStore('state').put('this is not an ATLAS database', 'database')
+          tx.oncomplete = () => {
+            req.result.close()
+            resolve()
+          }
           tx.onerror = () => reject(tx.error)
         }
         req.onerror = () => reject(req.error)
@@ -380,14 +383,14 @@ test('recovery: unreadable stored data is never overwritten', async ({ page }) =
   const stillThere = await page.evaluate(
     () =>
       new Promise<unknown>((resolve) => {
-        const req = indexedDB.open('life-os', 1)
+        const req = indexedDB.open('atlas', 1)
         req.onsuccess = () => {
           const get = req.result.transaction('state').objectStore('state').get('database')
           get.onsuccess = () => resolve(get.result)
         }
       }),
   )
-  expect(stillThere).toBe('this is not a LIFE OS database')
+  expect(stillThere).toBe('this is not an ATLAS database')
   errors = errors.filter((e) => !/Could not|invalid|Expected/i.test(e))
 })
 
@@ -415,7 +418,7 @@ test('offline: after the first visit the app opens without a network', async ({ 
     await navigator.serviceWorker.ready
   })
   // Let the service worker finish precaching, then take control on reload.
-  await page.waitForFunction(async () => (await caches.keys()).some((k) => k.startsWith('life-os-m')), null, { timeout: 15000 })
+  await page.waitForFunction(async () => (await caches.keys()).some((k) => k.startsWith('atlas-m')), null, { timeout: 15000 })
   await page.reload()
   await expect(page.getByTestId('tab-today')).toBeVisible()
   await context.setOffline(true)

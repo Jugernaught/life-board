@@ -25,6 +25,7 @@ import { nav } from '../../nav/navigator'
 import { CheckCircle } from '../../ui/controls'
 import { Cell, EmptyRow, Section, SeeAll } from '../../ui/List'
 import { NavButton, Screen } from '../../ui/Screen'
+import { storageKey } from '@/storage/brand'
 
 const isStandalone = () => (navigator as unknown as { standalone?: boolean }).standalone === true || window.matchMedia?.('(display-mode: standalone)').matches
 const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent)
@@ -32,7 +33,7 @@ const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent)
 function InstallHint() {
   const [hidden, setHidden] = useState(() => {
     try {
-      return localStorage.getItem('life-os:m-install-hint') === 'dismissed'
+      return localStorage.getItem(storageKey('m-install-hint')) === 'dismissed'
     } catch {
       return false
     }
@@ -54,7 +55,7 @@ function InstallHint() {
         onClick={() => {
           setHidden(true)
           try {
-            localStorage.setItem('life-os:m-install-hint', 'dismissed')
+            localStorage.setItem(storageKey('m-install-hint'), 'dismissed')
           } catch {
             // Hidden for this session only.
           }

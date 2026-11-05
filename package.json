@@ -2,10 +2,10 @@
   "name": "atlas",
   "private": true,
   "version": "1.0.0",
-  "description": "Atlas \u2014 a private, local-first personal operating system.",
+  "description": "ATLAS — a private, local-first personal operating system.",
   "type": "module",
   "main": "electron/main.cjs",
-  "author": "Atlas",
+  "author": "ATLAS",
   "scripts": {
     "electron:dev": "npm run build && electron .",
     "electron:build": "npm run build && electron-builder --win nsis",
@@ -19,6 +19,7 @@
     "test:e2e": "playwright test",
     "check": "npm run typecheck && npm run lint && npm run test",
     "test:all": "npm run check && npm run test:e2e",
+    "icons": "node scripts/generate-icons.mjs",
     "seed:build": "node scripts/build-seed.mjs",
     "seed:validate": "vitest run scripts/validate-seed.test.ts"
   },
@@ -65,10 +66,10 @@
     "node": ">=20.19"
   },
   "build": {
-    "appId": "app.atlas.desktop",
-    "productName": "Atlas",
+    "appId": "app.lifeos.desktop",
+    "productName": "ATLAS",
     "directories": { "output": "release", "buildResources": "build" },
-    "files": ["dist/**", "electron/**", "build/icon.png", "package.json"],
+    "files": ["dist/**", "electron/**", "!electron/**/*.test.ts", "build/icon.png", "package.json"],
     "win": {
       "target": [{ "target": "nsis", "arch": ["x64"] }],
       "icon": "build/icon.png"

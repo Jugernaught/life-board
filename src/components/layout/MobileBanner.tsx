@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Smartphone, X } from 'lucide-react'
+import { storageKey } from '@/storage/brand'
 
-const KEY = 'life-os:mobile-banner-dismissed'
+const KEY = storageKey('mobile-banner-dismissed')
 
 /** True on phone-sized touch screens (not on a narrow desktop window). */
 export function isPhone(): boolean {

@@ -1,13 +1,13 @@
-# Atlas for iPhone
+# ATLAS for iPhone
 
-A separate, touch-first version of Atlas built for iPhone. It lives at **`/m/`** next to the desktop app (`/`), shares all of its data and logic, and installs on your Home Screen like an app.
+A separate, touch-first version of ATLAS built for iPhone. It lives at **`/m/`** next to the desktop app (`/`), shares all of its data and logic, and installs on your Home Screen like an app.
 
 ## Install it on your iPhone
 
 1. Deploy the app (see the README's *Deploying* section). For a quick try from a computer on the same Wi-Fi, `npm run dev -- --host` prints a network address you can open on the iPhone — but offline support needs a deployed (HTTPS) build.
 2. On your iPhone, open **Safari** and go to `https://<your-site>/m/`.
 3. Tap the **Share** button (square with an up arrow) → **Add to Home Screen** → **Add**.
-4. Open Atlas from its new icon. It runs full-screen, without Safari's toolbars, and works offline after the first visit.
+4. Open ATLAS from its new icon. It runs full-screen, without Safari's toolbars, and works offline after the first visit.
 
 The desktop version shows an *“On a phone? Open the iPhone version”* banner on phones, and Settings → General has an *iPhone version* link.
 

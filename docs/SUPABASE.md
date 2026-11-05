@@ -1,6 +1,6 @@
 # Syncing with Supabase (optional, not active)
 
-Atlas works fully offline. If you want your data on several devices, you can add a cloud backend. This guide describes how to do it with [Supabase](https://supabase.com) without changing any screens.
+ATLAS works fully offline. If you want your data on several devices, you can add a cloud backend. This guide describes how to do it with [Supabase](https://supabase.com) without changing any screens.
 
 > **This requires external configuration** — a Supabase project, user sign-in, and a small amount of code. Nothing here runs until you build it.
 
@@ -13,31 +13,31 @@ A cloud database must know *whose* data it is serving. Without authentication, a
 In the Supabase SQL editor:
 
 ```sql
-create table public.life_os_documents (
+create table public.atlas_documents (
   user_id    uuid primary key references auth.users (id) on delete cascade,
   data       jsonb       not null,
   saved_at   timestamptz not null default now()
 );
 
-alter table public.life_os_documents enable row level security;
+alter table public.atlas_documents enable row level security;
 
-create policy "Owner can read"   on public.life_os_documents for select using (auth.uid() = user_id);
-create policy "Owner can insert" on public.life_os_documents for insert with check (auth.uid() = user_id);
-create policy "Owner can update" on public.life_os_documents for update using (auth.uid() = user_id);
+create policy "Owner can read"   on public.atlas_documents for select using (auth.uid() = user_id);
+create policy "Owner can insert" on public.atlas_documents for insert with check (auth.uid() = user_id);
+create policy "Owner can update" on public.atlas_documents for update using (auth.uid() = user_id);
 
-create table public.life_os_backups (
+create table public.atlas_backups (
   id         uuid primary key,
   user_id    uuid not null references auth.users (id) on delete cascade,
   created_at timestamptz not null,
   meta       jsonb not null,
   data       jsonb not null
 );
-alter table public.life_os_backups enable row level security;
-create policy "Owner manages backups" on public.life_os_backups
+alter table public.atlas_backups enable row level security;
+create policy "Owner manages backups" on public.atlas_backups
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 ```
 
-Storing the whole database as one JSON document matches how Atlas already saves locally and keeps the adapter simple. (A normalised table per collection is possible later if you need server-side queries.)
+Storing the whole database as one JSON document matches how ATLAS already saves locally and keeps the adapter simple. (A normalised table per collection is possible later if you need server-side queries.)
 
 ## 3. Configure the app
 
@@ -70,31 +70,31 @@ export class SupabaseAdapter implements StorageAdapter {
   constructor(private userId: string) {}
 
   async load() {
-    const { data, error } = await supabase.from('life_os_documents').select('data').eq('user_id', this.userId).maybeSingle()
+    const { data, error } = await supabase.from('atlas_documents').select('data').eq('user_id', this.userId).maybeSingle()
     if (error) throw error
     return data?.data ?? null
   }
   async save(db: Database) {
-    const { error } = await supabase.from('life_os_documents').upsert({ user_id: this.userId, data: db, saved_at: new Date().toISOString() })
+    const { error } = await supabase.from('atlas_documents').upsert({ user_id: this.userId, data: db, saved_at: new Date().toISOString() })
     if (error) throw error
   }
   async listBackups(): Promise<BackupMeta[]> {
-    const { data, error } = await supabase.from('life_os_backups').select('meta').order('created_at', { ascending: false })
+    const { data, error } = await supabase.from('atlas_backups').select('meta').order('created_at', { ascending: false })
     if (error) throw error
     return (data ?? []).map((r) => r.meta as BackupMeta)
   }
   async getBackup(id: string): Promise<StoredBackup | null> {
-    const { data, error } = await supabase.from('life_os_backups').select('meta, data').eq('id', id).maybeSingle()
+    const { data, error } = await supabase.from('atlas_backups').select('meta, data').eq('id', id).maybeSingle()
     if (error) throw error
     return data ? ({ ...(data.meta as BackupMeta), data: data.data } as StoredBackup) : null
   }
   async putBackup(b: StoredBackup) {
     const { data, ...meta } = b
-    const { error } = await supabase.from('life_os_backups').upsert({ id: b.id, user_id: this.userId, created_at: b.createdAt, meta, data })
+    const { error } = await supabase.from('atlas_backups').upsert({ id: b.id, user_id: this.userId, created_at: b.createdAt, meta, data })
     if (error) throw error
   }
   async deleteBackup(id: string) {
-    const { error } = await supabase.from('life_os_backups').delete().eq('id', id)
+    const { error } = await supabase.from('atlas_backups').delete().eq('id', id)
     if (error) throw error
   }
 }

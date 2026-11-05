@@ -3,7 +3,7 @@
 @import './themes.css';
 
 /* -------------------------------------------------------------------------
- * Atlas design tokens
+ * ATLAS design tokens
  *
  * Every colour used by the UI is a CSS variable defined here. Tailwind turns
  * each `--color-*` into utilities (bg-panel, text-ink-muted, border-line ...).

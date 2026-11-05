@@ -1,5 +1,5 @@
 /**
- * The agenda pulls every dated commitment from across Atlas into one list:
+ * The agenda pulls every dated commitment from across ATLAS into one list:
  * calendar events, task due dates, assignment and exam deadlines, interview
  * dates, project deadlines and milestones, goal target dates, career
  * milestones, birthdays and occasions, and upcoming recurring payments.

@@ -68,7 +68,7 @@ export function buildSampleBackup() {
   const habitLog = (every: number, days = 60) => Array.from({ length: days }, (_, i) => i).filter((i) => i % every !== 0).map((i) => day(-i))
 
   return {
-    app: 'life-os',
+    app: 'atlas',
     kind: 'backup',
     exportedAt: new Date().toISOString(),
     schemaVersion: 1,

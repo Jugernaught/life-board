@@ -30,7 +30,7 @@ export default function Onboarding() {
 
   const finish = () => {
     set({ displayName: name.trim(), onboarded: true })
-    toast({ title: `Welcome${name.trim() ? `, ${name.trim()}` : ''}`, description: 'Atlas is ready. Press N to add anything, Ctrl K to search.' })
+    toast({ title: `Welcome${name.trim() ? `, ${name.trim()}` : ''}`, description: 'ATLAS is ready. Press N to add anything, Ctrl K to search.' })
   }
 
   const importBackup = async (file: File) => {
@@ -67,7 +67,7 @@ export default function Onboarding() {
                     Your personal <span className="text-gradient">command centre</span>.
                   </h1>
                   <p className="mt-3 text-[14.5px] leading-relaxed text-ink-muted">
-                    Atlas brings your goals, work, studies, money, health, learning, writing and relationships into one place — and turns what you record into clear progress.
+                    ATLAS brings your goals, work, studies, money, health, learning, writing and relationships into one place — and turns what you record into clear progress.
                   </p>
                   <ul className="mt-5 space-y-3 text-[13.5px]">
                     <li className="flex gap-3">
@@ -263,7 +263,7 @@ export default function Onboarding() {
               </Button>
             ) : (
               <Button variant="primary" icon={Check} onClick={finish} data-testid="onboarding-finish">
-                Enter Atlas
+                Enter ATLAS
               </Button>
             )}
           </div>

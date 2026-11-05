@@ -3,23 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="description" content="Atlas for iPhone — your private personal operating system." />
+    <meta name="description" content="ATLAS for iPhone — your private personal operating system." />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Atlas" />
+    <meta name="apple-mobile-web-app-title" content="ATLAS" />
     <meta name="format-detection" content="telephone=no" />
     <meta name="theme-color" content="#000000" />
     <meta name="color-scheme" content="light dark" />
     <link rel="manifest" href="/m/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="/m/apple-touch-icon.png" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Atlas</title>
+    <title>ATLAS</title>
     <script>
       // Paint the last-used theme before the app loads (no flash of the wrong colours).
       ;(function () {
         try {
-          var a = JSON.parse(localStorage.getItem('life-os:m-appearance') || 'null')
+          var a = JSON.parse(localStorage.getItem('atlas:m-appearance') || localStorage.getItem('life-os:m-appearance') || 'null')
           if (!a) a = { style: 'glass', pref: 'system', accent: 'blue', transparency: 'full', effects: 'on' }
           var d = document.documentElement
           var dark = a.pref === 'dark' || (a.pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
@@ -34,7 +34,7 @@
   </head>
   <body>
     <div id="root"></div>
-    <noscript>Atlas needs JavaScript to run.</noscript>
+    <noscript>ATLAS needs JavaScript to run.</noscript>
     <script type="module" src="/src/mobile/main.tsx"></script>
   </body>
 </html>

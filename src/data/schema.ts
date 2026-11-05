@@ -1,5 +1,5 @@
 /**
- * The Atlas data model, written as Zod schemas.
+ * The ATLAS data model, written as Zod schemas.
  *
  * Zod schemas are the single source of truth: TypeScript types are inferred
  * from them (see types.ts), forms validate input against them, and imported

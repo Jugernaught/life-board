@@ -1,16 +1,21 @@
 import type { StorageAdapter } from './adapter'
+import { migrateLegacyLocalStorage } from './brand'
 import { IndexedDbAdapter } from './indexedDb'
 import { LocalStorageAdapter } from './localStorage'
 import { MemoryAdapter } from './memory'
 
 export type { BackupMeta, BackupReason, StorageAdapter, StoredBackup } from './adapter'
 export { IndexedDbAdapter, LocalStorageAdapter, MemoryAdapter }
+export { APP_KEY, LEGACY_APP_KEY, migrateLegacyLocalStorage, storageKey } from './brand'
 
 /**
  * Pick the most capable storage available: IndexedDB, then localStorage,
  * then memory (with a visible warning that data will not persist).
  */
 export async function createStorage(): Promise<{ adapter: StorageAdapter; warning?: string }> {
+  // Carry over pre-rename (LIFE OS) keys before anything reads them. Also run
+  // from each entry point; repeating it is a no-op.
+  migrateLegacyLocalStorage()
   try {
     return { adapter: await IndexedDbAdapter.open() }
   } catch (e) {

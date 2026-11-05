@@ -10,7 +10,7 @@ export declare class ProfileError extends Error {
 }
 
 export interface SeedBackup {
-  app: 'life-os'
+  app: 'atlas'
   kind: 'backup'
   exportedAt: string
   schemaVersion: number

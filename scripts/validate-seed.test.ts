@@ -17,8 +17,8 @@ const SEED = resolve(process.env.ATLAS_SEED ?? process.env.LIFE_OS_SEED ?? 'priv
 describe.skipIf(!existsSync(SEED))(`private seed (${SEED})`, () => {
   const raw = existsSync(SEED) ? JSON.parse(readFileSync(SEED, 'utf8')) : null
 
-  it('is an Atlas backup for the current schema version', () => {
-    expect(raw).toMatchObject({ app: 'life-os', kind: 'backup', schemaVersion: SCHEMA_VERSION })
+  it('is an ATLAS backup for the current schema version', () => {
+    expect(raw).toMatchObject({ app: 'atlas', kind: 'backup', schemaVersion: SCHEMA_VERSION })
   })
 
   it('passes the import validator in strict mode with no rejected records', () => {

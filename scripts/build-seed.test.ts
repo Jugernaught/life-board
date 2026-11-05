@@ -62,7 +62,7 @@ const records = (key: string, profile?: unknown) => (build(profile).backup.data[
 describe('buildSeed', () => {
   it('produces a backup the app imports with zero invalid records', () => {
     const { backup } = build()
-    expect(backup).toMatchObject({ app: 'life-os', kind: 'backup', schemaVersion: SCHEMA_VERSION })
+    expect(backup).toMatchObject({ app: 'atlas', kind: 'backup', schemaVersion: SCHEMA_VERSION })
     const result = validateDatabase(backup, { strict: true })
     expect(result.rejected).toEqual([])
     expect(result.ok).toBe(true)

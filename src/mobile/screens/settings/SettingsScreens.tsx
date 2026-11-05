@@ -207,8 +207,8 @@ export function SettingsScreen() {
             chevron
             onClick={() =>
               actionSheet({
-                title: 'Install Atlas',
-                message: 'In Safari, tap the Share button (square with an arrow), then “Add to Home Screen”, then Add. Open Atlas from its icon from then on. Note: the Home Screen app and Safari keep separate data — export from one and import into the other to move it.',
+                title: 'Install ATLAS',
+                message: 'In Safari, tap the Share button (square with an arrow), then “Add to Home Screen”, then Add. Open ATLAS from its icon from then on. Note: the Home Screen app and Safari keep separate data — export from one and import into the other to move it.',
                 options: [],
                 cancelLabel: 'Done',
               })
@@ -459,13 +459,13 @@ export function DataScreen() {
   }
 
   const exportNow = async () => {
-    const r = await shareJsonFile(`life-os-backup-${todayISO()}.json`, makeBackupFile(db))
+    const r = await shareJsonFile(`atlas-backup-${todayISO()}.json`, makeBackupFile(db))
     if (r === 'downloaded') toast({ title: 'Backup downloaded', description: 'Find it in the Files app → Downloads.' })
   }
   const shareBackup = async (b: BackupMeta) => {
     const full = await getBackup(b.id)
     if (!full) return toast({ title: 'Backup not found', tone: 'error' })
-    await shareJsonFile(`life-os-${b.reason}-${b.createdAt.slice(0, 10)}.json`, makeBackupFile(full.data))
+    await shareJsonFile(`atlas-${b.reason}-${b.createdAt.slice(0, 10)}.json`, makeBackupFile(full.data))
   }
   const restore = async (b: BackupMeta) => {
     if (await confirmAction({ title: 'Restore this backup?', message: `Your current data will be replaced with the backup from ${new Date(b.createdAt).toLocaleString()} (${b.recordCount} records). A safety backup of the current data is saved first.`, confirmLabel: 'Restore', tone: 'default' }))
@@ -482,7 +482,7 @@ export function DataScreen() {
         footer={
           <>
             Data stays on this iPhone, in this {standalone ? 'Home Screen app' : 'browser'}.{' '}
-            {standalone ? 'Safari keeps its own separate copy — use Export and Import to move data between them.' : 'If you use Atlas in Safari without adding it to your Home Screen, Safari may clear its data after about a week without a visit. Add it to your Home Screen, and export backups regularly.'}
+            {standalone ? 'Safari keeps its own separate copy — use Export and Import to move data between them.' : 'If you use ATLAS in Safari without adding it to your Home Screen, Safari may clear its data after about a week without a visit. Add it to your Home Screen, and export backups regularly.'}
           </>
         }
       >
@@ -499,7 +499,7 @@ export function DataScreen() {
             estimate.persisted === false
               ? async () => {
                   const granted = await requestPersistentStorage()
-                  toast(granted ? { title: 'Storage protected' } : { title: 'Not granted yet', description: 'iOS decides this itself — it’s more likely once Atlas is on your Home Screen and used regularly.', tone: 'info' })
+                  toast(granted ? { title: 'Storage protected' } : { title: 'Not granted yet', description: 'iOS decides this itself — it’s more likely once ATLAS is on your Home Screen and used regularly.', tone: 'info' })
                   void refresh()
                 }
               : undefined
@@ -529,7 +529,7 @@ export function DataScreen() {
       </Section>
 
       <Section header="Backups on this iPhone" footer="Manual and safety backups are never removed automatically. Tap a backup to restore, share or delete it.">
-        <Row label="Daily Automatic Backup" sub="When you open Atlas, at most once a day">
+        <Row label="Daily Automatic Backup" sub="When you open ATLAS, at most once a day">
           <IosSwitch checked={settings.autoBackup} onChange={(autoBackup) => actions.updateSettings({ autoBackup })} label="Daily automatic backup" />
         </Row>
         <SelectRow
