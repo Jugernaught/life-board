@@ -99,8 +99,8 @@ export function SocialScreen() {
       }
     >
       <StatGrid>
-        <StatTile label="To reconnect" value={due.length} sub={`${db.people.length} people`} tone="amber" onClick={() => nav.push('more/social/people')} />
-        <StatTile label="Occasions" value={occasions.length} sub="next 30 days" tone="magenta" onClick={() => nav.push('more/social/dates')} />
+        <StatTile label="To reconnect" value={due.length} sub={`${db.people.length} people`} tone="amber" />
+        <StatTile label="Occasions" value={occasions.length} sub="next 30 days" tone="magenta" />
         <StatTile label="Plans" value={upcoming.length} sub="next 60 days" tone="cyan" />
         <StatTile label="Commitments" value={openCommitments.length} sub="open" tone="violet" />
       </StatGrid>

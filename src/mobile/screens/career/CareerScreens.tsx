@@ -100,10 +100,10 @@ export function CareerScreen() {
       }
     >
       <StatGrid>
-        <StatTile label="Career paths" value={paths.length} sub={`${db.careerPaths.filter((p) => p.status === 'active').length} being pursued`} tone="cyan" onClick={() => nav.push('more/career/paths')} />
-        <StatTile label="Open applications" value={funnel.open} sub={`${funnel.total} tracked`} tone="violet" onClick={() => nav.push('more/career/applications')} />
+        <StatTile label="Career paths" value={paths.length} sub={`${db.careerPaths.filter((p) => p.status === 'active').length} being pursued`} tone="cyan" />
+        <StatTile label="Open applications" value={funnel.open} sub={`${funnel.total} tracked`} tone="violet" />
         <StatTile label="Deadlines" value={deadlines.length} sub="next 30 days" tone="magenta" />
-        <StatTile label="Qualifications" value={db.qualifications.filter((q) => q.status === 'completed').length} sub={`${db.qualifications.filter((q) => q.status === 'in_progress').length} in progress`} tone="lime" onClick={() => nav.push('more/career/qualifications')} />
+        <StatTile label="Qualifications" value={db.qualifications.filter((q) => q.status === 'completed').length} sub={`${db.qualifications.filter((q) => q.status === 'in_progress').length} in progress`} tone="lime" />
       </StatGrid>
 
       <Section header="Deadlines · next 30 days">

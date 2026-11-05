@@ -82,7 +82,6 @@ export function JournalScreen() {
       <Section>
         <Cell icon={Eye} iconTone="violet" title="All Entries" detail={entries.length} chevron onClick={() => nav.push('journal/history')} testId="journal-all" />
         <Cell icon={Smile} iconTone="amber" title="Mood & Energy" chevron onClick={() => nav.push('journal/checkins')} />
-        <Cell icon={PenLine} iconTone="cyan" title="Weekly Reflection" chevron onClick={() => nav.push('habits/review')} />
       </Section>
     </Screen>
   )

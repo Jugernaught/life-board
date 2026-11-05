@@ -58,11 +58,7 @@ export function TransactionsTab() {
 
   return (
     <div>
-      <ListToolbar controls={controls} placeholder="Search description, category…" total={transactions.length}>
-        <Button variant="primary" size="sm" icon={Plus} onClick={() => editor.create('transactions')}>
-          Transaction
-        </Button>
-      </ListToolbar>
+      <ListToolbar controls={controls} placeholder="Search description, category…" total={transactions.length} />
       <div className="mb-3 flex flex-wrap gap-x-5 gap-y-1 font-mono text-[12px] text-ink-muted tabular">
         <span>
           In <span className="text-ok">{fmt.money(income)}</span>

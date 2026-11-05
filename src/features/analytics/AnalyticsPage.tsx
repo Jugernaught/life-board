@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { BarChart3, ChevronLeft, ChevronRight, ClipboardCheck, Copy, FileText, Printer, Target } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { APPLICATION_STATUSES } from '@/data/constants'
@@ -20,12 +21,10 @@ import { Tabs, useTabParam } from '@/components/ui/Tabs'
 import { toast } from '@/components/ui/toast'
 import { ChartCard, ChartTooltip, axisProps, gridProps, series } from '@/components/charts/ChartKit'
 import { PageHeader } from '@/components/layout/PageHeader'
-import { WeeklyReviewPanel } from '@/components/shared/WeeklyReviewPanel'
 
 const TABS = [
   { id: 'trends', label: 'Trends', icon: BarChart3 },
   { id: 'reports', label: 'Reports', icon: FileText },
-  { id: 'review', label: 'Weekly review', icon: ClipboardCheck },
 ] as const
 
 type Trend = ReturnType<typeof trendSeries>[number]
@@ -524,6 +523,7 @@ function ReportsTab({ today }: { today: string }) {
 export default function AnalyticsPage() {
   const today = useToday()
   const db = useDatabase()
+  const navigate = useNavigate()
   const [tab, setTab] = useTabParam(TABS, 'trends')
   const [preset, setPreset] = useState<RangePreset>('last_30')
   const [custom, setCustom] = useState<DateRange>({ start: addDaysISO(today, -29), end: today })
@@ -534,30 +534,35 @@ export default function AnalyticsPage() {
         section="analytics"
         description="Understand how you're progressing across every area — calculated only from what you've recorded. No single “life score”."
         actions={
-          tab === 'trends' && (
-            <div className="flex flex-wrap items-center gap-2">
-              <Select size="sm" value={preset} onChange={(e) => setPreset(e.target.value as RangePreset)} aria-label="Date range" className="w-40">
-                {RANGE_PRESETS.map((p) => (
-                  <option key={p.value} value={p.value}>
-                    {p.label}
-                  </option>
-                ))}
-              </Select>
-              {preset === 'custom' && (
-                <>
-                  <Input type="date" value={custom.start} max={custom.end} onChange={(e) => e.target.value && setCustom((c) => ({ ...c, start: e.target.value }))} aria-label="Start date" className="h-8 w-38 text-[13px]" />
-                  <span className="text-ink-subtle">–</span>
-                  <Input type="date" value={custom.end} min={custom.start} onChange={(e) => e.target.value && setCustom((c) => ({ ...c, end: e.target.value }))} aria-label="End date" className="h-8 w-38 text-[13px]" />
-                </>
-              )}
-            </div>
-          )
+          <div className="flex flex-wrap items-center gap-2">
+            {/* The weekly review has one home, in Goals & Habits. */}
+            <Button size="sm" variant="ghost" icon={ClipboardCheck} onClick={() => navigate('/goals?tab=review')} data-testid="weekly-review-link">
+              Weekly review
+            </Button>
+            {tab === 'trends' && (
+              <div className="flex flex-wrap items-center gap-2">
+                <Select size="sm" value={preset} onChange={(e) => setPreset(e.target.value as RangePreset)} aria-label="Date range" className="w-40">
+                  {RANGE_PRESETS.map((p) => (
+                    <option key={p.value} value={p.value}>
+                      {p.label}
+                    </option>
+                  ))}
+                </Select>
+                {preset === 'custom' && (
+                  <>
+                    <Input type="date" value={custom.start} max={custom.end} onChange={(e) => e.target.value && setCustom((c) => ({ ...c, start: e.target.value }))} aria-label="Start date" className="h-8 w-38 text-[13px]" />
+                    <span className="text-ink-subtle">–</span>
+                    <Input type="date" value={custom.end} min={custom.start} onChange={(e) => e.target.value && setCustom((c) => ({ ...c, end: e.target.value }))} aria-label="End date" className="h-8 w-38 text-[13px]" />
+                  </>
+                )}
+              </div>
+            )}
+          </div>
         }
       />
       <Tabs tabs={TABS} value={tab} onChange={setTab} className="no-print mb-5" />
       {tab === 'trends' && <TrendsTab range={range} today={today} />}
       {tab === 'reports' && <ReportsTab today={today} />}
-      {tab === 'review' && <WeeklyReviewPanel today={today} />}
     </div>
   )
 }

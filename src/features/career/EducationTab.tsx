@@ -170,7 +170,7 @@ export function EducationTab({ today }: { today: string }) {
         )}
       </div>
       <div className="space-y-4">
-        <Panel title="Assignment & exam deadlines" icon={CalendarClock} actions={<Button size="xs" variant="ghost" icon={Plus} onClick={() => editor.create('assessments')}>Add</Button>}>
+        <Panel title="Assignment & exam deadlines" icon={CalendarClock}>
           {upcoming.length === 0 ? (
             <p className="text-[12.5px] text-ink-subtle">No outstanding assignments or exams.</p>
           ) : (

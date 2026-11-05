@@ -275,3 +275,41 @@ test('recurring payments: Log is one undoable step and shows its history', async
   await page.goto('/finance?tab=transactions')
   await expect(page.getByText('Gym membership')).toHaveCount(0)
 })
+
+test('weekly review has one home; every create action is shown once; integrations are a note', async ({ page }) => {
+  await skipOnboarding(page)
+  // Journal and Analytics link to the review in Goals & Habits instead of repeating it.
+  await page.goto('/journal')
+  await expect(page.getByRole('tab', { name: /Weekly/ })).toHaveCount(0)
+  await page.getByTestId('weekly-review-link').click()
+  await expect(page).toHaveURL(/\/goals\?tab=review/)
+  await expect(page.getByRole('tab', { name: /Weekly review/ })).toHaveAttribute('aria-selected', 'true')
+  await page.goto('/analytics?tab=review') // an old link falls back to the default tab
+  await expect(page.getByRole('tab', { name: /Trends/ })).toHaveAttribute('aria-selected', 'true')
+
+  const once = async (path: string, names: (string | RegExp)[]) => {
+    await page.goto(path)
+    for (const name of names) await expect(page.getByRole('button', { name, exact: typeof name === 'string' })).toHaveCount(1)
+  }
+  await once('/finance?tab=transactions', ['Transaction'])
+  await once('/goals?tab=habits', ['Habit', 'Goal'])
+  // Goals tab: one create action whether empty ("Set your first goal") or not (its "Goal" button, which keeps the timeframe).
+  await once('/goals', ['Set your first goal'])
+  await expect(page.getByRole('button', { name: 'Goal', exact: true })).toHaveCount(0)
+  await page.getByRole('button', { name: 'Set your first goal' }).click()
+  await page.getByRole('dialog').getByPlaceholder('e.g. Run a half marathon').fill('Run a 10k')
+  await page.getByRole('dialog').getByRole('button', { name: 'Add goal' }).click()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Goal', exact: true })).toHaveCount(1)
+  await once('/fitness?tab=workouts', ['Workout'])
+  await once('/fitness?tab=sleep', ['Sleep'])
+  await once('/career?tab=applications', ['Application'])
+  await once('/learning?tab=skills', ['Skill'])
+  await once('/social?tab=people', ['Person'])
+  await once('/schedule?tab=tasks', [/^(New task|Task)$/])
+
+  await page.goto('/settings?tab=integrations')
+  await expect(page.getByRole('tab', { name: 'Integrations' })).toHaveCount(0)
+  await page.goto('/settings?tab=privacy')
+  await expect(page.getByTestId('not-connected-note')).toContainText('Cloud sync')
+})

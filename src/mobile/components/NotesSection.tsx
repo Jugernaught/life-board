@@ -4,6 +4,7 @@ import type { Note } from '@/data/types'
 import { truncate } from '@/lib/utils'
 import { useCollection } from '@/store/store'
 import { editor } from '@/components/editor/editorStore'
+import { nav } from '../nav/navigator'
 import { ActionCell, Cell, Section } from '../ui/List'
 
 /** Notes for one context (a life area, a project or a skill) as a grouped section with "Add Note". */
@@ -11,7 +12,17 @@ export function NotesSection({ header = 'Notes', filter, defaults, limit = 5, fo
   const notes = useCollection('notes')
   const list = notes.filter(filter).sort((a, b) => (a.pinned !== b.pinned ? (a.pinned ? -1 : 1) : a.updatedAt < b.updatedAt ? 1 : -1))
   return (
-    <Section header={header} footer={footer ?? (list.length > limit ? `${list.length - limit} more in Notes.` : undefined)}>
+    <Section
+      header={header}
+      footer={
+        footer ??
+        (list.length > limit ? (
+          <button type="button" onClick={() => nav.push('more/notes')} className="text-accent active:opacity-50" data-testid="m-notes-more">
+            {list.length - limit} more in Notes
+          </button>
+        ) : undefined)
+      }
+    >
       {list.slice(0, limit).map((n) => (
         <Cell key={n.id} icon={n.pinned ? Pin : StickyNote} iconTone={n.pinned ? 'amber' : 'muted'} title={n.title} subtitle={n.body ? truncate(n.body.replace(/\s+/g, ' '), 90) : undefined} chevron onClick={() => editor.edit('notes', n.id)} testId="m-note-cell" />
       ))}

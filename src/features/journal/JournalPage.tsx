@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { Award, BookHeart, ClipboardCheck, Eye, History, Lightbulb, Mountain, PenLine, Smile } from 'lucide-react'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { ENERGY_SCALE, MOOD_SCALE, REFLECTION_PROMPTS } from '@/data/constants'
@@ -8,6 +9,7 @@ import { useToday } from '@/hooks/useNow'
 import { addDaysISO, diffDays, eachDay, eachMonth, formatDate, formatMonthKey, monthKey } from '@/lib/dates'
 import { average, cn, truncate } from '@/lib/utils'
 import { useCollection, useSettings } from '@/store/store'
+import { Button } from '@/components/ui/Button'
 import { Badge, EmptyState, Stat } from '@/components/ui/display'
 import { Panel } from '@/components/ui/Panel'
 import { Tabs, useTabParam } from '@/components/ui/Tabs'
@@ -15,7 +17,6 @@ import { ChartCard, ChartTooltip, axisProps, gridProps, series } from '@/compone
 import { PageHeader } from '@/components/layout/PageHeader'
 import { ListToolbar } from '@/components/shared/ListToolbar'
 import { RecordActions } from '@/components/shared/RecordActions'
-import { WeeklyReviewPanel } from '@/components/shared/WeeklyReviewPanel'
 import { JournalEditor } from './JournalEditor'
 
 const TABS = [
@@ -23,7 +24,6 @@ const TABS = [
   { id: 'history', label: 'History', icon: History },
   { id: 'checkins', label: 'Mood & energy', icon: Smile },
   { id: 'highlights', label: 'Highlights', icon: Award },
-  { id: 'weekly', label: 'Weekly reflection', icon: ClipboardCheck },
 ] as const
 
 const fullText = (e: JournalEntry) => [e.title, e.body, ...Object.values(e.prompts ?? {}), e.lessons, e.challenges, e.achievements, ...e.tags].filter(Boolean).join(' ')
@@ -242,6 +242,7 @@ function HighlightsTab({ open }: { open: (e: JournalEntry) => void }) {
 
 export default function JournalPage() {
   const today = useToday()
+  const navigate = useNavigate()
   const [tab, setTab] = useTabParam(TABS, 'write')
   const [date, setDate] = useState(today)
   const [entryId, setEntryId] = useState<string | undefined>()
@@ -269,6 +270,10 @@ export default function JournalPage() {
                 <span>last {diffDays(lastEntry.date, today)}d ago</span>
               </>
             )}
+            {/* The weekly review has one home, in Goals & Habits. */}
+            <Button size="sm" variant="ghost" icon={ClipboardCheck} onClick={() => navigate('/goals?tab=review')} className="font-sans" data-testid="weekly-review-link">
+              Weekly review
+            </Button>
           </div>
         }
       />
@@ -288,7 +293,6 @@ export default function JournalPage() {
       {tab === 'history' && <HistoryTab open={open} />}
       {tab === 'checkins' && <CheckInsTab today={today} />}
       {tab === 'highlights' && <HighlightsTab open={open} />}
-      {tab === 'weekly' && <WeeklyReviewPanel today={today} />}
     </div>
   )
 }

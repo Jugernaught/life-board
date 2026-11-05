@@ -167,11 +167,6 @@ function SkillsTab({ today }: { today: string }) {
   }
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button size="sm" variant="primary" icon={Plus} onClick={() => editor.create('skills')}>
-          Skill
-        </Button>
-      </div>
       <div className="grid gap-4 lg:grid-cols-2">
         {skills.map((s) => {
           const prog = skillProgress(s)
@@ -329,11 +324,7 @@ function SessionsTab() {
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
       <div>
-        <ListToolbar controls={controls} placeholder="Search topics and notes…" total={sessions.length}>
-          <Button size="sm" variant="primary" icon={Plus} onClick={() => editor.create('studySessions')}>
-            Session
-          </Button>
-        </ListToolbar>
+        <ListToolbar controls={controls} placeholder="Search topics and notes…" total={sessions.length} />
         {sessions.length > 0 && <p className="mb-2 font-mono text-[12px] text-ink-muted">{formatMinutes(total)} in shown sessions</p>}
         <Panel padded={false}>
           {controls.results.length === 0 ? (

@@ -514,7 +514,7 @@ test('plan your day from Today: pick priorities and set an intention', async ({ 
   await sheet.getByLabel('Intention for today').fill('One thing at a time')
   await page.getByTestId('m-pd-finish').click()
   await expect(page.getByTestId('m-today-intention')).toHaveText('One thing at a time')
-  await expect(page.getByTestId('m-plan-day')).toHaveCount(0)
+  await expect(page.getByTestId('m-plan-day')).toHaveText(/Replan/) // still reachable after planning
   await expect(top(page).getByTestId('m-task-row').filter({ hasText: 'Write report' }).first()).toBeVisible()
 })
 
@@ -591,4 +591,56 @@ test('logging a recurring payment is one step: Undo reverses it, history shows i
   await page.getByRole('status').filter({ hasText: 'Streaming logged' }).getByRole('button', { name: 'Undo' }).click()
   await expect(top(page).getByTestId('recurring-history')).toHaveText('Not logged yet')
   await expect(top(page)).toContainText('Today') // the due date moved back
+})
+
+/* ------------------------------------------------ refinement pass 2 · group C */
+
+test('Today links open Plan on the right view; Replan stays reachable', async ({ page }) => {
+  await start(page)
+  await top(page).getByRole('button', { name: 'All Tasks' }).click()
+  await expect(page.getByRole('radio', { name: 'Tasks' })).toHaveAttribute('aria-checked', 'true')
+  await page.getByTestId('tab-today').click()
+  await top(page).getByRole('button', { name: 'Calendar' }).click()
+  await expect(page.getByRole('radio', { name: 'Calendar' })).toHaveAttribute('aria-checked', 'true')
+  await page.getByTestId('tab-today').click()
+  await expect(page.getByTestId('m-plan-day')).toHaveText(/Plan Your Day/)
+})
+
+test('More: the floating button adds without losing your place; one link per destination', async ({ page }) => {
+  await start(page)
+  await open(page, 'more/career/education')
+  const accessory = page.getByTestId('tab-accessory')
+  await expect(accessory).toHaveAccessibleName('Quick add')
+  await accessory.click()
+  await expect(page.getByTestId('quick-add-sheet')).toBeVisible()
+  await page.getByTestId('quick-add-sheet').getByRole('button', { name: 'Cancel' }).click()
+  await expect(page.getByTestId('quick-add-sheet')).toHaveCount(0)
+  await expect(top(page)).toContainText('Education') // still where we were
+  // Career and Social stat tiles show figures; their destinations are the cells below.
+  await open(page, 'more/career')
+  await expect(top(page).getByRole('button', { name: /Career paths\s*\d/ })).toHaveCount(0)
+  await expect(top(page).getByTestId('career-paths')).toBeVisible()
+})
+
+test('Settings: inactive services are a note, the desktop link lives only in More, and "more in Notes" is a link', async ({ page }) => {
+  await start(page)
+  await open(page, 'more/settings')
+  await expect(page.getByTestId('m-not-connected-note')).toContainText('Not connected')
+  await expect(top(page).getByText('Open Desktop Version')).toHaveCount(0)
+  await open(page, 'more')
+  await expect(top(page).getByText('Open Desktop Version')).toBeVisible()
+  // Weekly Review lives in the Habits tab only.
+  await open(page, 'journal')
+  await expect(top(page).getByText('Weekly Reflection')).toHaveCount(0)
+
+  await open(page, 'more/career')
+  for (let i = 1; i <= 6; i++) {
+    await top(page).getByRole('button', { name: 'Add Note' }).click()
+    const editor = page.getByTestId('editor-sheet')
+    await editor.getByLabel('Title').fill(`Career note ${i}`)
+    await page.getByTestId('editor-save').click()
+    await expect(editor).toHaveCount(0)
+  }
+  await top(page).getByTestId('m-notes-more').click()
+  await expect(top(page)).toContainText('Career note 1')
 })

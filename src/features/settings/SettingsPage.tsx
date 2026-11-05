@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Bell, Calendar, Database, Globe2, LayoutGrid, Lock, Palette, Plug, Plus, Smartphone, Target, Trash2, User, Wallet } from 'lucide-react'
+import { Bell, Calendar, Database, Globe2, LayoutGrid, Lock, Palette, Plus, Smartphone, Target, Trash2, User, Wallet } from 'lucide-react'
 import { DATE_FORMATS, formatDate, todayISO } from '@/lib/dates'
 import { CURRENCIES } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -26,7 +26,6 @@ const TABS = [
   { id: 'finance', label: 'Finance', icon: Wallet },
   { id: 'privacy', label: 'Privacy', icon: Lock },
   { id: 'data', label: 'Data & backups', icon: Database },
-  { id: 'integrations', label: 'Integrations', icon: Plug },
 ] as const
 
 const set = (patch: Partial<Settings>) => actions.updateSettings(patch)
@@ -225,31 +224,15 @@ export default function SettingsPage() {
                   <li>Anyone with access to this browser profile can open LIFE OS and read your data. Use your device’s lock screen and a separate browser profile if you share the device.</li>
                   <li>Backups you export are plain JSON files — store them somewhere private.</li>
                 </ul>
+                <p className="mt-3 font-medium text-ink">Not connected</p>
+                <p className="mt-1" data-testid="not-connected-note">
+                  Cloud sync, calendar sync (Google / Outlook), bank connections, push notifications to a closed app and fitness trackers would each need an outside service, so none is active. Everything is entered by
+                  you and stays on this device. Reminders work while LIFE OS is open (Settings → Notifications); syncing is described in docs/SUPABASE.md.
+                </p>
               </div>
             </Panel>
           )}
           {tab === 'data' && <DataSettings />}
-          {tab === 'integrations' && (
-            <Panel title="Integrations" icon={Plug}>
-              <div className="space-y-4 text-[13.5px] text-ink-muted">
-                <p>LIFE OS currently works entirely offline with local storage. These integrations would need external services and are <span className="text-ink">not active</span>:</p>
-                <ul className="space-y-3">
-                  {[
-                    ['Cloud sync (Supabase)', 'Sync between devices. The storage layer is ready for a Supabase adapter — needs a Supabase project, authentication and the steps in docs/SUPABASE.md.'],
-                    ['Calendar sync (Google / Outlook)', 'Two-way calendar sync needs OAuth credentials and a small server to hold tokens securely.'],
-                    ['Bank connections (Open Banking)', 'Automatic transactions need a regulated provider (e.g. TrueLayer, GoCardless) and a server. All finance data is entered manually today.'],
-                    ['Push notifications', 'Reminders work while LIFE OS is open (Settings → Notifications). Alerts that reach a fully closed app need a push server, which would mean your schedule leaving this device.'],
-                    ['Fitness trackers', 'Importing steps/sleep from Apple Health, Google Fit or Fitbit needs their APIs or a mobile app.'],
-                  ].map(([title, text]) => (
-                    <li key={title} className="rounded-lg border border-line bg-panel-2/30 p-3">
-                      <p className="font-medium text-ink">{title}</p>
-                      <p className="mt-0.5 text-[12.5px]">{text}</p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </Panel>
-          )}
         </div>
       </div>
     </div>

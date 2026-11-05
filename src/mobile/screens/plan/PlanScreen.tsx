@@ -24,11 +24,13 @@ import { useShowsHeaderAdd, useTabContext } from '../../nav/tabContext'
 type Mode = 'calendar' | 'tasks'
 
 export function PlanScreen() {
-  const [mode, setMode] = useState<Mode>('calendar')
+  // The mode lives in the shared tab context so links elsewhere (e.g. Today's "All Tasks") can open Plan on Tasks.
+  const mode = useTabContext((s) => s.planMode)
+  const setMode = (planMode: Mode) => useTabContext.getState().set({ planMode })
   const today = useToday()
   const [selected, setSelected] = useState(today)
   const showAdd = useShowsHeaderAdd()
-  useEffect(() => useTabContext.getState().set({ planMode: mode, planDate: selected }), [mode, selected])
+  useEffect(() => useTabContext.getState().set({ planDate: selected }), [selected])
   return (
     <Screen
       title="Plan"

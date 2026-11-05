@@ -1,4 +1,4 @@
-import { CalendarDays, CircleEllipsis, NotebookPen, PenLine, Plus, Repeat, Search, Sun } from 'lucide-react'
+import { CalendarDays, CircleEllipsis, NotebookPen, PenLine, Plus, Repeat, Sun } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useToday } from '@/hooks/useNow'
 import { cn } from '@/lib/utils'
@@ -31,16 +31,7 @@ function useAccessory(tab: TabId) {
       return ctx.habitsSegment === 'goals' ? { label: 'New goal', icon: Plus, run: () => editor.create('goals') } : { label: 'New habit', icon: Plus, run: () => editor.create('habits') }
     case 'journal':
       return { label: 'Write today’s entry', icon: PenLine, run: () => nav.push(`journal/write/${today}`) }
-    case 'more':
-      return {
-        label: 'Search everything',
-        icon: Search,
-        run: () => {
-          useNav.getState().popToRoot('more')
-          // Focus once the More screen is on top again.
-          setTimeout(() => document.querySelector<HTMLInputElement>('[data-testid="more-search"] input, input[data-testid="more-search"]')?.focus(), 380)
-        },
-      }
+    // More: Quick add, which never changes your place in the stack. Search is the More screen's own field.
     default:
       return { label: 'Quick add', icon: Plus, run: () => showQuickAdd() }
   }

@@ -1,5 +1,5 @@
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
-import { Bell, BellRing, ChevronsUpDown, CloudOff, Database, Download, FolderTree, Laptop, RotateCcw, Share, Smartphone, Target, Trash2, Upload } from 'lucide-react'
+import { Bell, BellRing, ChevronsUpDown, Database, Download, FolderTree, RotateCcw, Share, Smartphone, Target, Trash2, Upload } from 'lucide-react'
 import { THEMES, resolveAppearance, supportsLight, themeMeta } from '@/app/themes'
 import { TEXT_SCALES } from '@/app/textScaleCss'
 import { REMINDER_LEAD_OPTIONS, leadLabel, permissionText, sendTestNotification, useNotificationPermission } from '@/app/reminders'
@@ -228,28 +228,15 @@ export function SettingsScreen() {
             }
           />
         )}
-        <a href={import.meta.env.BASE_URL} className="ios-press flex min-h-11 items-center gap-3 px-4 py-2" data-testid="settings-desktop">
-          <span className="flex size-[29px] items-center justify-center rounded-[7px] bg-[var(--color-ink-subtle)] text-white" aria-hidden>
-            <Laptop size={17} />
-          </span>
-          <span className="ios-body flex-1 text-ink">Open Desktop Version</span>
-        </a>
         <ActionCell icon={RotateCcw} onClick={async () => { if (await confirmAction({ title: 'Run setup again?', message: 'Shows the welcome screens again. Your data is not affected.', confirmLabel: 'Run Setup', tone: 'default' })) set({ onboarded: false }) }}>
           Run Setup Again
         </ActionCell>
       </Section>
 
-      <Section header="Not connected" footer="These need external services and are not active. Data is entered by you; nothing is synced or sent.">
-        {[
-          ['Cloud sync', 'Needs a sync server and sign-in'],
-          ['Calendar sync', 'Needs Google/Outlook OAuth and a server'],
-          ['Bank connections', 'Needs a regulated Open Banking provider'],
-          ['Push notifications', 'Alerts while LIFE OS is fully closed need a push server'],
-          ['Apple Health', 'Needs a native iOS app — web apps can’t read HealthKit'],
-        ].map(([t, d]) => (
-          <Cell key={t} icon={CloudOff} iconTone="muted" title={t} subtitle={d} />
-        ))}
-      </Section>
+      {/* What isn't active, said once rather than as rows that do nothing. */}
+      <p className="ios-footnote mx-8 -mt-3 mb-7 text-ink-subtle" data-testid="m-not-connected-note">
+        Not connected: cloud sync, calendar sync, bank connections, push notifications to a closed app and Apple Health each need an outside service, so none is active. Everything is entered by you and stays on this iPhone.
+      </p>
     </Screen>
   )
 }

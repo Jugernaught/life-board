@@ -128,9 +128,6 @@ export function ApplicationsTab({ today }: { today: string }) {
             { value: 'list', label: <LayoutList size={14} aria-label="List" />, title: 'List' },
           ]}
         />
-        <Button variant="primary" size="sm" icon={Plus} onClick={() => editor.create('applications')}>
-          Application
-        </Button>
       </ListToolbar>
       {view === 'board' ? (
         <div className="no-scrollbar -mx-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">

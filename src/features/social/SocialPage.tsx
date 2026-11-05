@@ -58,7 +58,7 @@ function PeopleTab({ today }: { today: string }) {
     )
   }
   return (
-    <Panel title="People to stay in touch with" icon={Users} actions={<Button size="sm" variant="primary" icon={Plus} onClick={() => editor.create('people')}>Person</Button>}>
+    <Panel title="People to stay in touch with" icon={Users}>
       <ul className="divide-y divide-line">
         {rows.map(({ person, due, dueDate, daysSince }) => (
           <li key={person.id} className="flex flex-wrap items-center gap-3 py-3">
@@ -161,7 +161,7 @@ export default function SocialPage() {
       <Tabs tabs={TABS.map((t) => ({ ...t, count: t.id === 'people' ? due.length : t.id === 'commitments' ? commitments.filter((c) => c.status !== 'done').length : undefined }))} value={tab} onChange={setTab} className="mb-5" />
       {tab === 'upcoming' && (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <Panel title="Social events & occasions" eyebrow="Next 60 days" actions={<Button size="xs" variant="ghost" icon={Plus} onClick={() => editor.create('events', { area: 'social' })}>Event</Button>}>
+          <Panel title="Social events & occasions" eyebrow="Next 60 days">
             {upcoming.length === 0 ? (
               <EmptyState compact icon={CalendarHeart} title="Nothing planned yet" description="Add a social event (it also appears on your calendar) or an important date." />
             ) : (

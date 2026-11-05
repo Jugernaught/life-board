@@ -42,11 +42,7 @@ export function WorkoutsTab() {
   return (
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
       <div>
-        <ListToolbar controls={controls} placeholder="Search workouts and exercises…" total={workouts.length}>
-          <Button size="sm" variant="primary" icon={Plus} onClick={() => editor.create('workouts')}>
-            Workout
-          </Button>
-        </ListToolbar>
+        <ListToolbar controls={controls} placeholder="Search workouts and exercises…" total={workouts.length} />
         <div className="space-y-2.5">
           {controls.results.map((w) => (
             <article key={w.id} className="panel flex items-start gap-3 p-3.5">
@@ -183,7 +179,7 @@ export function SleepTab({ today }: { today: string }) {
         <Stat label="Average quality" value={sleep.some((s) => s.quality) ? `${average(sleep.filter((s) => s.quality).map((s) => s.quality as number)).toFixed(1)}/5` : '—'} tone="amber" />
         <Stat label="Nights logged" value={sleep.length} tone="lime" />
       </div>
-      <Panel title="Sleep log" icon={Moon} actions={<Button size="sm" variant="primary" icon={Plus} onClick={() => editor.create('sleep')}>Log sleep</Button>}>
+      <Panel title="Sleep log" icon={Moon}>
         {sorted.length === 0 ? (
           <EmptyState compact icon={Moon} title="No sleep logged" description="Record when you went to bed and woke up. Duration is calculated for you, including past midnight." />
         ) : (

@@ -145,9 +145,12 @@ export default function GoalsPage() {
             <Button icon={Plus} onClick={() => editor.create('habits')}>
               Habit
             </Button>
-            <Button variant="primary" icon={Plus} onClick={() => editor.create('goals')}>
-              Goal
-            </Button>
+            {/* On the Goals tab, its own "Goal" button prefills the chosen timeframe. */}
+            {tab !== 'goals' && (
+              <Button variant="primary" icon={Plus} onClick={() => editor.create('goals')}>
+                Goal
+              </Button>
+            )}
           </>
         }
       />

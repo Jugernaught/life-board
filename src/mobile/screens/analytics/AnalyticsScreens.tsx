@@ -1,5 +1,5 @@
 import { type ReactNode, useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, ClipboardCheck, FileText, Share } from 'lucide-react'
+import { ChevronLeft, ChevronRight, FileText, Share } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useFormatters } from '@/hooks/useFormatters'
 import { useToday } from '@/hooks/useNow'
@@ -238,7 +238,6 @@ export function AnalyticsScreen() {
 
       <Section>
         <Cell icon={FileText} iconTone="cyan" title="Weekly & Monthly Reports" subtitle="Plain-language summary you can share" chevron onClick={() => nav.push('more/analytics/report')} testId="analytics-report" />
-        <Cell icon={ClipboardCheck} iconTone="lime" title="Weekly Review" chevron onClick={() => nav.push('habits/review')} />
       </Section>
 
       <TargetsSection range={range} today={today} />

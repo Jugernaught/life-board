@@ -21,6 +21,12 @@ export const useTabContext = create<TabContext>((set) => ({
   set: (patch) => set(patch),
 }))
 
+/** Open the Plan tab on Calendar or Tasks (from Today's "All Tasks", "Calendar" and the Due ring). */
+export function openPlan(planMode: TabContext['planMode'], push: (path: string) => void) {
+  useTabContext.getState().set({ planMode })
+  push('plan')
+}
+
 /** Liquid Glass, Cyberpunk and Minimal Dark show a floating action button; Apple Clean doesn't. */
 export const hasFloatingAction = (style: string) => style !== 'clean'
 

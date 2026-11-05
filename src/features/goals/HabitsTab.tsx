@@ -81,9 +81,6 @@ export function HabitsTab({ today }: { today: string }) {
               <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} className="accent-[var(--color-accent)]" />
               Archived
             </label>
-            <Button size="sm" variant="primary" icon={Plus} onClick={() => editor.create('habits')}>
-              Habit
-            </Button>
           </div>
         }
       >

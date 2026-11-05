@@ -33,9 +33,12 @@ export default function SchedulePage() {
         description="Plan your days with time blocks, events and tasks. Deadlines, exams, interviews and occasions from every section appear here automatically."
         actions={
           <>
-            <Button icon={Plus} onClick={() => editor.create('tasks')}>
-              Task
-            </Button>
+            {/* On the Tasks tab, its own "New task" button prefills the date for the chosen scope. */}
+            {tab !== 'tasks' && (
+              <Button icon={Plus} onClick={() => editor.create('tasks')}>
+                Task
+              </Button>
+            )}
             <Button variant="primary" icon={Plus} onClick={() => editor.create('events', { kind: 'block' })}>
               Time block
             </Button>
