@@ -213,3 +213,37 @@ Ask for authorisation to (a) commit Group C and (b) start the next group. The pl
 
 ## Next starting point
 Group B: item 2 (unlink relations when undoing a create) and item 4 (repeat `seriesId` and occurrence identity, `localInstant` DST policy). Then Group D.
+
+---
+
+# Group B — tasks and recurrence (items 2, 4)
+
+- **Authorised:** 2026-11-05 ("Start" after the Group A commit `6994382`).
+- **Baseline:** 02:25:15 UTC, clean tree; `npm run check` exit 0, 135/135.
+
+## Changes
+| Item | What changed | Files |
+| --- | --- | --- |
+| 2 | **Undoing an add unlinks related records.** `unlinkReferences()` is extracted from `remove` (it uses `RELATIONS`) and used by both delete and undo. Undoing an add, or removing a spawned copy during undo, now unlinks anything linked to it since: a new revision for each, never a delete. | `store/store.ts` |
+| 4 | **Series identity.** Repeating tasks carry an optional `seriesId` (the first task's id), copied to every occurrence. An occurrence's identity is `(series, due date)`, computed from the rule. A completion doesn't spawn when that occurrence already exists open, which fixes reopen → re-complete making a second copy. Older copies without `seriesId` are matched by title and rule. A duplicated task starts its own series. | `data/schema.ts`, `store/store.ts` (`seriesOf`, `nextOccurrenceOf`), `app/taskCommands.ts` |
+| 4 | **DST policy (clarification 2).** `localInstant(date, time)` in `lib/dates.ts` documents and centralises it. When clocks go back, the first occurrence of an ambiguous time is used; when they go forward, a time that doesn't exist moves forward by the gap. Reminders use it. Repeat rules work in whole dates, so DST can't shift or duplicate an occurrence. Clarification 3 (several occurrences per day) doesn't apply: one occurrence per day per series. | `lib/dates.ts`, `app/reminders.ts` |
+| — | **Test robustness.** The Group C e2e test "Today links open Plan" scrolls the Calendar link clear of the floating tab bar before tapping it. On iPhone 15 Pro it sat partly under the "+" button and failed 1 run in 7. | `e2e/ios.spec.ts` |
+
+## Verification
+| Time (UTC) | Check | Result |
+| --- | --- | --- |
+| 02:25 | Baseline `npm run check` | exit 0, 135/135 |
+| 02:28 | `store.test.ts` and the new `lib/dst.test.ts`. New store tests: undoing an add unlinks a task; complete → reopen → complete makes one next copy in one series; an older copy without `seriesId` counts as the same series. New DST tests, run in Europe/London whatever the machine's zone: 01:30 on 25 Oct 2026 = 00:30Z (first occurrence); 01:30 on 29 Mar 2026 = 01:30Z (moved forward to 02:30 BST); daily and weekly dates stay put. | 24/24 |
+| 02:29 | `npm run check` | exit 0; 141/141 |
+| 02:30–02:38 | Full e2e | 111/112. One intermittent failure on iPhone 15 Pro in a Group C test (cause above). 6/6 on rerun before the fix. |
+| 02:39 | That test after the fix, ×4 on 3 iPhones | 12/12 |
+| 02:40–02:49 | Full `npx playwright test`, then `npm run check` | e2e exit 0, 112/112; check exit 0, 141/141 |
+
+## Status
+| Item | Status |
+| --- | --- |
+| 2 | Completed |
+| 4 | Completed. The DST policy is verified by a unit test pinned to Europe/London. Reminders fire from the same helper. |
+
+## Next starting point
+Group D (items 8, 10, 11, 12, 14, 16, 18, 19, 20, 21, 24, 25, 26, 28), then the continuity docs (`CLAUDE.md`, `PROJECT_STATUS.md`, `CHANGELOG.md`, `docs/ARCHITECTURE.md`).

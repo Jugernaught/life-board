@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { createEmptyDatabase } from '@/data/defaults'
+import { nextDueDate } from '@/lib/recurrence'
 import { ValidationError, createAppStore } from './store'
 
 const fresh = () => createAppStore(createEmptyDatabase()).getState
@@ -226,5 +227,42 @@ describe('completion rules apply on every path', () => {
     // Same day: a second change collapses into that point rather than adding another.
     const again = s().update('goals', g.id, { description: 'Done in 58 min' })!
     expect(again.history.filter((h) => h.progress === 100)).toHaveLength(1)
+  })
+})
+
+describe('group B: links and repeating series', () => {
+  it('undoing an add unlinks anything linked to it since (as a delete would)', () => {
+    const s = fresh()
+    const p = s().create('projects', { name: 'Launch' })
+    const addProject = s().history.at(-1)!
+    const t = s().create('tasks', { title: 'Write copy', projectId: p.id })
+    expect(s().undoChange(addProject.id)).toBe(true)
+    expect(s().db.projects).toHaveLength(0)
+    const task = s().db.tasks.find((x) => x.id === t.id)!
+    expect(task.projectId).toBeUndefined()
+    expect(task.rev).toBe(2)
+  })
+
+  it('completing, reopening and completing a repeating task again makes one next occurrence, in one series', () => {
+    const s = fresh()
+    const r = s().create('tasks', { title: 'Bins out', repeat: { freq: 'weekly', interval: 1, days: [] }, dueDate: '2026-11-05' })
+    s().update('tasks', r.id, { status: 'done' })
+    s().update('tasks', r.id, { status: 'todo' })
+    s().update('tasks', r.id, { status: 'done' })
+    const copies = s().db.tasks.filter((t) => t.id !== r.id)
+    expect(copies).toHaveLength(1)
+    expect(copies[0].seriesId).toBe(r.id)
+    // Its own completion continues the same series.
+    s().update('tasks', copies[0].id, { status: 'done' })
+    expect(s().db.tasks.filter((t) => t.status !== 'done').map((t) => t.seriesId)).toEqual([r.id])
+  })
+
+  it('treats older copies (from before series ids) as the same series', () => {
+    const s = fresh()
+    const r = s().create('tasks', { title: 'Pay rent', repeat: { freq: 'monthly', interval: 1, days: [] }, dueDate: '2026-11-01' })
+    const next = nextDueDate({ freq: 'monthly', interval: 1, days: [] }, '2026-11-01', new Date().toISOString().slice(0, 10))
+    s().create('tasks', { title: 'Pay rent', repeat: { freq: 'monthly', interval: 1, days: [] }, dueDate: next })
+    s().update('tasks', r.id, { status: 'done' })
+    expect(s().db.tasks.filter((t) => t.title === 'Pay rent' && t.status !== 'done')).toHaveLength(1)
   })
 })

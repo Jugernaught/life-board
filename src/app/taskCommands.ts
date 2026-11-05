@@ -55,7 +55,8 @@ export function rescheduleMany(tasks: readonly Task[], date: string, today: stri
 
 export function duplicateTask(task: Task) {
   const rest: Record<string, unknown> = { ...task }
-  for (const k of ['id', 'createdAt', 'updatedAt', 'completedAt']) delete rest[k]
+  // A duplicate starts its own repeating series (and its own revisions).
+  for (const k of ['id', 'createdAt', 'updatedAt', 'completedAt', 'seriesId', 'rev']) delete rest[k]
   const copy = actions.create('tasks', { ...rest, status: 'todo', checklist: (task.checklist ?? []).map((c) => ({ ...c, done: false, doneAt: undefined })) } as never)
   toast({ title: 'Task duplicated', description: copy.title, tone: 'success', action: { label: 'Undo', onClick: undoAll([lastChangeId()]) } })
   return copy

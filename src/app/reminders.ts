@@ -10,7 +10,7 @@
  */
 import { useCallback, useEffect, useState } from 'react'
 import type { Database, Settings } from '@/data/types'
-import { addDaysISO, formatTime, toISODate } from '@/lib/dates'
+import { addDaysISO, formatTime, localInstant, toISODate } from '@/lib/dates'
 import { appStore } from '@/store/store'
 import { toast } from '@/components/ui/toast'
 
@@ -28,7 +28,6 @@ export interface Reminder {
 export const MISSED_GRACE_MS = 15 * 60_000
 const HORIZON_DAYS = 2
 
-const at = (date: string, time: string) => new Date(`${date}T${time}:00`).getTime()
 
 const leadText = (mins: number) => (mins === 0 ? 'now' : mins < 60 ? `in ${mins} min` : mins % 1440 === 0 ? `in ${mins / 1440} day${mins === 1440 ? '' : 's'}` : `in ${Math.round(mins / 60)} h`)
 
@@ -43,13 +42,13 @@ export function upcomingReminders(db: Pick<Database, 'tasks' | 'events'>, settin
     if (t.status === 'done' || !t.dueDate || !t.dueTime || t.dueDate > last) continue
     const lead = t.remindBefore ?? (r.tasks ? r.lead : undefined)
     if (lead === undefined) continue
-    const fire = at(t.dueDate, t.dueTime) - lead * 60_000
+    const fire = localInstant(t.dueDate, t.dueTime) - lead * 60_000
     out.push({ key: `t:${t.id}@${fire}`, kind: 'tasks', recordId: t.id, title: t.title, body: `Task due ${leadText(lead)} · ${formatTime(t.dueTime, settings.timeFormat)}`, at: fire })
   }
   if (r.events) {
     for (const e of db.events) {
       if (e.allDay || !e.startTime || e.date > last) continue
-      const fire = at(e.date, e.startTime) - r.lead * 60_000
+      const fire = localInstant(e.date, e.startTime) - r.lead * 60_000
       const where = e.location ? ` · ${e.location}` : ''
       out.push({ key: `e:${e.id}@${fire}`, kind: 'events', recordId: e.id, title: e.title, body: `Starts ${leadText(r.lead)} · ${formatTime(e.startTime, settings.timeFormat)}${where}`, at: fire })
     }

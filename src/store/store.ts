@@ -166,6 +166,27 @@ function logActivity(activity: ActivityEntry[], entry: ActivityInput, at: string
 const revOf = (r: { rev?: number } | undefined) => r?.rev ?? 0
 
 /**
+ * Unlink — never delete — records that point at `key/id` (RELATIONS), as a
+ * new revision of each. Mutates the given (already copied) database and
+ * returns what was unlinked, so a delete can put the links back on undo.
+ */
+function unlinkReferences(db: Database, key: CollectionKey, id: string, now: string): UndoToken['unlinked'] {
+  const unlinked: UndoToken['unlinked'] = []
+  for (const rel of RELATIONS.filter((r) => r.to === key)) {
+    const rows = db[rel.from] as unknown as Record<string, unknown>[]
+    if (!rows.some((row) => row[rel.field] === id)) continue
+    ;(db as unknown as Record<string, unknown>)[rel.from] = rows.map((row) => {
+      if (row[rel.field] !== id) return row
+      unlinked.push({ key: rel.from, id: row.id as string, field: rel.field, value: id })
+      const copy: Record<string, unknown> = { ...row, updatedAt: now, rev: revOf(row as { rev?: number }) + 1 }
+      delete copy[rel.field]
+      return copy
+    })
+  }
+  return unlinked
+}
+
+/**
  * After an undo puts a record back to an earlier state as a new revision,
  * point older history entries that produced that state at the new revision,
  * so undoing step by step keeps working.
@@ -193,19 +214,39 @@ function pushHistory(history: Change[], change: Change): Change[] {
   return out.length > HISTORY_LIMIT ? out.slice(-HISTORY_LIMIT) : out
 }
 
-/** The next occurrence of a repeating task that was just completed. */
-function nextOccurrenceOf(task: Collections['tasks'], now: string): Collections['tasks'] | undefined {
+/** The series a repeating task belongs to (older tasks, from before series ids, are their own series). */
+export const seriesOf = (task: Pick<Collections['tasks'], 'id' | 'seriesId'>) => task.seriesId ?? task.id
+
+/**
+ * The next occurrence of a repeating task that was just completed — unless
+ * that occurrence already exists (completed, reopened and completed again):
+ * occurrences are identified by (series, due date), so there's never a second.
+ */
+function nextOccurrenceOf(task: Collections['tasks'], now: string, existing: readonly Collections['tasks'][]): Collections['tasks'] | undefined {
   if (!task.repeat || task.status !== 'done') return undefined
+  const series = seriesOf(task)
+  const dueDate = nextDueDate(task.repeat, task.dueDate, todayISO())
+  const sameRule = JSON.stringify(task.repeat)
+  const already = existing.some(
+    (t) =>
+      t.id !== task.id &&
+      t.status !== 'done' &&
+      t.dueDate === dueDate &&
+      // Same series — or, for copies made before series ids existed, the same title and rule.
+      (seriesOf(t) === series || (!t.seriesId && t.title === task.title && JSON.stringify(t.repeat) === sameRule)),
+  )
+  if (already) return undefined
   const rest: Record<string, unknown> = { ...task }
   for (const k of ['id', 'completedAt', 'createdAt', 'updatedAt', 'focusDate', 'rev']) delete rest[k]
   return validate('tasks', {
     ...rest,
     id: uid(),
+    seriesId: series,
     createdAt: now,
     updatedAt: now,
     rev: 1,
     status: 'todo',
-    dueDate: nextDueDate(task.repeat, task.dueDate, todayISO()),
+    dueDate,
     checklist: task.checklist.map((c) => ({ ...c, done: false, doneAt: undefined })),
   })
 }
@@ -250,7 +291,7 @@ export function createAppStore(initial: Database = createEmptyDatabase()) {
       const final = validate(key, record)
       const resolvedAction = opts?.action ?? action
       // A repeating task that has just been completed comes back on its next date.
-      const spawn = key === 'tasks' && resolvedAction === 'completed' ? nextOccurrenceOf(final as Collections['tasks'], now) : undefined
+      const spawn = key === 'tasks' && resolvedAction === 'completed' ? nextOccurrenceOf(final as Collections['tasks'], now, get().db.tasks) : undefined
       set((s) => {
         const items = [...(s.db[key] as Collections[typeof key][])]
         const i = items.findIndex((r) => r.id === id)
@@ -295,21 +336,8 @@ export function createAppStore(initial: Database = createEmptyDatabase()) {
       if (index === -1) return undefined
       const record = list[index]
       const now = new Date().toISOString()
-      const unlinked: UndoToken['unlinked'] = []
       const db = { ...state.db, [key]: list.filter((r) => r.id !== id) } as Database
-
-      // Unlink — never delete — records that referenced this one.
-      for (const rel of RELATIONS.filter((r) => r.to === key)) {
-        const rows = db[rel.from] as unknown as Record<string, unknown>[]
-        if (!rows.some((row) => row[rel.field] === id)) continue
-        ;(db as unknown as Record<string, unknown>)[rel.from] = rows.map((row) => {
-          if (row[rel.field] !== id) return row
-          unlinked.push({ key: rel.from, id: row.id as string, field: rel.field, value: id })
-          const copy: Record<string, unknown> = { ...row, updatedAt: now, rev: revOf(row as { rev?: number }) + 1 }
-          delete copy[rel.field]
-          return copy
-        })
-      }
+      const unlinked = unlinkReferences(db, key, id, now)
 
       db.activity = logActivity(
         state.db.activity,
@@ -409,6 +437,8 @@ export function createAppStore(initial: Database = createEmptyDatabase()) {
           if (!record) return
           rows[key] = rows[key].filter((r) => r.id !== id)
           deletions = addDeletion(deletions, key, record, now)
+          // Anything linked to it in the meantime is unlinked, exactly as a delete would.
+          unlinkReferences(db, key, id, now)
         }
         if (change.kind === 'create') {
           drop(change.key, change.recordId)

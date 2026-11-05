@@ -124,6 +124,12 @@ export const task = entity({
   tags,
   /** Repeat rule. Completing a repeating task creates the next occurrence. */
   repeat: repeatRule.optional(),
+  /**
+   * The repeating series this task belongs to: the first task's id, carried
+   * to every occurrence. An occurrence is identified by (seriesId, dueDate) —
+   * computed from the rule, never from list position — so one is never made twice.
+   */
+  seriesId: idSchema.optional(),
   /** Subtasks. */
   checklist: z.array(checkItem).default([]),
   /** Remind this many minutes before the due time (needs a due time). */

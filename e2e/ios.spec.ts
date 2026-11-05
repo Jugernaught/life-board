@@ -600,7 +600,10 @@ test('Today links open Plan on the right view; Replan stays reachable', async ({
   await top(page).getByRole('button', { name: 'All Tasks' }).click()
   await expect(page.getByRole('radio', { name: 'Tasks' })).toHaveAttribute('aria-checked', 'true')
   await page.getByTestId('tab-today').click()
-  await top(page).getByRole('button', { name: 'Calendar' }).click()
+  // Scroll it clear of the floating tab bar first, as a person would (near the bottom it sits underneath).
+  const calendarLink = top(page).getByRole('button', { name: 'Calendar' })
+  await calendarLink.evaluate((el) => el.scrollIntoView({ block: 'center' }))
+  await calendarLink.click()
   await expect(page.getByRole('radio', { name: 'Calendar' })).toHaveAttribute('aria-checked', 'true')
   await page.getByTestId('tab-today').click()
   await expect(page.getByTestId('m-plan-day')).toHaveText(/Plan Your Day/)

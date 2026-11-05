@@ -117,6 +117,19 @@ export function relativeDay(value: ISODate, today: ISODate = todayISO()): string
 
 // ---------------------------------------------------------------- times ---
 
+/**
+ * The moment a local date and wall-clock time happen on this device (ms).
+ *
+ * Daylight-saving policy (relied on deliberately; it is ECMAScript's rule for
+ * local times and is covered by tests):
+ *  - Clocks go back (a time happens twice): the FIRST occurrence is used, so
+ *    a 01:30 reminder fires once, at the earlier 01:30.
+ *  - Clocks go forward (a time doesn't exist): it moves forward by the gap,
+ *    so 01:30 on that night means 02:30.
+ * Repeat rules work in whole dates, so DST never moves or duplicates an occurrence.
+ */
+export const localInstant = (date: ISODate, time: string): number => new Date(`${date}T${time}:00`).getTime()
+
 export const isTime = (value: unknown): value is string => typeof value === 'string' && TIME_RE.test(value)
 
 export function timeToMinutes(value: string): number {
