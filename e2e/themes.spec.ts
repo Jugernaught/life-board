@@ -84,6 +84,9 @@ test('toolbar switcher, dark-only themes, accents and Reduce Transparency', asyn
 
 for (const t of THEMES) {
   test(`every section renders in ${t.name}`, async ({ page }, info) => {
+    // Visits all 13 sections (twice for themes with light + dark). That takes
+    // 12–20 s alone but can pass 60 s when the full suite runs in parallel.
+    test.slow()
     const errors = trackErrors(page)
     await skipOnboarding(page)
     await importSample(page, info.outputPath('sample.json'))

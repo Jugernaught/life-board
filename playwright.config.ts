@@ -11,6 +11,10 @@ export default defineConfig({
   timeout: 60_000,
   expect: { timeout: 10_000 },
   fullyParallel: true,
+  // Every worker renders the glass themes' blur effects in software. Playwright's
+  // default (half the CPU cores) overloads the machine and makes screen-walking
+  // tests time out; a quarter of the cores is both reliable and faster.
+  workers: '25%',
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: [['list'], ['html', { open: 'never' }]],
