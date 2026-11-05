@@ -5,7 +5,7 @@
  * Desktop app; the iPhone versions are covered in ios.spec.ts.
  */
 import { type Page, expect, test } from '@playwright/test'
-import { skipOnboarding, trackErrors, waitForSave } from './helpers'
+import { importSample, skipOnboarding, trackErrors, waitForSave } from './helpers'
 
 let errors: string[] = []
 // Every test starts at the same moment — Wednesday 4 November 2026, 09:00 — and
@@ -312,4 +312,43 @@ test('weekly review has one home; every create action is shown once; integration
   await expect(page.getByRole('tab', { name: 'Integrations' })).toHaveCount(0)
   await page.goto('/settings?tab=privacy')
   await expect(page.getByTestId('not-connected-note')).toContainText('Cloud sync')
+})
+
+test('group D: no-match states, templates entry, export feedback, target range, keyboard-openable transactions, board fits', async ({ page }, info) => {
+  await skipOnboarding(page)
+  await importSample(page, info.outputPath('sample.json'))
+
+  await page.goto('/fitness?tab=workouts')
+  await page.getByPlaceholder('Search workouts and exercises…').fill('zzzz-nothing')
+  await expect(page.getByText('No workouts match your search or filters')).toBeVisible()
+
+  await page.goto('/goals?tab=habits')
+  await page.getByTestId('habits-templates').click()
+  await expect(page.getByRole('dialog', { name: 'Starter templates' })).toBeVisible()
+  await page.keyboard.press('Escape')
+
+  await page.goto('/settings?tab=data')
+  const download = page.waitForEvent('download')
+  await page.getByTestId('export-json').click()
+  await download
+  await expect(page.getByRole('status').filter({ hasText: 'Backup downloaded' })).toBeVisible()
+
+  await page.goto('/settings?tab=targets')
+  const workouts = page.getByLabel('Workouts per week')
+  await workouts.fill('99')
+  await expect(page.getByTestId('target-error')).toHaveText('Use a value from 1 to 21')
+  await workouts.fill('4')
+  await expect(page.getByTestId('target-error')).toHaveCount(0)
+
+  await page.goto('/finance?tab=transactions')
+  await page.getByTestId('tx-open').first().focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('dialog', { name: 'Edit transaction' })).toBeVisible()
+  await page.keyboard.press('Escape')
+
+  // The applications pipeline wraps instead of needing sideways scrolling on a laptop screen.
+  await page.setViewportSize({ width: 1280, height: 800 })
+  await page.goto('/career?tab=applications')
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+  expect(overflow).toBeLessThanOrEqual(0)
 })

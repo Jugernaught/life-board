@@ -1,17 +1,13 @@
 import { useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import { CalendarClock, Flame, Plus, Share, Sparkles, Sunrise, X } from 'lucide-react'
-import { COLLECTIONS } from '@/data/registry'
-import type { CollectionKey } from '@/data/types'
 import { useNow, useToday } from '@/hooks/useNow'
 import { buildAgenda } from '@/selectors/agenda'
-import { periodSummary } from '@/selectors/analytics'
 import { currentStreak, todaysHabits, toggleLog } from '@/selectors/habits'
 import { tasksDueToday, todaysPriorities } from '@/selectors/tasks'
-import { addDaysISO, eachDay, greetingFor, weekStartISO } from '@/lib/dates'
-import { formatMinutes } from '@/lib/format'
+import { addDaysISO, greetingFor } from '@/lib/dates'
 import { toneColor } from '@/lib/tone'
-import { cn, truncate } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { actions, useDatabase } from '@/store/store'
 import { quickCreateTask, rescheduleMany } from '@/app/taskCommands'
 import { ProgressRing } from '@/components/ui/display'
@@ -20,14 +16,13 @@ import { planDay } from '@/features/planday/model'
 import { AgendaRow } from '../../components/AgendaRow'
 import { CheckInCard } from '../../components/CheckInCard'
 import { InlineAdd } from '../../components/InlineAdd'
-import { StatGrid, StatTile } from '../../components/Stats'
 import { TaskRow } from '../../components/TaskRow'
 import { openRecord } from '../../editor/openRecord'
 import { GettingStartedSection } from './GettingStarted'
 import { nav } from '../../nav/navigator'
 import { openPlan, useShowsHeaderAdd } from '../../nav/tabContext'
 import { CheckCircle } from '../../ui/controls'
-import { ActionCell, Cell, EmptyRow, Section, SeeAll } from '../../ui/List'
+import { ActionCell, EmptyRow, Section, SeeAll } from '../../ui/List'
 import { NavButton, Screen } from '../../ui/Screen'
 
 const isStandalone = () => (navigator as unknown as { standalone?: boolean }).standalone === true || window.matchMedia?.('(display-mode: standalone)').matches
@@ -99,16 +94,9 @@ export default function TodayScreen() {
     const nowHM = format(now, 'HH:mm')
     return buildAgenda(db, today, addDaysISO(today, 1), today).filter((i) => i.sourceKey !== 'tasks' && (i.date !== today || i.allDay || (i.endTime ?? i.startTime ?? '') >= nowHM))
   }, [db, today, now])
-  const week = useMemo(() => {
-    const start = weekStartISO(today, ws)
-    const elapsed = eachDay(start, today).length
-    const prevStart = addDaysISO(start, -7)
-    return {
-      cur: periodSummary(db, { start, end: today }, today, ws),
-      prev: periodSummary(db, { start: prevStart, end: addDaysISO(prevStart, elapsed - 1) }, today, ws),
-    }
-  }, [db, today, ws])
   const dueAll = [...overdue, ...dueToday]
+  // Today's priorities are listed above; the Due list shows the rest (the ring still counts everything due).
+  const dueList = dueAll.filter((t) => t.focusDate !== today)
   const dueDone = db.tasks.filter((t) => t.status === 'done' && t.dueDate === today).length
   const name = db.settings.displayName
   const planned = db.settings.planDayLast === today
@@ -159,13 +147,13 @@ export default function TodayScreen() {
           {priorities.map((t) => (
             <TaskRow key={t.id} task={t} today={today} />
           ))}
-          <InlineAdd placeholder="Add a priority" testId="add-priority" onAdd={(title) => actions.create('tasks', { title, focusDate: today, dueDate: today, priority: 'high' })} />
+          <InlineAdd placeholder="Add a priority" testId="add-priority" onAdd={(title) => quickCreateTask(title, { focusDate: today, dueDate: today, priority: 'high' })} />
         </Section>
       </div>
 
       <Section header={overdue.length ? `Due · ${overdue.length} overdue` : 'Due today'} headerAction={<SeeAll label="All Tasks" onClick={() => openPlan('tasks', nav.push)} />}>
-        {dueAll.length === 0 && <EmptyRow>{dueDone ? `All done — ${dueDone} completed today.` : 'Nothing due today.'}</EmptyRow>}
-        {dueAll.map((t) => (
+        {dueList.length === 0 && <EmptyRow>{dueAll.length ? 'Everything due today is in your priorities above.' : dueDone ? `All done — ${dueDone} completed today.` : 'Nothing due today.'}</EmptyRow>}
+        {dueList.map((t) => (
           <TaskRow key={t.id} task={t} today={today} />
         ))}
         {overdue.length > 1 && (
@@ -208,32 +196,6 @@ export default function TodayScreen() {
       <GettingStartedSection />
       <InstallHint />
 
-      <Section header="This week" plain>
-        <StatGrid className="!mx-0 !mb-0">
-          <StatTile label="Tasks done" value={week.cur.tasksCompleted} current={week.cur.tasksCompleted} previous={week.prev.tasksCompleted} tone="cyan" />
-          <StatTile label="Habits" value={week.cur.habitRate === null ? '—' : `${Math.round(week.cur.habitRate * 100)}%`} sub={`${week.cur.habitCheckIns} check-ins`} tone="lime" />
-          <StatTile label="Workouts" value={week.cur.workouts} current={week.cur.workouts} previous={week.prev.workouts} tone="magenta" />
-          <StatTile label="Learning" value={formatMinutes(week.cur.learningMinutes)} current={week.cur.learningMinutes} previous={week.prev.learningMinutes} format={formatMinutes} tone="violet" />
-        </StatGrid>
-        <p className="ios-footnote mt-1.5 px-4 text-ink-subtle">Compared with the same days last week.</p>
-      </Section>
-
-      <Section header="Recent activity">
-        {db.activity.length === 0 && <EmptyRow>Everything you add, complete or change is logged here.</EmptyRow>}
-        {db.activity.slice(0, 5).map((a) => {
-          const key = a.collection as CollectionKey
-          const exists = a.action !== 'deleted' && (db[key] as { id: string }[] | undefined)?.some((r) => r.id === a.entityId)
-          return (
-            <Cell
-              key={a.id}
-              title={truncate(a.label, 48)}
-              subtitle={`${a.action[0].toUpperCase()}${a.action.slice(1)} ${COLLECTIONS[key]?.singular.toLowerCase() ?? 'record'}`}
-              detail={<span className="ios-footnote">{format(new Date(a.at), 'HH:mm')}</span>}
-              onClick={exists ? () => openRecord(key, a.entityId) : undefined}
-            />
-          )
-        })}
-      </Section>
     </Screen>
   )
 }

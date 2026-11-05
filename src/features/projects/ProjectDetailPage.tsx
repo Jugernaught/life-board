@@ -12,7 +12,7 @@ import { toneColor } from '@/lib/tone'
 import { actions, useCollection, useDatabase, useRecord } from '@/store/store'
 import { Button } from '@/components/ui/Button'
 import { Badge, EmptyState, ProgressRing } from '@/components/ui/display'
-import { Segmented } from '@/components/ui/inputs'
+import { Checkbox, Segmented } from '@/components/ui/inputs'
 import { Panel } from '@/components/ui/Panel'
 import { ChartCard, ChartTooltip, axisProps, gridProps, series } from '@/components/charts/ChartKit'
 import { Checklist } from '@/components/shared/Checklist'
@@ -60,9 +60,9 @@ export default function ProjectDetailPage() {
 
   if (!project) {
     return (
-      <div className="panel">
+      <Panel padded={false}>
         <EmptyState icon={FolderX} title="Project not found" description="It may have been deleted." action={<Button onClick={() => navigate('/projects')}>Back to projects</Button>} />
-      </div>
+      </Panel>
     )
   }
 
@@ -135,10 +135,7 @@ export default function ProjectDetailPage() {
             title="Tasks"
             icon={ListChecks}
             actions={
-              <label className="flex items-center gap-2 text-[12px] text-ink-subtle">
-                <input type="checkbox" checked={showDone} onChange={(e) => setShowDone(e.target.checked)} className="accent-[var(--color-accent)]" />
-                Show completed ({own.filter((t) => t.status === 'done').length})
-              </label>
+              <Checkbox size="sm" checked={showDone} onChange={setShowDone} label={<span className="text-[12px] text-ink-muted">Show completed ({own.filter((t) => t.status === 'done').length})</span>} />
             }
           >
             {visibleTasks.length === 0 ? (

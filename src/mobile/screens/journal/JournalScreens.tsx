@@ -9,7 +9,6 @@ import { useCollection, useRecord, useSettings } from '@/store/store'
 import { TagInput } from '@/components/ui/pickers'
 import { deleteRecord } from '@/components/editor/useDeleteRecord'
 import { useJournalDraft } from '@/features/journal/useJournalDraft'
-import { CheckInCard } from '../../components/CheckInCard'
 import { nav } from '../../nav/navigator'
 import { useShowsHeaderAdd } from '../../nav/tabContext'
 import { actionSheet } from '../../ui/ActionSheet'
@@ -50,6 +49,8 @@ export function JournalScreen() {
   const settings = useSettings()
   const today = useToday()
   const sorted = useMemo(() => [...entries].sort((a, b) => (a.date === b.date ? (a.createdAt < b.createdAt ? 1 : -1) : a.date < b.date ? 1 : -1)), [entries])
+  // Only mention a streak once there is one ("0 day streak" reads as a scold).
+  const streakDays = streak(entries, today)
   const todays = sorted.filter((e) => e.date === today)
   const showAdd = useShowsHeaderAdd()
   return (
@@ -57,7 +58,7 @@ export function JournalScreen() {
       title="Journal"
       large
       testId="screen-journal"
-      subtitle={`${entries.length} entr${entries.length === 1 ? 'y' : 'ies'} · ${streak(entries, today)} day streak`}
+      subtitle={`${entries.length} entr${entries.length === 1 ? 'y' : 'ies'}${streakDays > 0 ? ` · ${streakDays} day streak` : ''}`}
       trailing={
         showAdd && (
           <NavButton label="Write" testId="journal-write" onClick={() => nav.push(`journal/write/${today}`)}>
@@ -67,9 +68,8 @@ export function JournalScreen() {
       }
     >
       <Section header="Today" footer="Private: stored only on this device. Saves as you type.">
-        {todays.length === 0 ? <Cell title="Write today’s entry" tint chevron onClick={() => nav.push(`journal/write/${today}`)} testId="journal-today" /> : todays.map((e) => <EntryCell key={e.id} e={e} blur={settings.journalBlur} />)}
+        {todays.length === 0 ? <Cell title="Write Today’s Entry" tint chevron onClick={() => nav.push(`journal/write/${today}`)} testId="journal-today" /> : todays.map((e) => <EntryCell key={e.id} e={e} blur={settings.journalBlur} />)}
       </Section>
-      <CheckInCard today={today} />
       <Section header="Recent">
         {sorted.filter((e) => e.date !== today).length === 0 && <EmptyRow>Past entries appear here.</EmptyRow>}
         {sorted

@@ -62,7 +62,7 @@ export const COLLECTIONS: Registry = {
   habits: { singular: 'Habit', plural: 'Habits', section: 'goals', tab: 'habits', title: (r) => r.name, searchText: (r) => r.description ?? '', searchable: true },
   weeklyReviews: { singular: 'Weekly review', plural: 'Weekly reviews', section: 'goals', tab: 'review', title: (r) => `Week of ${r.weekStart}`, searchText: (r) => [r.wins, r.challenges, r.lessons, r.focus].join(' '), searchable: true },
   skills: { singular: 'Skill', plural: 'Skills', section: 'learning', tab: 'skills', title: (r) => r.name, searchText: (r) => [r.description, r.objectives, r.category, ...r.roadmap.map((s) => s.title)].join(' '), searchable: true },
-  learningCourses: { singular: 'Course', plural: 'Courses', section: 'learning', tab: 'courses', title: (r) => r.title, searchText: (r) => [r.provider, r.notes].join(' '), searchable: true },
+  learningCourses: { singular: 'Learning course', plural: 'Learning courses', section: 'learning', tab: 'courses', title: (r) => r.title, searchText: (r) => [r.provider, r.notes].join(' '), searchable: true },
   studySessions: { singular: 'Study session', plural: 'Study sessions', section: 'learning', tab: 'sessions', title: (r) => r.topic || 'Study session', searchText: (r) => r.notes ?? '', searchable: true },
   resources: { singular: 'Resource', plural: 'Resources', section: 'learning', tab: 'resources', title: (r) => r.title, searchText: (r) => r.notes ?? '', searchable: true },
   journal: {

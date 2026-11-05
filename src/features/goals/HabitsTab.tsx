@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Flame, Plus, Repeat, Trophy } from 'lucide-react'
+import { Flame, LayoutTemplate, Plus, Repeat, Trophy } from 'lucide-react'
 import { HABIT_SCHEDULES, LIFE_AREAS, WEEKDAYS } from '@/data/constants'
 import type { Habit } from '@/data/types'
 import { completionRate, currentStreak, isDoneOn, isScheduledOn, longestStreak, toggleLog } from '@/selectors/habits'
@@ -9,10 +9,12 @@ import { cn } from '@/lib/utils'
 import { actions, useCollection, useSettings } from '@/store/store'
 import { Button } from '@/components/ui/Button'
 import { Badge, EmptyState, Stat } from '@/components/ui/display'
+import { Checkbox } from '@/components/ui/inputs'
 import { Panel } from '@/components/ui/Panel'
 import { Heatmap } from '@/components/charts/Heatmap'
 import { RecordActions } from '@/components/shared/RecordActions'
 import { editor } from '@/components/editor/editorStore'
+import { templates } from '@/features/start/model'
 
 function scheduleText(h: Habit) {
   if (h.schedule === 'daily') return 'Every day'
@@ -77,10 +79,11 @@ export function HabitsTab({ today }: { today: string }) {
         eyebrow="Tap a cell to tick off or back-fill a day"
         actions={
           <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 text-[12px] text-ink-subtle">
-              <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} className="accent-[var(--color-accent)]" />
-              Archived
-            </label>
+            {/* Ready-made habits stay one click away after the getting-started guide is gone. */}
+            <Button size="sm" variant="ghost" icon={LayoutTemplate} onClick={() => templates.show()} data-testid="habits-templates">
+              Templates
+            </Button>
+            <Checkbox size="sm" checked={showArchived} onChange={setShowArchived} label={<span className="text-[12px] text-ink-muted">Archived</span>} />
           </div>
         }
       >

@@ -158,7 +158,7 @@ export default function FitnessPage() {
         description="Log workouts, activity and sleep, and keep routines on track. Built around consistency and wellbeing — no appearance-based scores."
         actions={
           <>
-            <Button icon={Moon} onClick={() => editor.create('sleep')}>
+            <Button icon={Plus} onClick={() => editor.create('sleep')}>
               Sleep
             </Button>
             <Button variant="primary" icon={Plus} onClick={() => editor.create('workouts')}>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight, ClipboardCheck, Flame, Minus, Plus, Trophy } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ClipboardCheck, Flame, LayoutTemplate, Minus, Plus, Trophy } from 'lucide-react'
 import { GOAL_HORIZONS, GOAL_STATUSES, HABIT_SCHEDULES, LIFE_AREAS, WEEKDAYS, type GoalHorizon } from '@/data/constants'
 import type { Goal, Habit } from '@/data/types'
 import { useToday } from '@/hooks/useNow'
@@ -14,6 +14,7 @@ import { actions, useCollection, useDatabase, useRecord, useSettings } from '@/s
 import { ProgressRing } from '@/components/ui/display'
 import { Heatmap } from '@/components/charts/Heatmap'
 import { editor } from '@/components/editor/editorStore'
+import { templates } from '@/features/start/model'
 import { deleteRecord } from '@/components/editor/useDeleteRecord'
 import { checklistAdd, checklistRows } from '../../components/Checklist'
 import { StatGrid, StatTile } from '../../components/Stats'
@@ -151,6 +152,8 @@ export function HabitsScreen() {
     >
       <Section>
         <Cell icon={ClipboardCheck} iconTone="violet" title="Weekly Review" subtitle="What you recorded, and your reflection" chevron onClick={() => nav.push('habits/review')} />
+        {/* Ready-made habits and routines stay reachable after the getting-started guide is gone. */}
+        <Cell icon={LayoutTemplate} iconTone="violet" title="Starter Templates" subtitle="Ready-made habits and routines" chevron onClick={() => templates.show()} testId="m-habits-templates" />
       </Section>
       {seg === 'habits' ? (
         <>

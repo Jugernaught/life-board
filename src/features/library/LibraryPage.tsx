@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/Button'
 import { Badge, EmptyState, ProgressBar, Stat } from '@/components/ui/display'
 import { Segmented, Select } from '@/components/ui/inputs'
 import { RatingDisplay } from '@/components/ui/pickers'
+import { Panel } from '@/components/ui/Panel'
 import { ChartCard, ChartTooltip, axisProps, gridProps, series } from '@/components/charts/ChartKit'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { ListToolbar } from '@/components/shared/ListToolbar'
@@ -158,9 +159,9 @@ export default function LibraryPage() {
         }
       />
       {items.length === 0 ? (
-        <div className="panel">
+        <Panel padded={false}>
           <EmptyState icon={Library} title="Your library is empty" description="Add something you're reading, watching or listening to — or want to. Rate it and note key takeaways when you finish." action={<Button variant="primary" icon={Plus} onClick={() => editor.create('media')}>Add first item</Button>} />
-        </div>
+        </Panel>
       ) : (
         <>
           <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -215,9 +216,9 @@ export default function LibraryPage() {
             />
           </ListToolbar>
           {controls.results.length === 0 ? (
-            <div className="panel">
+            <Panel padded={false}>
               <EmptyState compact title="Nothing matches" description="Try clearing filters." />
-            </div>
+            </Panel>
           ) : view === 'grid' ? (
             <div className={cn('grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4')}>
               {controls.results.map((i) => (

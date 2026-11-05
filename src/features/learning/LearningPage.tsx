@@ -265,6 +265,7 @@ function CoursesTab() {
           Course
         </Button>
       </ListToolbar>
+      {courses.length > 0 && controls.results.length === 0 && <EmptyState compact icon={GraduationCap} title="No courses match your search or filters" description="Try clearing the search or filters." />}
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {controls.results.map((c) => {
           const p = courseProgress(c)

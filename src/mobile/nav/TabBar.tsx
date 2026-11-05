@@ -89,7 +89,7 @@ export function TabBar() {
         <span className="relative">
           <t.icon size={floating ? 23 : 25} strokeWidth={active ? 2.3 : 1.8} />
           {badge > 0 && (
-            <span className="absolute -top-1 -right-2.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[#ff3b30] px-1 text-[12px] leading-none font-medium text-white tabular-nums" aria-hidden>
+            <span className="absolute -top-1 -right-2.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--ios-system-red)] px-1 text-[12px] leading-none font-medium text-white tabular-nums" aria-hidden>
               {badge > 99 ? '99+' : badge}
             </span>
           )}

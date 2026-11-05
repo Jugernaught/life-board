@@ -185,6 +185,15 @@
 }
 
 /* ----------------------------------------------------------------- base */
+/*
+ * iOS system red, for the notification badge and the calendar's "today" marker.
+ * Deliberately not --color-bad: that is tuned per theme for red *text*, and in
+ * some themes (e.g. Minimal Dark's pastel) white badge text on it would be too faint.
+ */
+:root[data-shell='ios'] {
+  --ios-system-red: #ff3b30;
+}
+
 :root[data-shell='ios'],
 :root[data-shell='ios'] body {
   height: 100%;

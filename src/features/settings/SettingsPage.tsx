@@ -79,19 +79,37 @@ function CategoryEditor({ kind }: { kind: 'expenseCategories' | 'incomeCategorie
 function TargetInput({ field, label, description, unit, min, max }: { field: keyof Settings['targets']; label: string; description: string; unit: string; min: number; max: number }) {
   const settings = useSettings()
   const value = settings.targets[field] as number | undefined
+  // A value outside the range isn't saved — and says so, instead of silently doing nothing.
+  const [problem, setProblem] = useState<string | undefined>()
+  const id = `target-${field}`
   return (
-    <Row label={label} description={description}>
-      <div className="flex items-center gap-2">
+    <Row label={label} description={`${description} · ${min}–${max.toLocaleString()} ${unit.replace(/^\//, 'per ')}`}>
+      <div>
         <NumberInput
           value={value}
           onChange={(v) => {
-            if (v === undefined) set({ targets: { ...settings.targets, [field]: undefined } })
-            else if (Number.isFinite(v) && v >= min && v <= max) set({ targets: { ...settings.targets, [field]: Math.round(v * 10) / 10 } })
+            if (v === undefined) {
+              setProblem(undefined)
+              set({ targets: { ...settings.targets, [field]: undefined } })
+            } else if (!Number.isFinite(v)) setProblem('Enter a number')
+            else if (v < min || v > max) setProblem(`Use a value from ${min} to ${max.toLocaleString()}`)
+            else {
+              setProblem(undefined)
+              set({ targets: { ...settings.targets, [field]: Math.round(v * 10) / 10 } })
+            }
           }}
           placeholder="Not set"
           aria-label={label}
+          aria-invalid={problem ? true : undefined}
+          aria-describedby={problem ? `${id}-error` : undefined}
+          invalid={!!problem}
           trailing={<span className="pr-1 text-[12px]">{unit}</span>}
         />
+        {problem && (
+          <p id={`${id}-error`} className="mt-1 text-[12px] text-bad" role="alert" data-testid="target-error">
+            {problem}
+          </p>
+        )}
       </div>
     </Row>
   )

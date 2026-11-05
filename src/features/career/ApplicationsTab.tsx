@@ -131,7 +131,8 @@ export function ApplicationsTab({ today }: { today: string }) {
       </ListToolbar>
       {view === 'board' ? (
         <div className="no-scrollbar -mx-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
-          <div className="grid min-w-[1100px] grid-cols-6 gap-3">
+          {/* Six stages: all in a row on wide screens, wrapping into rows on laptops and tablets — never sideways scrolling. */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
             {columns.map((col) => {
               const list = controls.results.filter((a) => col.statuses.includes(a.status))
               const label = col.id === 'closed' ? 'Closed' : APPLICATION_STATUSES.label(col.id as ApplicationStatus)
@@ -156,11 +157,14 @@ export function ApplicationsTab({ today }: { today: string }) {
           </div>
         </div>
       ) : (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {controls.results.map((a) => (
-            <ApplicationCard key={a.id} a={a} today={today} />
-          ))}
-        </div>
+        <>
+          {applications.length > 0 && controls.results.length === 0 && <EmptyState compact icon={Briefcase} title="No applications match your search or filters" description="Try clearing the search or filters." />}
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {controls.results.map((a) => (
+              <ApplicationCard key={a.id} a={a} today={today} />
+            ))}
+          </div>
+        </>
       )}
     </div>
   )

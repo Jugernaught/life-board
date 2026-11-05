@@ -10,7 +10,7 @@ import { actions, useCollection, useSettings } from '@/store/store'
 import { logRecurring } from '@/app/financeCommands'
 import { Button, IconButton } from '@/components/ui/Button'
 import { Badge, EmptyState, ProgressBar, ProgressRing, Stat } from '@/components/ui/display'
-import { Input } from '@/components/ui/inputs'
+import { Checkbox, Input } from '@/components/ui/inputs'
 import { Panel } from '@/components/ui/Panel'
 import { RecordActions } from '@/components/shared/RecordActions'
 import { toast } from '@/components/ui/toast'
@@ -110,10 +110,7 @@ export function SavingsTab({ today }: { today: string }) {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between gap-2">
-        <label className="flex items-center gap-2 text-[12.5px] text-ink-muted">
-          <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} className="accent-[var(--color-accent)]" />
-          Show archived
-        </label>
+        <Checkbox size="sm" checked={showArchived} onChange={setShowArchived} label={<span className="text-[12.5px] text-ink-muted">Show archived</span>} />
         <Button variant="primary" size="sm" icon={Plus} onClick={() => editor.create('savingsGoals')}>
           Savings goal
         </Button>

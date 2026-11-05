@@ -371,9 +371,12 @@ export function EducationScreen() {
             testId="m-course-row"
           />
         ))}
-        <ActionCell icon={Plus} onClick={() => editor.create('academicCourses')}>
-          Add Course
-        </ActionCell>
+        {/* The "+" above offers Course too; this prompt only shows while there are none. */}
+        {db.academicCourses.length === 0 && (
+          <ActionCell icon={Plus} onClick={() => editor.create('academicCourses')}>
+            Add Course
+          </ActionCell>
+        )}
       </Section>
       {loose.length > 0 && (
         <Section header="Other modules">

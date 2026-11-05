@@ -18,6 +18,7 @@ import { confirmAction } from '@/components/ui/confirm'
 import { toast } from '@/components/ui/toast'
 import { InlineAdd } from '../../components/InlineAdd'
 import { PhoneThemePreview } from '../../components/PhoneThemePreview'
+import { RecentActivity } from '../../components/RecentActivity'
 import { shareJsonFile } from '../../components/share'
 import { nav } from '../../nav/navigator'
 import { actionSheet } from '../../ui/ActionSheet'
@@ -169,7 +170,7 @@ export function SettingsScreen() {
         <SelectRow label="Week Starts On" value={String(s.weekStartsOn) as '0' | '1'} onChange={(v) => set({ weekStartsOn: Number(v) as 0 | 1 })} options={[{ value: '1', label: 'Monday' }, { value: '0', label: 'Sunday' }]} />
       </Section>
 
-      <Section header="Working hours" footer="Shaded on the day timeline in Plan.">
+      <Section header="Working hours" footer="Plan’s day timeline opens at your start time. The desktop calendar also shades your working hours and days.">
         <Row label="Starts" htmlFor="m-work-start">
           <input id="m-work-start" type="time" value={s.workStart} onChange={(e) => e.target.value && set({ workStart: e.target.value })} className="rounded-[8px] bg-[var(--ios-fill)] px-2 text-ink" />
         </Row>
@@ -189,7 +190,7 @@ export function SettingsScreen() {
       </Section>
 
       <Section>
-        <Cell icon={Target} iconTone="magenta" title="Targets" detail={Object.values(s.targets).filter((v) => v !== undefined).length || undefined} chevron onClick={() => nav.push('more/settings/targets')} testId="settings-targets" />
+        <Cell icon={Target} iconTone="magenta" title="Personal Targets" detail={Object.values(s.targets).filter((v) => v !== undefined).length || undefined} chevron onClick={() => nav.push('more/settings/targets')} testId="settings-targets" />
         <Cell icon={FolderTree} iconTone="lime" title="Finance Categories" chevron onClick={() => nav.push('more/settings/categories')} />
       </Section>
 
@@ -337,7 +338,7 @@ export function NotificationsScreen() {
 
 export function TargetsScreen() {
   return (
-    <Screen title="Targets" testId="screen-targets">
+    <Screen title="Personal Targets" testId="screen-targets">
       <Section footer="Optional. When set, Analytics and section overviews show progress against them. Leave blank and nothing is assumed.">
         {TARGETS.map((t) => (
           <TargetRow key={t.field} t={t} />
@@ -365,7 +366,7 @@ export function CategoriesScreen() {
     >
       <Section footer="Removing a category only removes the suggestion — existing transactions keep theirs. Swipe left to remove.">
         {list.map((c) => (
-          <SwipeRow key={c} actions={list.length > 1 ? [{ label: 'Remove', icon: Trash2, tone: 'bad', onAction: () => set({ [kind]: list.filter((x) => x !== c) } as Partial<Settings>) }] : []}>
+          <SwipeRow key={c} actions={list.length > 1 ? [{ label: 'Remove', icon: Trash2, tone: 'bad', onAction: () => removeCategory(kind, c) }] : []}>
             <Cell title={c} testId="m-category-row" />
           </SwipeRow>
         ))}
@@ -384,6 +385,28 @@ export function CategoriesScreen() {
       </Section>
     </Screen>
   )
+}
+
+/** Remove a category suggestion, with Undo (puts it back where it was, if it isn't there already). */
+function removeCategory(kind: 'expenseCategories' | 'incomeCategories', name: string) {
+  const list = appStore.getState().db.settings[kind]
+  const index = list.indexOf(name)
+  set({ [kind]: list.filter((x) => x !== name) } as Partial<Settings>)
+  toast({
+    title: 'Category removed',
+    description: `“${name}” — existing transactions keep it.`,
+    tone: 'success',
+    action: {
+      label: 'Undo',
+      onClick: () => {
+        const now = appStore.getState().db.settings[kind]
+        if (now.includes(name)) return
+        const next = [...now]
+        next.splice(Math.min(index, next.length), 0, name)
+        set({ [kind]: next } as Partial<Settings>)
+      },
+    },
+  })
 }
 
 // ----------------------------------------------------------- data & backups
@@ -626,6 +649,8 @@ export function DataScreen() {
           </SwipeRow>
         ))}
       </Section>
+
+      <RecentActivity />
 
       <Section header="Danger zone" footer="A backup is saved before each of these, so they can be undone from Backups.">
         <ActionCell

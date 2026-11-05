@@ -428,7 +428,7 @@ export function TargetsScreen() {
   const month = monthKey(today)
   return (
     <RecordScreen
-      title="Targets"
+      title="Financial Targets"
       collection="financialTargets"
       testId="screen-fin-targets"
       items={targets}

@@ -62,7 +62,7 @@ export const ROUTES: Record<RoutePattern, RouteDef> = {
   'more/finance/budgets': { component: named(finance, 'BudgetsScreen'), title: 'Budgets' },
   'more/finance/savings': { component: named(finance, 'SavingsScreen'), title: 'Savings' },
   'more/finance/recurring': { component: named(finance, 'RecurringScreen'), title: 'Recurring' },
-  'more/finance/targets': { component: named(finance, 'TargetsScreen'), title: 'Targets' },
+  'more/finance/targets': { component: named(finance, 'TargetsScreen'), title: 'Financial Targets' },
   'more/fitness': { component: named(fitness, 'FitnessScreen'), title: 'Fitness' },
   'more/fitness/workouts': { component: named(fitness, 'WorkoutsScreen'), title: 'Workouts' },
   'more/fitness/records': { component: named(fitness, 'RecordsScreen'), title: 'Personal Records' },
@@ -84,7 +84,7 @@ export const ROUTES: Record<RoutePattern, RouteDef> = {
   'more/settings': { component: named(settings, 'SettingsScreen'), title: 'Settings' },
   'more/settings/data': { component: named(settings, 'DataScreen'), title: 'Data & Backups' },
   'more/settings/notifications': { component: named(settings, 'NotificationsScreen'), title: 'Notifications' },
-  'more/settings/targets': { component: named(settings, 'TargetsScreen'), title: 'Targets' },
+  'more/settings/targets': { component: named(settings, 'TargetsScreen'), title: 'Personal Targets' },
   'more/settings/categories': { component: named(settings, 'CategoriesScreen'), title: 'Categories' },
 }
 

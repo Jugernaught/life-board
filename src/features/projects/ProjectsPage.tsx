@@ -11,6 +11,7 @@ import { actions, useCollection } from '@/store/store'
 import { Button } from '@/components/ui/Button'
 import { EmptyState, Stat } from '@/components/ui/display'
 import { Segmented } from '@/components/ui/inputs'
+import { Panel } from '@/components/ui/Panel'
 import { ChartCard, ChartTooltip, axisProps, gridProps, series } from '@/components/charts/ChartKit'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { ListToolbar } from '@/components/shared/ListToolbar'
@@ -63,7 +64,7 @@ export default function ProjectsPage() {
         }
       />
       {projects.length === 0 ? (
-        <div className="panel">
+        <Panel padded={false}>
           <EmptyState
             icon={FolderKanban}
             title="No projects yet"
@@ -74,7 +75,7 @@ export default function ProjectsPage() {
               </Button>
             }
           />
-        </div>
+        </Panel>
       ) : (
         <>
           <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -119,9 +120,9 @@ export default function ProjectsPage() {
             />
           </ListToolbar>
           {controls.results.length === 0 ? (
-            <div className="panel">
+            <Panel padded={false}>
               <EmptyState icon={FolderKanban} title="No projects match" description="Try a different search or filter." />
-            </div>
+            </Panel>
           ) : view === 'grid' ? (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {controls.results.map((p) => (

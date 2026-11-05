@@ -12,6 +12,7 @@ import { toneColor, toneTint } from '@/lib/tone'
 import { cn } from '@/lib/utils'
 import { goalProgressOf } from '@/store/lifecycle'
 import { actions, useCollection, useDatabase } from '@/store/store'
+import { quickCreateTask } from '@/app/taskCommands'
 import { editor } from '@/components/editor/editorStore'
 import { deleteRecord } from '@/components/editor/useDeleteRecord'
 import { AgendaDayRow } from '../../components/AgendaRow'
@@ -140,7 +141,7 @@ export function SocialScreen() {
         {commitments.slice(0, 8).map((t) => (
           <TaskRow key={t.id} task={t} today={today} />
         ))}
-        <InlineAdd placeholder="Add a commitment" testId="social-add-commitment" onAdd={(title) => actions.create('tasks', { title, area: 'social' })} />
+        <InlineAdd placeholder="Add a commitment" testId="social-add-commitment" onAdd={(title) => quickCreateTask(title, { area: 'social' })} />
       </Section>
 
       <Section header="Social goals">
@@ -148,13 +149,16 @@ export function SocialScreen() {
         {goals.map((g) => (
           <Cell key={g.id} icon={Target} iconTone="amber" title={g.title} subtitle={<ProgressLine value={goalProgressOf(g)} className="mt-1.5" />} detail={`${Math.round(goalProgressOf(g))}%`} chevron onClick={() => nav.push(`habits/goal/${g.id}`)} />
         ))}
-        <ActionCell icon={Plus} onClick={() => editor.create('goals', { area: 'social' })}>
-          Add Social Goal
-        </ActionCell>
+        {/* "+" above adds goals too; this prompt only shows while there are none. */}
+        {goals.length === 0 && (
+          <ActionCell icon={Plus} onClick={() => editor.create('goals', { area: 'social' })}>
+            Add Social Goal
+          </ActionCell>
+        )}
       </Section>
 
       <Section>
-        <Cell icon={Users} iconTone="cyan" title="People" detail={db.people.length || undefined} chevron onClick={() => nav.push('more/social/people')} />
+        <Cell icon={Users} iconTone="cyan" title="Reconnect" subtitle="People to stay in touch with" detail={db.people.length || undefined} chevron onClick={() => nav.push('more/social/people')} />
         <Cell icon={CalendarHeart} iconTone="magenta" title="Important Dates" detail={db.importantDates.length || undefined} chevron onClick={() => nav.push('more/social/dates')} />
       </Section>
 
@@ -201,11 +205,14 @@ export function PeopleScreen() {
           ))}
         </Section>
       )}
-      <Section>
-        <ActionCell icon={HandHeart} onClick={() => editor.create('people')}>
-          Add Person
-        </ActionCell>
-      </Section>
+      {/* The "+" above adds people; this prompt only shows while there are none. */}
+      {people.length === 0 && (
+        <Section>
+          <ActionCell icon={HandHeart} onClick={() => editor.create('people')}>
+            Add Person
+          </ActionCell>
+        </Section>
+      )}
     </Screen>
   )
 }

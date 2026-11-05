@@ -43,6 +43,7 @@ export function WorkoutsTab() {
     <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
       <div>
         <ListToolbar controls={controls} placeholder="Search workouts and exercises…" total={workouts.length} />
+        {workouts.length > 0 && controls.results.length === 0 && <EmptyState compact icon={Dumbbell} title="No workouts match your search or filters" description="Try clearing the search or filters." />}
         <div className="space-y-2.5">
           {controls.results.map((w) => (
             <article key={w.id} className="panel flex items-start gap-3 p-3.5">

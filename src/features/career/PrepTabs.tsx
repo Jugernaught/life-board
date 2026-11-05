@@ -41,6 +41,7 @@ export function CompaniesTab() {
           Company
         </Button>
       </ListToolbar>
+      {companies.length > 0 && controls.results.length === 0 && <EmptyState compact icon={Building2} title="No companies match your search or filters" description="Try clearing the search or filters." />}
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {controls.results.map((c) => {
           const apps = applications.filter((a) => a.company.trim().toLowerCase() === c.name.trim().toLowerCase())
@@ -229,10 +230,7 @@ export function MilestonesTab({ today }: { today: string }) {
             {done} of {milestones.length} milestones complete
           </p>
         </div>
-        <label className="flex items-center gap-2 text-[12.5px] text-ink-muted">
-          <input type="checkbox" checked={showDone} onChange={(e) => setShowDone(e.target.checked)} className="accent-[var(--color-accent)]" />
-          Show completed
-        </label>
+        <Checkbox size="sm" checked={showDone} onChange={setShowDone} label={<span className="text-[12.5px] text-ink-muted">Show completed</span>} />
         <Button size="sm" variant="primary" icon={Plus} onClick={() => editor.create('careerMilestones')}>
           Milestone
         </Button>

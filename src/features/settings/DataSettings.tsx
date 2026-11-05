@@ -210,7 +210,19 @@ export function DataSettings() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Panel title="Export" icon={Download}>
           <p className="mb-3 text-[13px] text-ink-muted">Download everything — every record and setting — as a single JSON file you can keep or import later.</p>
-          <Button variant="primary" icon={Download} onClick={() => exportDatabase()} data-testid="export-json">
+          <Button
+            variant="primary"
+            icon={Download}
+            onClick={() => {
+              try {
+                exportDatabase()
+                toast({ title: 'Backup downloaded', description: 'Keep the file somewhere private — it holds everything.' })
+              } catch (e) {
+                toast({ title: 'Couldn’t export', description: (e as Error).message, tone: 'error' })
+              }
+            }}
+            data-testid="export-json"
+          >
             Export JSON backup
           </Button>
         </Panel>
@@ -225,10 +237,11 @@ export function DataSettings() {
             onChange={async (e) => {
               const f = e.target.files?.[0]
               e.target.value = ''
-              if (f) setPreview(await inspectImportFile(f))
+              // Reading a large backup can take a moment: show it's working.
+              if (f) await run('read-import', async () => setPreview(await inspectImportFile(f)))
             }}
           />
-          <Button icon={Upload} onClick={() => fileInput.current?.click()}>
+          <Button icon={Upload} onClick={() => fileInput.current?.click()} loading={busy === 'read-import'}>
             Choose file…
           </Button>
         </Panel>
@@ -329,11 +342,18 @@ export function DataSettings() {
             size="sm"
             variant="danger"
             icon={RefreshCw}
+            loading={busy === 'clear-log'}
             onClick={async () => {
               if (await confirmAction({ title: 'Clear activity log?', message: `${db.activity.length} activity entries will be removed. Records are not affected.`, confirmLabel: 'Clear log' })) {
-                await createBackup('manual', 'Before clearing activity log')
-                appStore.getState().clearActivity()
-                toast({ title: 'Activity log cleared', description: 'A backup was taken first.' })
+                // If the safety backup fails, nothing is cleared and the error is shown.
+                await run(
+                  'clear-log',
+                  async () => {
+                    await createBackup('manual', 'Before clearing activity log')
+                    appStore.getState().clearActivity()
+                  },
+                  'Activity log cleared — a backup was taken first',
+                )
               }
             }}
           >
@@ -350,6 +370,8 @@ export function DataSettings() {
               size="sm"
               variant="danger"
               icon={Database}
+              loading={busy === 'reset'}
+              disabled={busy === 'factory'}
               onClick={async () => {
                 if (await confirmAction({ title: 'Erase all records?', message: `All ${records} records will be erased. Your settings are kept. A backup is created first.`, requireText: 'ERASE', confirmLabel: 'Erase records' }))
                   await run('reset', () => resetAllData({ keepSettings: true }), 'All records erased — backup saved')
@@ -361,6 +383,8 @@ export function DataSettings() {
               size="sm"
               variant="danger"
               icon={Trash2}
+              loading={busy === 'factory'}
+              disabled={busy === 'reset'}
               onClick={async () => {
                 if (await confirmAction({ title: 'Factory reset?', message: 'Erases every record AND your settings, then shows first-time setup again. A backup is created first.', requireText: 'RESET', confirmLabel: 'Factory reset' }))
                   await run('factory', () => resetAllData({ keepSettings: false }), 'Reset complete — backup saved')

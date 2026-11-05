@@ -647,3 +647,47 @@ test('Settings: inactive services are a note, the desktop link lives only in Mor
   await top(page).getByTestId('m-notes-more').click()
   await expect(top(page)).toContainText('Career note 1')
 })
+
+/* ------------------------------------------------ refinement pass 2 · group D */
+
+test('Today: a priority isn’t listed twice; activity lives in Data & Backups, with dates', async ({ page }) => {
+  await start(page)
+  await page.getByTestId('add-priority').fill('Write the report')
+  await page.getByTestId('add-priority').press('Enter')
+  const today = top(page)
+  await expect(today.getByTestId('m-task-row').filter({ hasText: 'Write the report' })).toHaveCount(1)
+  await expect(today.getByText('Everything due today is in your priorities above.')).toBeVisible()
+  await expect(today.getByText('Recent activity')).toHaveCount(0)
+  await expect(today.getByText('This week')).toHaveCount(0)
+  await open(page, 'more/settings/data')
+  const row = top(page).getByTestId('m-activity-row').filter({ hasText: 'Write the report' })
+  await expect(row).toContainText(/Today \d\d:\d\d/)
+})
+
+test('Habits lists Starter Templates; More labels match the screens they open', async ({ page }) => {
+  await start(page)
+  await page.getByTestId('tab-habits').click()
+  await top(page).getByTestId('m-habits-templates').click()
+  await expect(page.getByTestId('templates-sheet')).toBeVisible()
+  await page.getByTestId('templates-sheet').getByRole('button', { name: 'Cancel' }).click()
+  await open(page, 'more')
+  await top(page).getByTestId('more-career').click()
+  await expect(top(page).getByRole('heading', { level: 1 })).toHaveText('Career')
+  await open(page, 'more/settings')
+  await top(page).getByTestId('settings-targets').click()
+  await expect(top(page).getByRole('heading', { level: 1 })).toHaveText('Personal Targets')
+})
+
+test('removing a category can be undone', async ({ page }) => {
+  await start(page)
+  await open(page, 'more/settings/categories')
+  const first = top(page).getByTestId('m-category-row').first()
+  const name = (await first.innerText()).trim()
+  const count = await top(page).getByTestId('m-category-row').count()
+  await swipeLeft(page, first)
+  await top(page).getByRole('button', { name: 'Remove' }).first().click()
+  await expect(top(page).getByTestId('m-category-row')).toHaveCount(count - 1)
+  await page.getByRole('status').filter({ hasText: 'Category removed' }).getByRole('button', { name: 'Undo' }).click()
+  await expect(top(page).getByTestId('m-category-row')).toHaveCount(count)
+  await expect(top(page).getByTestId('m-category-row').first()).toHaveText(name)
+})

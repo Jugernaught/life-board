@@ -167,9 +167,12 @@ export function LearningScreen() {
         {skills.map((s) => (
           <SkillCell key={s.id} skill={s} />
         ))}
-        <ActionCell icon={Plus} onClick={() => editor.create('skills')} testId="learning-add-skill">
-          Add Skill
-        </ActionCell>
+        {/* "Add" above offers Skill too; this prompt only shows while there are none. */}
+        {db.skills.length === 0 && (
+          <ActionCell icon={Plus} onClick={() => editor.create('skills')} testId="learning-add-skill">
+            Add Skill
+          </ActionCell>
+        )}
       </Section>
 
       {inProgress.length > 0 && (

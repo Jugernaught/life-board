@@ -90,10 +90,19 @@ export function TransactionsTab() {
                   <tr key={t.id} className="group cursor-pointer border-b border-line/60 transition-colors last:border-0 hover:bg-panel-3/40" onClick={() => editor.edit('transactions', t.id)}>
                     <td className="px-4 py-2.5 font-mono text-[12px] whitespace-nowrap text-ink-muted tabular">{fmt.date(t.date)}</td>
                     <td className="max-w-64 px-2 py-2.5">
-                      <span className="flex items-center gap-2">
-                        {t.kind === 'income' ? <ArrowDownLeft size={14} className="shrink-0 text-ok" /> : <ArrowUpRight size={14} className="shrink-0 text-bad" />}
+                      {/* A real button, so the row can be opened from the keyboard too (the row click is for the mouse). */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          editor.edit('transactions', t.id)
+                        }}
+                        className="flex max-w-full items-center gap-2 rounded text-left"
+                        data-testid="tx-open"
+                      >
+                        {t.kind === 'income' ? <ArrowDownLeft size={14} className="shrink-0 text-ok" aria-label="Income" /> : <ArrowUpRight size={14} className="shrink-0 text-bad" aria-label="Expense" />}
                         <span className="truncate text-ink">{t.description || <span className="text-ink-subtle">{t.category}</span>}</span>
-                      </span>
+                      </button>
                     </td>
                     <td className="px-2 py-2.5 text-ink-muted">{t.category}</td>
                     <td className={cn('px-2 py-2.5 text-right font-mono whitespace-nowrap tabular', t.kind === 'income' ? 'text-ok' : 'text-ink')}>

@@ -9,7 +9,7 @@ import { isOverdue, sortTasks } from '@/selectors/tasks'
 import { addDaysISO, eachDay, formatDate, minutesToTime, monthEndISO, monthStartISO, relativeDay, timeToMinutes, toISODate, weekStartISO } from '@/lib/dates'
 import { toneColor, toneTint } from '@/lib/tone'
 import { cn, groupBy, normalise } from '@/lib/utils'
-import { actions, useDatabase } from '@/store/store'
+import { useDatabase } from '@/store/store'
 import { quickCreateTask, rescheduleMany } from '@/app/taskCommands'
 import { editor } from '@/components/editor/editorStore'
 import { layoutDay, toTimed } from '@/features/schedule/layout'
@@ -102,7 +102,7 @@ function WeekStrip({ selected, setSelected, today }: { selected: string; setSele
             <span
               className={cn(
                 'flex size-9 items-center justify-center rounded-full text-[19px] tabular-nums',
-                isSel ? (isToday ? 'bg-[#ff3b30] font-semibold text-white' : 'bg-ink font-semibold text-[var(--ios-cell)]') : isToday ? 'font-semibold text-[#ff3b30]' : 'text-ink',
+                isSel ? (isToday ? 'bg-[var(--ios-system-red)] font-semibold text-white' : 'bg-ink font-semibold text-[var(--ios-cell)]') : isToday ? 'font-semibold text-[var(--ios-system-red)]' : 'text-ink',
               )}
             >
               {Number(d.slice(8))}
@@ -137,7 +137,7 @@ function MonthGrid({ selected, setSelected, today }: { selected: string; setSele
             <span
               className={cn(
                 'flex size-8 items-center justify-center rounded-full text-[16px] tabular-nums',
-                d === selected ? 'bg-ink font-semibold text-[var(--ios-cell)]' : d === today ? 'font-semibold text-[#ff3b30]' : d.slice(0, 7) === month ? 'text-ink' : 'text-ink-subtle/50',
+                d === selected ? 'bg-ink font-semibold text-[var(--ios-cell)]' : d === today ? 'font-semibold text-[var(--ios-system-red)]' : d.slice(0, 7) === month ? 'text-ink' : 'text-ink-subtle/50',
               )}
             >
               {Number(d.slice(8))}
@@ -209,8 +209,8 @@ function DayTimeline({ day, items }: { day: string; items: AgendaItem[] }) {
         )
       })}
       {isToday && (
-        <div className="pointer-events-none absolute right-0 left-[52px] z-10 h-0.5 bg-[#ff3b30]" style={{ top: (nowMin / 60) * HOUR }} aria-hidden>
-          <span className="absolute -top-[4px] -left-1 size-2.5 rounded-full bg-[#ff3b30]" />
+        <div className="pointer-events-none absolute right-0 left-[52px] z-10 h-0.5 bg-[var(--ios-system-red)]" style={{ top: (nowMin / 60) * HOUR }} aria-hidden>
+          <span className="absolute -top-[4px] -left-1 size-2.5 rounded-full bg-[var(--ios-system-red)]" />
         </div>
       )}
     </div>
@@ -302,7 +302,7 @@ function CalendarView({ today, selected, setSelected }: { today: string; selecte
         {dayTasks.map((t) => (
           <TaskRow key={t.id} task={t} today={today} />
         ))}
-        <InlineAdd placeholder="Add a task for this day" onAdd={(title) => actions.create('tasks', { title, dueDate: selected })} />
+        <InlineAdd placeholder="Add a task for this day" onAdd={(title) => quickCreateTask(title, { dueDate: selected })} />
       </Section>
     </div>
   )

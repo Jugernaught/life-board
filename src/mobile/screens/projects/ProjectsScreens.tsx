@@ -11,6 +11,7 @@ import { diffDays, formatDate, relativeDay } from '@/lib/dates'
 import { toneColor } from '@/lib/tone'
 import { truncate } from '@/lib/utils'
 import { actions, useCollection, useDatabase, useRecord } from '@/store/store'
+import { quickCreateTask } from '@/app/taskCommands'
 import { ProgressRing } from '@/components/ui/display'
 import { editor } from '@/components/editor/editorStore'
 import { deleteRecord } from '@/components/editor/useDeleteRecord'
@@ -149,7 +150,7 @@ export function ProjectDetailScreen({ params }: { params: Record<string, string>
         {visible.map((t) => (
           <TaskRow key={t.id} task={t} today={today} showProject={false} />
         ))}
-        <InlineAdd placeholder="Add a task" testId="project-add-task" onAdd={(title) => actions.create('tasks', { title, projectId: project.id, area: project.area })} />
+        <InlineAdd placeholder="Add a task" testId="project-add-task" onAdd={(title) => quickCreateTask(title, { projectId: project.id, area: project.area })} />
       </Section>
 
       <Section header="Milestones">

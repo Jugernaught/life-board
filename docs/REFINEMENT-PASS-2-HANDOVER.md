@@ -247,3 +247,41 @@ Group B: item 2 (unlink relations when undoing a create) and item 4 (repeat `ser
 
 ## Next starting point
 Group D (items 8, 10, 11, 12, 14, 16, 18, 19, 20, 21, 24, 25, 26, 28), then the continuity docs (`CLAUDE.md`, `PROJECT_STATUS.md`, `CHANGELOG.md`, `docs/ARCHITECTURE.md`).
+
+---
+
+# Group D — components, forms and accessibility (items 8, 10, 11, 12, 14, 16, 18, 19, 20, 21, 24, 25, 26, 28)
+
+- **Authorised:** 2026-11-05 ("Do everything").
+- **Baseline:** 03:08:35 UTC, clean tree at `5c5f881`; `npm run check` exit 0, 141/141.
+
+## Changes
+| Item | What changed | Files |
+| --- | --- | --- |
+| 8 | **Priorities aren't listed twice.** iPhone Today's Due list leaves out today's priorities, while the ring still counts them. If every due item is a priority, it says "Everything due today is in your priorities above." | `mobile/screens/today/TodayScreen.tsx` |
+| 10 | **Add cells only when the list is empty.** "Add Person", "Add Skill", "Add Course" and "Add Social Goal" duplicated the header "+" or its sheet, so they now show only while their list is empty (the Group C empty-state rule). The Social commitments inline add stays: it's quick inline capture, like Today's. | `SocialScreens.tsx`, `LearningScreens.tsx`, `CareerScreens.tsx` |
+| 11 | **"No … match your search or filters"** for learning courses, workouts, companies and the applications list. It shows only when the list has records but none match. | `LearningPage.tsx`, `LogsTabs.tsx`, `PrepTabs.tsx`, `ApplicationsTab.tsx` |
+| 12 | **Every task-creating inline add on iPhone uses `quickCreateTask`:** Today priorities, Plan's day list, Project tasks and Social commitments. Each reads dates and priority from the text and offers Undo. | `TodayScreen.tsx`, `PlanScreen.tsx`, `ProjectsScreens.tsx`, `SocialScreens.tsx` |
+| 14 | **Shorter Today.** "This week" is removed; its figures are in Habits → Weekly Review and Analytics. "Recent activity" moved to Settings → Data & Backups as `RecentActivity` (10 entries, each with its day and time). The duplicate check-in card is removed from the Journal root, which has "Mood & Energy". **Deviation:** the plan said "replace This week with a Weekly Review cell", but that cell would jump to another tab, which Group C removed elsewhere, so no cell was added. | `TodayScreen.tsx`, new `mobile/components/RecentActivity.tsx`, `SettingsScreens.tsx`, `JournalScreens.tsx` |
+| 16 | **Starter Templates entry points:** desktop Habits tab (a "Templates" button) and iPhone Habits screen (a cell). | `goals/HabitsTab.tsx`, `mobile/screens/habits/HabitsScreens.tsx` |
+| 18 | **Data settings feedback.** Export shows a toast (and an error toast). "Clear log" runs through `run()`, so a failed backup is reported and nothing is cleared. Erase and Factory reset show a loading state and each disables the other. Reading an import file shows a busy button. | `settings/DataSettings.tsx` |
+| 19 | **The applications board wraps** (1 → 2 → 3 → 6 columns) instead of a fixed 1100px width that scrolled sideways on laptops. | `career/ApplicationsTab.tsx` |
+| 20 | **Target inputs show their range** in the description, and an inline error (with `role="alert"`) instead of silently ignoring an out-of-range value. | `settings/SettingsPage.tsx` |
+| 21 | **Undo for iPhone deletes.** Deleting a checklist step shows a toast with Undo, which is the record's own undo step (it won't overwrite later changes). Removing a category shows Undo, which puts it back in place. | `mobile/components/Checklist.tsx`, `SettingsScreens.tsx` |
+| 24 | **Working-hours footer is accurate:** Plan's timeline opens at your start time, and the desktop calendar shades working hours. | `SettingsScreens.tsx` |
+| 25 | **Naming.** "Financial Targets" and "Personal Targets". More labels match the screen titles (Career, Fitness, Learning, Library, Analytics), and Social's "People" cell is "Reconnect". Registry label "Learning course". "Write Today's Entry". The Journal streak shows only when it's above 0. | `MoreScreen.tsx`, `routes.tsx`, `FinanceScreens.tsx`, `SettingsScreens.tsx`, `SocialScreens.tsx`, `JournalScreens.tsx`, `data/registry.ts` |
+| 26 | **Shared components.** `Panel` replaces the plain `div.panel` (×5). `Checkbox` replaces native checkboxes (×4). The Sleep button uses Plus. **Adaptation:** the hard-coded `#ff3b30` became a named `--ios-system-red` token, not `--color-bad`, because white badge text on Minimal Dark's pastel `--color-bad` would be about 2.4:1. Same look, one source. | `ProjectsPage.tsx`, `LibraryPage.tsx`, `ProjectDetailPage.tsx`, `HabitsTab.tsx`, `PlanningTabs.tsx`, `PrepTabs.tsx`, `FitnessPage.tsx`, `mobile/ios.css`, `TabBar.tsx`, `PlanScreen.tsx` |
+| 28 | **Transactions open from the keyboard:** the description cell is a button; the row click remains for the mouse. | `finance/TransactionsTab.tsx` |
+
+## Verification
+| Time (UTC) | Check | Result |
+| --- | --- | --- |
+| 03:08 | Baseline `npm run check` | exit 0, 141/141 |
+| 03:16 | `npm run check` after implementation | exit 0, 141/141 |
+| 03:17 | New desktop e2e "group D": no-match state, Templates button, export toast with a real download, target range error and recovery, keyboard-opened transaction, no sideways scroll on the applications page at 1280px | 1/1 |
+| 03:17 | New iPhone e2e ×3 devices: priority not duplicated, activity in Data with "Today HH:MM", Habits → Starter Templates, More → "Career" title, "Personal Targets", category removal undone | 9/9 |
+| 03:18–03:24 | `npm run check`; full `npx playwright test` | 141/141; 122/122 |
+| 03:24–03:29 | Pixel-contrast audit: 13 desktop pages × 6 theme combinations, and the iPhone feature scenes × 6 | All text meets WCAG AA (5,635 and 858 text runs) |
+
+## Status
+All 14 items are completed (two deviations, recorded above).
