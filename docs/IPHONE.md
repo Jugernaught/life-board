@@ -22,17 +22,17 @@ The desktop version shows an *“On a phone? Open the iPhone version”* banner 
 
 | Tab | What's there |
 | --- | --- |
-| **Today** | Progress rings, priorities, tasks due/overdue, up next, habits, mood & energy check-in, this week vs last week, recent activity |
+| **Today** | Progress rings, today's intention, priorities (with Plan Your Day / Replan), the rest of what's due or overdue, up next, habits, mood & energy check-in |
 | **Plan** | Calendar (swipeable week strip, month grid, list or hour timeline — tap an hour to add) and Tasks (Today, Upcoming, Overdue, No date, All, Completed) |
-| **Habits** | Habits with 7-day dots and streaks, habit detail with a tappable history calendar, goals with progress controls and milestones, weekly review |
+| **Habits** | Habits with 7-day dots and streaks, habit detail with a tappable history calendar, goals with progress controls and milestones, weekly review, starter templates |
 | **Journal** | Today's entry (autosaves), reflection prompts, searchable history, mood & energy trend |
-| **More** | Search everything, plus Projects, Career & Education, Finances, Fitness, Learning, Library, Social, Notes, Analytics, Settings |
+| **More** | Search everything, plus Projects, Career, Finances, Fitness, Learning, Library, Social, Notes, Analytics, Settings (Data & Backups shows recent activity) |
 
 ### Themes
 
 More → Settings → **Theme** offers the same four themes as the desktop version, with a live miniature of each:
 
-- **Liquid Glass** — a floating glass tab bar with a sliding selection lens, plus a contextual button beside it (Quick add on Today, New task on Plan, New habit on Habits, Write on Journal, Search on More). Navigation-bar buttons sit in glass capsules.
+- **Liquid Glass** — a floating glass tab bar with a sliding selection lens, plus a contextual button beside it (Quick add on Today, New task or New event on Plan, New habit or New goal on Habits, Write on Journal, Quick add on More — More keeps its own search field). Navigation-bar buttons sit in glass capsules.
 - **Apple Clean** — the classic iOS look with a full-width tab bar.
 - **Cyberpunk** and **Minimal Dark** — dark-only, with a floating tab bar.
 
@@ -81,4 +81,4 @@ These need a native iOS app or a server, and are **not** pretended:
 - `npm run dev` serves both: desktop at `/`, iPhone at `/m/`. Use your browser's device toolbar (iPhone 15 Pro, touch on) to work on it.
 - Offline support: `vite.config.ts` generates `/m/sw.js` at build time, precaching every file the iPhone app can load (screens are lazy-loaded, then cached). It only runs in production builds.
 - Tests: `npx playwright test --project=iphone-se --project=iphone-15-pro --project=iphone-16-pro-max` runs `e2e/ios.spec.ts` on three iPhone sizes, light and dark, with simulated notch / home-indicator insets.
-- Design and progress notes: [`MOBILE_PROGRESS.md`](../MOBILE_PROGRESS.md).
+- Design decisions and build log (historical): [`docs/history/IPHONE-BUILD-LOG.md`](history/IPHONE-BUILD-LOG.md).

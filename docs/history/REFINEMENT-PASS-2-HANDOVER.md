@@ -1,3 +1,5 @@
+> **Historical.** The operation-by-operation record of Refinement Pass 2 (Groups A–D). It is complete. Current status lives in [`PROJECT_STATUS.md`](../../PROJECT_STATUS.md).
+
 # Refinement Pass 2 — handover
 
 Status record for the second refinement pass. It is kept up to date operation by operation, so the next session can continue from here. The code is authoritative; if this file disagrees with it, the code wins.

@@ -1,3 +1,5 @@
+> **Historical.** This is the build log of the first iPhone version. It is kept for its design decisions; current status lives in [`PROJECT_STATUS.md`](../../PROJECT_STATUS.md).
+
 # LIFE OS for iPhone — progress log
 
 This file tracks the iPhone version of LIFE OS so work can be resumed at any point. Update it as each stage changes.

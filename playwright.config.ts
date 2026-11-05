@@ -23,7 +23,7 @@ export default defineConfig({
     { name: 'desktop', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } }, testIgnore: /(mobile|ios)\.spec\.ts/ },
     { name: 'mobile', use: { ...devices['Pixel 7'] }, testMatch: /mobile\.spec\.ts/ },
     // The iPhone version (/m/). iPhone screen sizes, touch and user agents,
-    // rendered by Chromium (WebKit isn't installed here — see MOBILE_PROGRESS.md).
+    // rendered by Chromium (WebKit isn't installed here — see docs/history/IPHONE-BUILD-LOG.md).
     { name: 'iphone-se', use: { ...devices['iPhone SE (3rd gen)'], browserName: 'chromium', colorScheme: 'light' }, testMatch: /ios\.spec\.ts/ },
     { name: 'iphone-15-pro', use: { ...devices['iPhone 15 Pro'], browserName: 'chromium', colorScheme: 'dark' }, testMatch: /ios\.spec\.ts/ },
     { name: 'iphone-16-pro-max', use: { ...devices['iPhone 16 Pro Max'], browserName: 'chromium', colorScheme: 'light' }, testMatch: /ios\.spec\.ts/ },

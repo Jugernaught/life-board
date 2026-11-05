@@ -58,6 +58,19 @@ A later audit focused on coherence rather than new features. It changed:
 
 Deliberately unchanged: the four themes, the 13 sections, the iPhone's five tabs and the data schema. No separate "subscriptions" entity was added, because recurring items already model subscriptions.
 
+## Refinement pass 2
+
+A second audit covered the data layer, desktop and iPhone. It produced a fixed 29-item checklist, carried out in four groups. The operation-by-operation record is in [`history/REFINEMENT-PASS-2-HANDOVER.md`](history/REFINEMENT-PASS-2-HANDOVER.md).
+
+| Group | What changed |
+| --- | --- |
+| **A — data safety** | Every record has a revision number (`rev`), and deletes leave a deletion marker, so merges no longer depend on device clocks and a deleted record can't come back. Two tabs saving at once merge instead of overwriting, under a browser lock. Undo is compare-and-swap: it refuses rather than overwrite a newer change. Completion dates for books, media and courses are set in one place. Replace-import keeps this device's display preferences. The merged activity log is capped. Restoring a backup reports any records it couldn't read. |
+| **B — repeating tasks** | Undoing a create unlinks related records. Repeating tasks carry a series id, so completing, reopening and completing again never makes a second copy. Reminder times follow a documented daylight-saving policy (first occurrence on fall-back, forward on spring-forward). |
+| **C — one home per feature** | Weekly review lives only in Goals & Habits (Journal and Analytics link to it). One create button per action on desktop. Today's links open the right Plan mode on iPhone. Replan stays reachable. Static stat tiles. Integrations is now a plain "not connected" note. |
+| **D — screens and forms** | iPhone Today is shorter: priorities aren't repeated in Due, and recent activity moved to Data & Backups. Duplicate add rows are gone. "No matches" states. Starter templates are reachable from Habits. The Data settings have loading states and toasts. Target inputs give inline errors. Checklist and category deletes can be undone. Clearer names. Shared components and tokens replace one-offs. Transaction rows open with the keyboard. |
+
+Deliberately not done (they need product decisions): merging similar concepts (habits and routines, the two kinds of course, important dates and events), progressive disclosure on crowded overview pages, and enforcing one record per day.
+
 ## Why these, in this order
 
 Each feature was chosen by how often it's used × how much friction it removes × whether existing parts could be reused:
