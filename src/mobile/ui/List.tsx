@@ -15,7 +15,7 @@ export function Section({ header, footer, children, className, headerAction, pla
       {(header || headerAction) && (
         <div className="mb-1.5 flex items-end justify-between gap-2 px-4">
           {header && (
-            <h2 id={headerId} className="ios-footnote font-normal tracking-[0.01em] text-ink-subtle uppercase">
+            <h2 id={headerId} className="ios-footnote font-normal text-ink-subtle uppercase" style={{ fontFamily: 'var(--ios-section-font)', letterSpacing: 'var(--ios-section-tracking)' }}>
               {header}
             </h2>
           )}

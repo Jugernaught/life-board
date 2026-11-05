@@ -1,5 +1,7 @@
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { ChevronsUpDown, CloudOff, Database, Download, FolderTree, Laptop, RotateCcw, Share, Smartphone, Target, Trash2, Upload } from 'lucide-react'
+import { THEMES, resolveAppearance, supportsLight, themeMeta } from '@/app/themes'
+import { useSystemDark } from '@/app/ThemeController'
 import { COLLECTIONS } from '@/data/registry'
 import { COLLECTION_KEYS } from '@/data/schema'
 import type { Database as Db, Settings } from '@/data/types'
@@ -13,6 +15,7 @@ import { cn } from '@/lib/utils'
 import { confirmAction } from '@/components/ui/confirm'
 import { toast } from '@/components/ui/toast'
 import { InlineAdd } from '../../components/InlineAdd'
+import { PhoneThemePreview } from '../../components/PhoneThemePreview'
 import { shareJsonFile } from '../../components/share'
 import { nav } from '../../nav/navigator'
 import { actionSheet } from '../../ui/ActionSheet'
@@ -58,7 +61,6 @@ function SelectRow<T extends string>({ label, value, options, onChange, testId }
   )
 }
 
-const ACCENTS = ['cyan', 'violet', 'magenta', 'lime'] as const
 const DAYS = [
   { v: 1, s: 'M', l: 'Monday' },
   { v: 2, s: 'T', l: 'Tuesday' },
@@ -71,6 +73,7 @@ const DAYS = [
 
 export function SettingsScreen() {
   const s = useSettings()
+  const live = resolveAppearance(s, s.mobileTheme, useSystemDark())
   const db = useDatabase()
   const [name, setName] = useState(s.displayName)
   useEffect(() => setName(s.displayName), [s.displayName])
@@ -95,7 +98,33 @@ export function SettingsScreen() {
         </Row>
       </Section>
 
-      <Section header="Appearance" footer="Automatic follows your iPhone’s Light/Dark setting. The desktop version has its own theme setting.">
+      <Section header="Theme" footer={`${themeMeta(s.uiStyle).description} Shared with the desktop version.`}>
+        <div className="grid grid-cols-2 gap-3 p-3" role="radiogroup" aria-label="Theme">
+          {THEMES.map((t) => {
+            const on = s.uiStyle === t.id
+            return (
+              <button
+                key={t.id}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                onClick={() => set({ uiStyle: t.id, ...(t.accents.some((a) => a.id === s.accent) ? {} : { accent: t.accents[0].id }) })}
+                className="text-left active:scale-[0.97]"
+                data-testid={`m-theme-${t.id}`}
+              >
+                <span className={cn('block rounded-[21px] p-[3px] transition-colors', on ? 'bg-accent' : 'bg-transparent')}>
+                  <PhoneThemePreview style={t.id} mode={supportsLight(t.id) ? live.mode : 'dark'} accent={t.accents.some((a) => a.id === s.accent) ? s.accent : t.accents[0].id} />
+                </span>
+                <span className="mt-1.5 flex items-center justify-center gap-1">
+                  <span className={cn('ios-subhead font-medium', on ? 'text-accent' : 'text-ink')}>{t.name}</span>
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </Section>
+
+      <Section header="Appearance" footer={supportsLight(s.uiStyle) ? 'Automatic follows your iPhone’s Light/Dark setting.' : `${themeMeta(s.uiStyle).name} is always dark.`}>
         <div className="px-4 py-2.5">
           <Segmented
             ariaLabel="Appearance"
@@ -111,14 +140,17 @@ export function SettingsScreen() {
         <div className="flex min-h-11 items-center gap-3 px-4 py-1.5">
           <span className="ios-body flex-1 text-ink">Accent</span>
           <div className="-mr-1.5 flex" role="radiogroup" aria-label="Accent colour">
-            {ACCENTS.map((a) => (
-              <button key={a} type="button" role="radio" aria-checked={s.accent === a} aria-label={a} onClick={() => set({ accent: a })} className="flex size-11 items-center justify-center" data-testid={`accent-${a}`}>
-                <span className={cn('size-7 rounded-full ring-offset-2 ring-offset-[var(--ios-cell)]', s.accent === a && 'ring-2 ring-ink-muted')} style={{ background: `var(--color-${a})` }} />
+            {themeMeta(s.uiStyle).accents.map((a) => (
+              <button key={a.id} type="button" role="radio" aria-checked={s.accent === a.id} aria-label={a.label} onClick={() => set({ accent: a.id })} className="flex size-11 items-center justify-center" data-testid={`accent-${a.id}`}>
+                <span className={cn('size-7 rounded-full ring-offset-2 ring-offset-[var(--ios-cell)]', s.accent === a.id && 'ring-2 ring-ink-muted')} style={{ background: `var(--color-${a.id})` }} />
               </button>
             ))}
           </div>
         </div>
         <SelectRow label="Motion" value={s.motion} onChange={(motion) => set({ motion })} options={[{ value: 'system', label: 'Match iPhone' }, { value: 'full', label: 'Full' }, { value: 'reduced', label: 'Reduced' }]} />
+        <Row label="Reduce Transparency" sub="Solid bars instead of glass">
+          <IosSwitch checked={s.reduceTransparency} onChange={(reduceTransparency) => set({ reduceTransparency })} label="Reduce transparency" testId="settings-reduce-transparency" />
+        </Row>
       </Section>
 
       <Section header="Region">

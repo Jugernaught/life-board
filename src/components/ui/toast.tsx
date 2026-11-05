@@ -68,7 +68,7 @@ export function Toaster({ placement = 'bottom' }: { placement?: 'bottom' | 'top'
               exit={{ opacity: 0, x: 24, transition: { duration: 0.15 } }}
               transition={{ type: 'spring', stiffness: 500, damping: 36 }}
               role={t.tone === 'error' ? 'alert' : 'status'}
-              className={cn('panel pointer-events-auto flex w-full max-w-sm items-start gap-3 border-line-strong bg-panel/95 px-4 py-3')}
+              className="float pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-[calc(var(--radius-control)+6px)] px-4 py-3"
               style={{ boxShadow: `0 0 0 1px color-mix(in oklab, ${colors[t.tone]} 25%, transparent), 0 16px 40px -16px rgb(0 0 0 / 0.8)` }}
             >
               <Icon size={18} className="mt-0.5 shrink-0" style={{ color: colors[t.tone] }} />

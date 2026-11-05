@@ -11,7 +11,8 @@ import { SaveStatus } from './SaveStatus'
 export function Logo({ collapsed }: { collapsed?: boolean }) {
   return (
     <div className="flex items-center gap-2.5">
-      <div className="relative flex size-9 shrink-0 items-center justify-center">
+      {/* Cyberpunk: the original chamfered HUD mark. */}
+      <div className="cyber-only relative flex size-9 shrink-0 items-center justify-center">
         <svg viewBox="0 0 36 36" className="absolute inset-0" aria-hidden>
           <defs>
             <linearGradient id="logo-g" x1="0" y1="0" x2="1" y2="1">
@@ -25,12 +26,25 @@ export function Logo({ collapsed }: { collapsed?: boolean }) {
         </svg>
         <div className="absolute inset-1 rounded-md bg-accent/10 blur-md" />
       </div>
+      {/* Other themes: an app-icon squircle. */}
+      <div
+        className="not-cyber relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-[10px] shadow-[0_4px_12px_-4px_color-mix(in_oklab,var(--color-accent)_60%,transparent),inset_0_1px_0_rgb(255_255_255/0.35)]"
+        style={{ background: 'linear-gradient(145deg, var(--color-accent), var(--color-accent-2))' }}
+        aria-hidden
+      >
+        <svg viewBox="0 0 36 36" className="size-6">
+          <path d="M11 26.5 L18 9.5 L25 26.5 M13.9 20.5h8.2" fill="none" stroke="#fff" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="27" cy="10" r="2.4" fill="#fff" opacity="0.9" />
+        </svg>
+      </div>
       {!collapsed && (
         <div className="min-w-0 leading-none">
-          <p className="font-display text-[17px] font-bold tracking-[0.12em] text-ink">
+          <p className="cyber-only font-display text-[17px] font-bold tracking-[0.12em] text-ink">
             <span className="text-accent">A</span>TLAS
           </p>
-          <p className="mt-1 font-mono text-[9.5px] tracking-[0.2em] text-ink-subtle">PERSONAL SYSTEM</p>
+          <p className="cyber-only mt-1 font-mono text-[9.5px] tracking-[0.2em] text-ink-subtle">PERSONAL SYSTEM</p>
+          <p className="not-cyber title text-[15.5px] font-semibold text-ink">Atlas</p>
+          <p className="not-cyber mt-0.5 text-[11.5px] text-ink-subtle">Personal system</p>
         </div>
       )}
     </div>
@@ -47,8 +61,8 @@ function NavRow({ item, index, collapsed, onNavigate }: { item: NavItem; index: 
       title={collapsed ? item.label : undefined}
       className={({ isActive }) =>
         cn(
-          'group relative flex h-9 items-center gap-3 rounded-lg px-2.5 text-[13.5px] transition-colors duration-150',
-          isActive ? 'bg-accent/[0.09] text-ink' : 'text-ink-muted hover:bg-panel-3/60 hover:text-ink',
+          'group relative flex h-9 items-center gap-3 rounded-[var(--radius-control)] px-2.5 text-[13.5px] transition-colors duration-150',
+          isActive ? 'bg-[var(--nav-active-bg)] font-medium text-[var(--nav-active-ink)]' : 'text-ink-muted hover:bg-ink/[0.05] hover:text-ink',
           collapsed && 'justify-center px-0',
         )
       }
@@ -58,7 +72,8 @@ function NavRow({ item, index, collapsed, onNavigate }: { item: NavItem; index: 
           {isActive && (
             <motion.span
               layoutId="nav-active"
-              className="absolute top-1.5 bottom-1.5 left-0 w-[2px] rounded-full bg-accent shadow-[0_0_10px_var(--color-accent)]"
+              className="absolute top-1.5 bottom-1.5 left-0 w-[2px] rounded-full bg-accent shadow-[var(--glow-sm)]"
+              style={{ opacity: 'var(--nav-indicator)' }}
               transition={{ type: 'spring', stiffness: 500, damping: 40 }}
             />
           )}
@@ -66,7 +81,7 @@ function NavRow({ item, index, collapsed, onNavigate }: { item: NavItem; index: 
           {!collapsed && (
             <>
               <span className="min-w-0 flex-1 truncate">{item.label}</span>
-              <span aria-hidden className={cn('font-mono text-[10px] tabular', isActive ? 'text-accent/70' : 'text-ink-subtle/60')}>{String(index + 1).padStart(2, '0')}</span>
+              <span aria-hidden className={cn('cyber-only font-mono text-[10px] tabular', isActive ? 'text-accent' : 'text-ink-subtle/60')}>{String(index + 1).padStart(2, '0')}</span>
             </>
           )}
         </>
@@ -96,7 +111,7 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
             setPalette(true)
           }}
           className={cn(
-            'flex h-9 items-center gap-2 rounded-lg border border-line bg-panel-2/60 text-[13px] text-ink-subtle transition-colors hover:border-line-strong hover:text-ink-muted',
+            'flex h-9 items-center gap-2 rounded-[var(--radius-btn)] border border-line bg-ink/[0.04] text-[13px] text-ink-muted transition-colors hover:border-line-strong hover:text-ink',
             collapsed ? 'w-9 justify-center' : 'flex-1 px-2.5',
           )}
           aria-label="Search and commands"
@@ -116,7 +131,7 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
             onNavigate?.()
             showQuickAdd()
           }}
-          className="chamfer-sm flex size-9 shrink-0 items-center justify-center bg-accent text-on-accent transition hover:brightness-110"
+          className="chamfer-sm flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-btn-primary)] bg-accent-fill text-on-accent shadow-[var(--glow-md)] transition hover:brightness-110"
           aria-label="Quick add"
           title="Quick add (N)"
         >
@@ -137,8 +152,8 @@ function SidebarContent({ collapsed, onNavigate }: { collapsed: boolean; onNavig
       </nav>
       <div className={cn('shrink-0 border-t border-line p-2', collapsed && 'flex flex-col items-center gap-1')}>
         {!collapsed && (
-          <NavLink to="/settings" onClick={onNavigate} className="flex items-center gap-2.5 rounded-lg px-2 py-2 hover:bg-panel-3/60">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-accent/30 bg-accent/10 font-display text-[12px] font-semibold text-accent">
+          <NavLink to="/settings" onClick={onNavigate} className="flex items-center gap-2.5 rounded-[var(--radius-control)] px-2 py-2 hover:bg-ink/[0.05]">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-[calc(var(--radius-btn)*0.5)] border border-accent/30 bg-accent/10 font-display text-[12px] font-semibold text-accent">
               {initials(settings.displayName)}
             </span>
             <span className="min-w-0 flex-1">
@@ -164,13 +179,17 @@ export function Sidebar() {
         animate={{ width: collapsed ? 72 : 264 }}
         transition={{ type: 'spring', stiffness: 400, damping: 40 }}
         aria-label="Sidebar"
-        className="relative z-30 hidden h-dvh shrink-0 border-r border-line bg-canvas/70 backdrop-blur-xl lg:sticky lg:top-0 lg:block"
+        className="no-print relative z-30 hidden h-dvh shrink-0 lg:sticky lg:top-0 lg:block"
+        style={{ padding: 'var(--shell-gap) 0 var(--shell-gap) var(--shell-gap)' }}
       >
-        <SidebarContent collapsed={collapsed} />
+        {/* A floating glass pane in Liquid Glass; a full-height source list elsewhere. */}
+        <div className="chrome h-full overflow-hidden" style={{ borderRadius: 'var(--sidebar-radius)', borderWidth: 'var(--sidebar-border)' }} data-testid="sidebar-pane">
+          <SidebarContent collapsed={collapsed} />
+        </div>
         <button
           type="button"
           onClick={() => actions.updateSettings({ sidebarCollapsed: !collapsed })}
-          className="absolute top-[22px] -right-3 flex size-6 items-center justify-center rounded-full border border-line-strong bg-panel text-ink-subtle shadow-lg transition-colors hover:border-accent/50 hover:text-accent"
+          className="float absolute top-[26px] -right-3 flex size-6 items-center justify-center rounded-full! text-ink-subtle transition-colors hover:text-accent"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           title={`${collapsed ? 'Expand' : 'Collapse'} sidebar ( [ )`}
         >
@@ -187,7 +206,7 @@ export function Sidebar() {
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ type: 'spring', stiffness: 420, damping: 40 }}
-              className="absolute inset-y-0 left-0 w-[84vw] max-w-[300px] border-r border-line bg-canvas/95 backdrop-blur-xl"
+              className="float absolute inset-y-2 left-2 w-[84vw] max-w-[300px] overflow-hidden"
               aria-label="Navigation"
             >
               <button type="button" onClick={() => setMobileNav(false)} className="absolute top-4 right-3 z-10 rounded-md p-1.5 text-ink-subtle hover:text-ink" aria-label="Close navigation">

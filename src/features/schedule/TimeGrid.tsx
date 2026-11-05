@@ -148,7 +148,7 @@ export function TimeGrid({ days, items, today }: { days: string[]; items: Agenda
             {days.length > 1 && (
               <p className={cn('mb-1 text-center text-[12px]', d === today ? 'text-accent' : 'text-ink-muted')}>
                 <span className="eyebrow mr-1">{formatDate(d, 'EEE')}</span>
-                <span className={cn('font-mono tabular', d === today && 'rounded bg-accent px-1 text-on-accent')}>{formatDate(d, 'd')}</span>
+                <span className={cn('font-mono tabular', d === today && 'rounded bg-accent-fill px-1 text-on-accent')}>{formatDate(d, 'd')}</span>
               </p>
             )}
             <div className="space-y-1">

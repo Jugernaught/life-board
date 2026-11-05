@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Check, HardDrive, Lock, Sparkles, Upload } from 
 import { WIDGET_META } from '@/data/defaults'
 import { DATE_FORMATS, formatDate, todayISO } from '@/lib/dates'
 import { CURRENCIES } from '@/lib/format'
+import { THEMES, themeMeta } from '@/app/themes'
 import { cn } from '@/lib/utils'
 import { applyImport, inspectImportFile } from '@/store/backups'
 import { actions, useSettings } from '@/store/store'
@@ -44,7 +45,7 @@ export default function Onboarding() {
 
   return (
     <div className="flex min-h-dvh items-center justify-center p-4 py-10">
-      <BackgroundFX enabled={settings.effects} />
+      <BackgroundFX style={settings.uiStyle} enabled={settings.effects} />
       <div className="w-full max-w-xl">
         <div className="mb-6 flex items-center justify-between">
           <Logo />
@@ -61,7 +62,7 @@ export default function Onboarding() {
             <motion.div key={step} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.2 }} className="p-6 sm:p-8">
               {step === 0 && (
                 <div>
-                  <p className="eyebrow text-accent/80">Setup · 1 of {STEPS.length}</p>
+                  <p className="eyebrow text-accent">Setup · 1 of {STEPS.length}</p>
                   <h1 className="mt-3 font-display text-[30px] leading-tight font-semibold">
                     Your personal <span className="text-gradient">command centre</span>.
                   </h1>
@@ -92,7 +93,7 @@ export default function Onboarding() {
               )}
               {step === 1 && (
                 <div>
-                  <p className="eyebrow text-accent/80">Setup · 2 of {STEPS.length}</p>
+                  <p className="eyebrow text-accent">Setup · 2 of {STEPS.length}</p>
                   <h2 className="mt-3 font-display text-[24px] font-semibold">What should we call you?</h2>
                   <p className="mt-2 text-[14px] text-ink-muted">Used for your greeting. You can leave it blank.</p>
                   <Field label="Display name" htmlFor="ob-name" className="mt-5">
@@ -100,6 +101,21 @@ export default function Onboarding() {
                   </Field>
                   <div className="mt-5 space-y-3">
                     <p className="text-[12px] font-medium text-ink-muted">Appearance</p>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4" role="radiogroup" aria-label="Look">
+                      {THEMES.map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          role="radio"
+                          aria-checked={settings.uiStyle === t.id}
+                          onClick={() => set({ uiStyle: t.id, ...(t.accents.some((a) => a.id === settings.accent) ? {} : { accent: t.accents[0].id }) })}
+                          className={cn('rounded-[var(--radius-control)] border px-2.5 py-2 text-left text-[12.5px] transition-colors', settings.uiStyle === t.id ? 'border-accent bg-accent/10 text-ink' : 'border-line text-ink-muted hover:border-line-strong')}
+                        >
+                          <span className="block font-semibold">{t.name}</span>
+                          <span className="block truncate text-[11.5px] text-ink-subtle">{t.tagline}</span>
+                        </button>
+                      ))}
+                    </div>
                     <Segmented
                       value={settings.theme}
                       onChange={(theme) => set({ theme })}
@@ -112,30 +128,30 @@ export default function Onboarding() {
                       ]}
                     />
                     <div className="flex gap-2" role="radiogroup" aria-label="Accent colour">
-                      {(['cyan', 'violet', 'magenta', 'lime'] as const).map((a) => (
+                      {themeMeta(settings.uiStyle).accents.map((a) => (
                         <button
-                          key={a}
+                          key={a.id}
                           type="button"
                           role="radio"
-                          aria-checked={settings.accent === a}
-                          aria-label={`${a} accent`}
-                          onClick={() => set({ accent: a })}
-                          className={cn('h-9 flex-1 rounded-lg border-2 capitalize transition', settings.accent === a ? 'border-ink' : 'border-transparent')}
-                          style={{ background: `color-mix(in oklab, var(--color-${a}) 22%, transparent)`, color: `var(--color-${a})` }}
+                          aria-checked={settings.accent === a.id}
+                          aria-label={`${a.label} accent`}
+                          onClick={() => set({ accent: a.id })}
+                          className={cn('h-9 flex-1 rounded-[var(--radius-btn)] border-2 text-[12.5px] transition', settings.accent === a.id ? 'border-ink' : 'border-transparent')}
+                          style={{ background: `color-mix(in oklab, var(--color-${a.id}) 18%, transparent)`, color: `var(--color-${a.id})` }}
                         >
-                          {a}
+                          {a.label}
                         </button>
                       ))}
                     </div>
                     <div className="rounded-lg border border-line bg-panel-2/40 px-3 py-2.5">
-                      <Switch checked={settings.effects} onChange={(effects) => set({ effects })} label="Background effects" description="Subtle grid and light blooms behind the interface" />
+                      <Switch checked={settings.effects} onChange={(effects) => set({ effects })} label="Ambient effects" description="Soft moving light behind the interface" />
                     </div>
                   </div>
                 </div>
               )}
               {step === 2 && (
                 <div>
-                  <p className="eyebrow text-accent/80">Setup · 3 of {STEPS.length}</p>
+                  <p className="eyebrow text-accent">Setup · 3 of {STEPS.length}</p>
                   <h2 className="mt-3 font-display text-[24px] font-semibold">Region & formats</h2>
                   <div className="mt-5 grid gap-4 sm:grid-cols-2">
                     <Field label="Currency" htmlFor="ob-currency">
@@ -167,7 +183,7 @@ export default function Onboarding() {
               )}
               {step === 3 && (
                 <div>
-                  <p className="eyebrow text-accent/80">Setup · 4 of {STEPS.length}</p>
+                  <p className="eyebrow text-accent">Setup · 4 of {STEPS.length}</p>
                   <h2 className="mt-3 font-display text-[24px] font-semibold">Your working rhythm</h2>
                   <p className="mt-2 text-[14px] text-ink-muted">Working hours are highlighted on your daily timeline.</p>
                   <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -188,7 +204,7 @@ export default function Onboarding() {
               )}
               {step === 4 && (
                 <div>
-                  <p className="eyebrow text-accent/80">Setup · 5 of {STEPS.length}</p>
+                  <p className="eyebrow text-accent">Setup · 5 of {STEPS.length}</p>
                   <h2 className="mt-3 font-display text-[24px] font-semibold">Choose your dashboard widgets</h2>
                   <p className="mt-2 text-[14px] text-ink-muted">You can reorder and resize them later from the Command Centre.</p>
                   <div className="mt-4 grid max-h-[46vh] gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
@@ -200,7 +216,7 @@ export default function Onboarding() {
                         onClick={() => set({ dashboard: settings.dashboard.map((x) => (x.id === w.id ? { ...x, visible: !x.visible } : x)) })}
                         className={cn('flex items-start gap-2.5 rounded-lg border p-3 text-left transition-all', w.visible ? 'border-accent/50 bg-accent/8' : 'border-line bg-panel-2/30 opacity-70 hover:opacity-100')}
                       >
-                        <span className={cn('mt-0.5 flex size-4 shrink-0 items-center justify-center rounded border', w.visible ? 'border-accent bg-accent text-on-accent' : 'border-line-strong')}>{w.visible && <Check size={11} strokeWidth={3} />}</span>
+                        <span className={cn('mt-0.5 flex size-4 shrink-0 items-center justify-center rounded border', w.visible ? 'border-accent bg-accent-fill text-on-accent' : 'border-line-strong')}>{w.visible && <Check size={11} strokeWidth={3} />}</span>
                         <span>
                           <span className="block text-[13px] text-ink">{WIDGET_META[w.id].title}</span>
                           <span className="block text-[11.5px] text-ink-subtle">{WIDGET_META[w.id].description}</span>

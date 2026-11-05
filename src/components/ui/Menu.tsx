@@ -88,7 +88,7 @@ export function Menu({ items, label = 'More actions', trigger, align = 'end' }: 
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -4, transition: { duration: 0.1 } }}
               transition={{ duration: 0.14 }}
-              className="panel fixed z-[90] min-w-44 border-line-strong bg-panel/95 p-1"
+              className="float fixed z-[90] min-w-44 rounded-[calc(var(--radius-control)+4px)] p-1"
               style={align === 'end' ? { top: pos.top, right: Math.max(8, pos.right) } : { top: pos.top, left: Math.max(8, pos.left) }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -106,8 +106,8 @@ export function Menu({ items, label = 'More actions', trigger, align = 'end' }: 
                       item.onSelect()
                     }}
                     className={cn(
-                      'flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13px] transition-colors outline-none disabled:opacity-40',
-                      item.danger ? 'text-bad hover:bg-bad/10 focus:bg-bad/10' : 'text-ink hover:bg-panel-3 focus:bg-panel-3',
+                      'flex w-full items-center gap-2.5 rounded-[calc(var(--radius-control)-2px)] px-2.5 py-2 text-left text-[13px] transition-colors outline-none disabled:opacity-40',
+                      item.danger ? 'text-bad hover:bg-bad/10 focus:bg-bad/10' : 'text-ink hover:bg-ink/[0.07] focus:bg-ink/[0.07]',
                     )}
                   >
                     {item.icon && <item.icon size={14} className={item.danger ? '' : 'text-ink-subtle'} />}

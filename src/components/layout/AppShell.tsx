@@ -34,8 +34,8 @@ export function AppShell() {
   useGlobalHotkeys()
   return (
     <div className="flex min-h-dvh">
-      <BackgroundFX enabled={settings.effects} />
-      <a href="#main" className="sr-only z-[100] rounded-md bg-accent px-3 py-2 text-on-accent focus:not-sr-only focus:fixed focus:top-3 focus:left-3">
+      <BackgroundFX style={settings.uiStyle} enabled={settings.effects} />
+      <a href="#main" className="sr-only z-[100] rounded-md bg-accent-fill px-3 py-2 text-on-accent focus:not-sr-only focus:fixed focus:top-3 focus:left-3">
         Skip to content
       </a>
       <Sidebar />

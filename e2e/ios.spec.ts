@@ -217,14 +217,56 @@ test('finance: add a transaction and see the month summary update', async ({ pag
 test('settings: appearance follows the choice and persists', async ({ page }) => {
   await start(page)
   await open(page, 'more/settings')
-  await page.getByRole('radio', { name: 'Dark' }).click()
+  await page.getByRole('radio', { name: 'Dark', exact: true }).click()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
-  await page.getByRole('radio', { name: 'Light' }).click()
+  await page.getByRole('radio', { name: 'Light', exact: true }).click()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
   await page.reload()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+  // Apple Clean in light mode uses the iOS system grouped background.
+  await page.getByTestId('m-theme-clean').click()
+  await expect(page.locator('html')).toHaveAttribute('data-style', 'clean')
   const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor)
   expect(bg).toBe('rgb(242, 242, 247)')
+})
+
+test('themes: every theme switches instantly, applies everywhere and persists', async ({ page }) => {
+  await start(page)
+  // Liquid Glass is the default: a floating glass tab bar with a contextual button.
+  await expect(page.locator('html')).toHaveAttribute('data-style', 'glass')
+  await expect(page.getByTestId('tab-capsule')).toBeVisible()
+  await expect(page.getByTestId('tab-accessory')).toHaveAccessibleName('Quick add')
+  await page.getByTestId('tab-journal').click()
+  await expect(page.getByTestId('tab-accessory')).toHaveAccessibleName('Write today’s entry')
+
+  await open(page, 'more/settings')
+  await page.getByRole('radio', { name: 'Light', exact: true }).click()
+  const seen = new Set<string>()
+  for (const style of ['clean', 'cyber', 'minimal', 'glass'] as const) {
+    await page.getByTestId(`m-theme-${style}`).click()
+    await expect(page.locator('html')).toHaveAttribute('data-style', style)
+    // Dark-only themes stay dark even when Light is chosen.
+    await expect(page.locator('html')).toHaveAttribute('data-theme', style === 'cyber' || style === 'minimal' ? 'dark' : 'light')
+    // Apple Clean keeps the classic tab bar; the others float.
+    await expect(page.getByTestId('tab-capsule')).toHaveCount(style === 'clean' ? 0 : 1)
+    seen.add(await page.evaluate(() => getComputedStyle(document.body).backgroundColor))
+  }
+  expect(seen.size, 'each theme has its own backdrop').toBeGreaterThanOrEqual(3)
+
+  // Persists across a reload, and the desktop version uses the same theme.
+  await page.getByTestId('m-theme-cyber').click()
+  await page.reload()
+  await expect(page.locator('html')).toHaveAttribute('data-style', 'cyber')
+  await page.goto('/')
+  await expect(page.locator('html')).toHaveAttribute('data-style', 'cyber')
+
+  // Reduce Transparency turns glass into solid surfaces.
+  await open(page, 'more/settings')
+  await page.getByTestId('m-theme-glass').click()
+  await page.getByTestId('settings-reduce-transparency').click()
+  await expect(page.locator('html')).toHaveAttribute('data-transparency', 'reduced')
+  const filter = await page.getByTestId('tab-capsule').evaluate((el) => getComputedStyle(el).backdropFilter)
+  expect(filter).toBe('none')
 })
 
 test('data: export downloads a backup file; backups can be created', async ({ page }) => {

@@ -28,6 +28,16 @@ The desktop version shows an *“On a phone? Open the iPhone version”* banner 
 | **Journal** | Today's entry (autosaves), reflection prompts, searchable history, mood & energy trend |
 | **More** | Search everything, plus Projects, Career & Education, Finances, Fitness, Learning, Library, Social, Notes, Analytics, Settings |
 
+### Themes
+
+More → Settings → **Theme** offers the same four themes as the desktop version, with a live miniature of each:
+
+- **Liquid Glass** — a floating glass tab bar with a sliding selection lens, plus a contextual button beside it (Quick add on Today, New task on Plan, New habit on Habits, Write on Journal, Search on More). Navigation-bar buttons sit in glass capsules.
+- **Apple Clean** — the classic iOS look with a full-width tab bar.
+- **Cyberpunk** and **Minimal Dark** — dark-only, with a floating tab bar.
+
+*Reduce Transparency* replaces glass with solid surfaces. The theme is shared with the desktop version on the same browser.
+
 ### Gestures and controls
 
 - **Swipe from the left edge** to go back (or tap **‹ Back**). Each tab keeps its own place — switch tabs and come back to exactly where you were.

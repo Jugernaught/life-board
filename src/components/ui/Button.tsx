@@ -6,12 +6,11 @@ export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg'
 type IconType = ComponentType<{ className?: string; size?: number; strokeWidth?: number }>
 
 const variants: Record<ButtonVariant, string> = {
-  primary:
-    'chamfer-sm bg-accent text-on-accent font-semibold hover:brightness-110 active:brightness-95 shadow-[0_0_24px_-6px_color-mix(in_oklab,var(--color-accent)_70%,transparent)]',
-  secondary: 'rounded-lg border border-line-strong bg-panel-2/70 text-ink hover:border-accent/50 hover:bg-panel-3 hover:text-ink',
-  ghost: 'rounded-lg text-ink-muted hover:bg-panel-3/70 hover:text-ink',
-  subtle: 'rounded-lg bg-accent/10 text-accent hover:bg-accent/20',
-  danger: 'rounded-lg border border-bad/40 bg-bad/10 text-bad hover:bg-bad/20',
+  primary: 'chamfer-sm rounded-[var(--radius-btn-primary)] bg-accent-fill text-on-accent font-semibold hover:brightness-110 active:brightness-95 shadow-[var(--glow-md)]',
+  secondary: 'rounded-[var(--radius-btn)] border border-line-strong bg-panel-2/70 text-ink hover:border-accent/50 hover:bg-panel-3 hover:text-ink',
+  ghost: 'rounded-[var(--radius-btn)] text-ink-muted hover:bg-panel-3/70 hover:text-ink',
+  subtle: 'rounded-[var(--radius-btn)] bg-accent/10 text-accent hover:bg-accent/20',
+  danger: 'rounded-[var(--radius-btn)] border border-bad/40 bg-bad/10 text-bad hover:bg-bad/20',
 }
 
 const sizes: Record<ButtonSize, string> = {
@@ -41,7 +40,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       type={type}
       disabled={disabled || loading}
       className={cn(
-        'relative inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap font-medium transition-[background,color,border-color,filter,box-shadow] duration-150 disabled:cursor-not-allowed disabled:opacity-50',
+        'relative inline-flex shrink-0 select-none items-center justify-center whitespace-nowrap font-medium transition-[background,color,border-color,filter,box-shadow,transform] duration-150 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50',
         variants[variant],
         sizes[size],
         className,
@@ -80,7 +79,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
       aria-label={label}
       title={label}
       className={cn(
-        'inline-flex shrink-0 items-center justify-center rounded-lg transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-40',
+        'inline-flex shrink-0 items-center justify-center rounded-[var(--radius-btn)] transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-40',
         dims,
         variant === 'ghost' && 'text-ink-muted hover:bg-panel-3/80 hover:text-ink',
         variant === 'secondary' && 'border border-line-strong bg-panel-2/70 text-ink-muted hover:border-accent/50 hover:text-ink',

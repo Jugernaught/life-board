@@ -12,6 +12,7 @@ import { WeekdayPicker } from '@/components/ui/pickers'
 import { Tabs, useTabParam } from '@/components/ui/Tabs'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { DashboardLayoutEditor } from '@/features/command-centre/CustomiseDashboard'
+import { AppearanceSettings } from './AppearanceSettings'
 import { DataSettings } from './DataSettings'
 
 const TABS = [
@@ -161,39 +162,7 @@ export default function SettingsPage() {
               </Row>
             </Panel>
           )}
-          {tab === 'appearance' && (
-            <Panel title="Appearance" icon={Palette}>
-              <Row label="Theme">
-                <Segmented value={s.theme} onChange={(theme) => set({ theme })} fullWidth ariaLabel="Theme" options={[{ value: 'dark', label: 'Dark' }, { value: 'light', label: 'Light' }, { value: 'system', label: 'System' }]} />
-              </Row>
-              <Row label="Accent colour" description="Used for highlights, focus rings and primary buttons">
-                <div className="flex gap-2" role="radiogroup" aria-label="Accent colour">
-                  {(['cyan', 'violet', 'magenta', 'lime'] as const).map((a) => (
-                    <button
-                      key={a}
-                      type="button"
-                      role="radio"
-                      aria-checked={s.accent === a}
-                      onClick={() => set({ accent: a })}
-                      className={cn('h-9 flex-1 rounded-lg border-2 text-[12.5px] capitalize transition', s.accent === a ? 'border-ink' : 'border-transparent')}
-                      style={{ background: `color-mix(in oklab, var(--color-${a}) 22%, transparent)`, color: `var(--color-${a})` }}
-                    >
-                      {a}
-                    </button>
-                  ))}
-                </div>
-              </Row>
-              <Row label="Background effects" description="Ambient grid, light blooms and grain">
-                <Switch checked={s.effects} onChange={(effects) => set({ effects })} label={<span className="sr-only">Background effects</span>} />
-              </Row>
-              <Row label="Motion" description="System follows your device’s reduced-motion setting">
-                <Segmented value={s.motion} onChange={(motion) => set({ motion })} fullWidth ariaLabel="Motion" options={[{ value: 'system', label: 'System' }, { value: 'full', label: 'Full' }, { value: 'reduced', label: 'Reduced' }]} />
-              </Row>
-              <Row label="Collapsed sidebar" description="Also toggled with the [ key">
-                <Switch checked={s.sidebarCollapsed} onChange={(sidebarCollapsed) => set({ sidebarCollapsed })} label={<span className="sr-only">Collapsed sidebar</span>} />
-              </Row>
-            </Panel>
-          )}
+          {tab === 'appearance' && <AppearanceSettings />}
           {tab === 'schedule' && (
             <Panel title="Schedule" icon={Calendar}>
               <Row label="Working hours" description="Shaded on the daily and weekly timeline">

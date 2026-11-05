@@ -46,7 +46,7 @@ export function ChartTooltip({
 }) {
   if (!active || !payload?.length) return null
   return (
-    <div className="panel min-w-36 border-line-strong bg-panel/95 px-3 py-2 text-[12px] shadow-xl">
+    <div className="float min-w-36 rounded-[var(--radius-control)] px-3 py-2 text-[12px]">
       <p className="mb-1.5 font-mono text-[11px] text-ink-subtle">{formatLabel(label, payload[0]?.payload)}</p>
       <div className="space-y-1">
         {payload

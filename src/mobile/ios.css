@@ -10,7 +10,8 @@
  */
 @import '../styles/index.css';
 
-:root[data-shell='ios'] {
+/* ------------------------------------------------------------ structure */
+[data-shell='ios'] {
   /* Safe areas are read through variables so tests can simulate a notch. */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -19,13 +20,32 @@
   /* Height of the on-screen keyboard (set from visualViewport in JS). */
   --kb: 0px;
   --navbar-h: 44px;
-  --tabbar-h: calc(50px + var(--safe-bottom));
+  /* Floating tab bar by default: 62pt capsule above the home indicator. */
+  --tabbar-float-bottom: max(var(--safe-bottom), 12px);
+  --tabbar-h: calc(62px + var(--tabbar-float-bottom) + 10px);
 
   --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
   --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, monospace;
+  --radius-panel: 12px;
 
-  /* Dark appearance (default) */
+  /* Bars: blur + tint; Liquid Glass adds a sheen and rim light. */
+  --ios-bar-filter: saturate(180%) blur(20px);
+  --ios-bar-sheen: linear-gradient(transparent, transparent);
+  --ios-bar-rim: transparent;
+  --ios-section-font: var(--font-sans);
+  --ios-section-tracking: 0.01em;
+  --ios-backdrop: var(--ios-grouped);
+  --ios-tab-active-bg: color-mix(in oklab, var(--color-ink) 10%, transparent);
+  --ios-tab-glow: none;
+}
+
+/* Apple Clean — classic iOS: system grouped backgrounds, full-width tab bar. */
+[data-shell='ios'][data-style='clean'] {
+  --tabbar-h: calc(50px + var(--safe-bottom));
+}
+[data-shell='ios'][data-style='clean'][data-theme='dark'],
+[data-shell='ios'][data-style='glass'][data-theme='dark'] {
   --color-canvas: #000000;
   --color-canvas-2: #000000;
   --color-panel: #1c1c1e;
@@ -37,22 +57,6 @@
   --color-ink: #ffffff;
   --color-ink-muted: #aeaeb2;
   --color-ink-subtle: #98989f;
-
-  --color-cyan: #19e6ff;
-  --color-violet: #bf5af2;
-  --color-magenta: #ff375f;
-  --color-lime: #30d158;
-  --color-amber: #ff9f0a;
-  --color-accent: #19e6ff;
-  --color-accent-2: #bf5af2;
-  --color-accent-3: #ff375f;
-  --color-on-accent: #00151a;
-  --color-ok: #30d158;
-  --color-warn: #ff9f0a;
-  --color-bad: #ff453a;
-  --color-info: #409cff;
-
-  /* iOS-specific */
   --ios-fill: rgb(118 118 128 / 0.24);
   --ios-fill-2: rgb(118 118 128 / 0.32);
   --ios-bar: rgb(20 20 22 / 0.9);
@@ -61,12 +65,10 @@
   --ios-grouped: #000000;
   --ios-cell: #1c1c1e;
   --ios-cell-pressed: #2c2c2e;
-
-  --radius-panel: 12px;
   color-scheme: dark;
 }
-
-:root[data-shell='ios'][data-theme='light'] {
+[data-shell='ios'][data-style='clean'][data-theme='light'],
+[data-shell='ios'][data-style='glass'][data-theme='light'] {
   --color-canvas: #f2f2f7;
   --color-canvas-2: #f2f2f7;
   --color-panel: #ffffff;
@@ -78,21 +80,6 @@
   --color-ink: #000000;
   --color-ink-muted: #3c3c43;
   --color-ink-subtle: #636366;
-
-  --color-cyan: #077188;
-  --color-violet: #8944ab;
-  --color-magenta: #d30f45;
-  --color-lime: #1e7b34;
-  --color-amber: #a05a00;
-  --color-accent: #077188;
-  --color-accent-2: #8944ab;
-  --color-accent-3: #d30f45;
-  --color-on-accent: #ffffff;
-  --color-ok: #1e7b34;
-  --color-warn: #a05a00;
-  --color-bad: #d70015;
-  --color-info: #0040dd;
-
   --ios-fill: rgb(118 118 128 / 0.12);
   --ios-fill-2: rgb(118 118 128 / 0.2);
   --ios-bar: rgb(249 249 249 / 0.9);
@@ -104,20 +91,97 @@
   color-scheme: light;
 }
 
-/* Accent presets keep their meaning on iPhone. */
-:root[data-shell='ios'][data-accent='violet'] {
-  --color-accent: var(--color-violet);
+/* Liquid Glass — solid, legible content; glass for bars, tab bar and floating
+   controls, over a softly tinted backdrop for the glass to pick up. */
+[data-shell='ios'][data-style='glass'][data-theme='dark'] {
+  --ios-grouped: #05070d;
+  --color-ink-muted: #bdbdc4;
+  --color-ink-subtle: #a6a6ae;
+  --ios-cell: #1a1c24;
+  --ios-cell-pressed: #262934;
+  --color-panel: #1a1c24;
+  --ios-backdrop:
+    radial-gradient(120% 55% at 0% 0%, color-mix(in oklab, var(--color-accent) 26%, transparent), transparent 62%),
+    radial-gradient(90% 45% at 100% 22%, color-mix(in oklab, var(--color-accent-2) 18%, transparent), transparent 62%),
+    radial-gradient(100% 50% at 50% 100%, color-mix(in oklab, var(--color-accent-3) 12%, transparent), transparent 60%),
+    #05070d;
+  --ios-bar: rgb(24 26 36 / 0.72);
+  --ios-bar-filter: blur(24px) saturate(190%) brightness(1.08);
+  --ios-bar-sheen: linear-gradient(135deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0.03) 40%, rgb(255 255 255 / 0) 62%, rgb(255 255 255 / 0.07));
+  --ios-bar-rim: rgb(255 255 255 / 0.2);
+  --ios-tab-active-bg: color-mix(in oklab, var(--color-accent-fill) 32%, rgb(0 0 0 / 0.25));
 }
-:root[data-shell='ios'][data-accent='magenta'] {
-  --color-accent: var(--color-magenta);
+[data-shell='ios'][data-style='glass'][data-theme='light'] {
+  --ios-grouped: #edf1f8;
+  --ios-backdrop:
+    radial-gradient(120% 55% at 0% 0%, color-mix(in oklab, var(--color-accent) 16%, transparent), transparent 62%),
+    radial-gradient(90% 45% at 100% 22%, color-mix(in oklab, var(--color-accent-2) 12%, transparent), transparent 62%),
+    radial-gradient(100% 50% at 50% 100%, color-mix(in oklab, var(--color-accent-3) 9%, transparent), transparent 60%),
+    #edf1f8;
+  --ios-bar: rgb(255 255 255 / 0.62);
+  --ios-bar-filter: blur(24px) saturate(200%) brightness(1.05);
+  --ios-bar-sheen: linear-gradient(135deg, rgb(255 255 255 / 0.8), rgb(255 255 255 / 0.2) 40%, rgb(255 255 255 / 0) 62%, rgb(255 255 255 / 0.45));
+  --ios-bar-rim: rgb(255 255 255 / 0.95);
+  --ios-tab-active-bg: rgb(0 0 0 / 0.07);
 }
-:root[data-shell='ios'][data-accent='lime'] {
-  --color-accent: var(--color-lime);
+
+/* Cyberpunk — neon on near-black, monospaced captions, glowing active tab. */
+[data-shell='ios'][data-style='cyber'] {
+  --font-display: 'Chakra Petch', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --ios-section-font: var(--font-mono);
+  --ios-section-tracking: 0.12em;
+  --color-line: rgb(148 163 184 / 0.16);
+  --color-line-strong: rgb(148 163 184 / 0.26);
+  --ios-fill: rgb(148 163 184 / 0.14);
+  --ios-fill-2: rgb(148 163 184 / 0.22);
+  --ios-bar: rgb(7 9 14 / 0.82);
+  --ios-switch-on: var(--color-accent);
+  --ios-seg-selected: #232a3a;
+  --ios-grouped: #05060a;
+  --ios-backdrop:
+    radial-gradient(100% 40% at 50% 0%, color-mix(in oklab, var(--color-accent) 10%, transparent), transparent 65%),
+    #05060a;
+  --ios-cell: #0d1017;
+  --ios-cell-pressed: #151a24;
+  --ios-bar-rim: color-mix(in oklab, var(--color-accent) 35%, transparent);
+  --ios-tab-active-bg: color-mix(in oklab, var(--color-accent) 14%, transparent);
+  --ios-tab-glow: 0 0 12px color-mix(in oklab, var(--color-accent) 60%, transparent);
+  color-scheme: dark;
 }
-:root[data-shell='ios'][data-accent='violet'],
-:root[data-shell='ios'][data-accent='magenta'],
-:root[data-shell='ios'][data-accent='lime'] {
-  --color-on-accent: #ffffff;
+
+/* Minimal Dark — charcoal, flat, quiet. */
+[data-shell='ios'][data-style='minimal'] {
+  --color-line: rgb(255 255 255 / 0.07);
+  --color-line-strong: rgb(255 255 255 / 0.12);
+  --ios-fill: rgb(255 255 255 / 0.07);
+  --ios-fill-2: rgb(255 255 255 / 0.11);
+  --ios-bar: rgb(36 37 42 / 0.92);
+  --ios-bar-filter: blur(14px);
+  --ios-bar-rim: rgb(255 255 255 / 0.09);
+  --ios-switch-on: var(--color-accent);
+  --ios-seg-selected: #2c2d33;
+  --ios-grouped: #0e0f11;
+  --ios-cell: #17181b;
+  --ios-cell-pressed: #202126;
+  --ios-tab-active-bg: rgb(255 255 255 / 0.08);
+  color-scheme: dark;
+}
+
+/* Liquid Glass: navigation-bar buttons sit in glass capsules (iOS 26). */
+:root[data-shell='ios'][data-style='glass'] .nav-btn {
+  margin-inline: 2px;
+  border-radius: 999px;
+  padding-inline: 12px;
+  background: var(--ios-bar-sheen), var(--ios-bar);
+  backdrop-filter: var(--ios-bar-filter);
+  box-shadow:
+    inset 0 1px 0 var(--ios-bar-rim),
+    inset 0 0 0 0.5px color-mix(in oklab, var(--ios-bar-rim) 60%, transparent),
+    0 6px 18px -8px rgb(0 0 0 / 0.35);
+}
+:root[data-shell='ios'][data-style='glass'][data-transparency='reduced'] .nav-btn {
+  background: var(--ios-cell);
+  backdrop-filter: none;
 }
 
 /* ----------------------------------------------------------------- base */
@@ -186,7 +250,6 @@
   border: 0;
   box-shadow: none;
   backdrop-filter: none;
-  -webkit-backdrop-filter: none;
   border-radius: var(--radius-panel);
 }
 :root[data-shell='ios'] .hud::before,
@@ -209,9 +272,29 @@
 
 /* ---------------------------------------------------------- utilities */
 @utility ios-bar {
-  background: var(--ios-bar);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  background: var(--ios-bar-sheen), var(--ios-bar);
+  backdrop-filter: var(--ios-bar-filter);
+}
+/* Liquid Glass capsule for floating controls (tab bar, nav buttons, accessory). */
+@utility ios-glass {
+  background: var(--ios-bar-sheen), var(--ios-bar);
+  backdrop-filter: var(--ios-bar-filter);
+  box-shadow:
+    inset 0 1px 0 var(--ios-bar-rim),
+    inset 0 0 0 0.5px color-mix(in oklab, var(--ios-bar-rim) 60%, transparent),
+    0 10px 30px -10px rgb(0 0 0 / 0.35),
+    0 2px 6px -2px rgb(0 0 0 / 0.18);
+}
+[data-transparency='reduced'] .ios-bar,
+[data-transparency='reduced'] .ios-glass {
+  background: var(--ios-cell);
+  backdrop-filter: none;
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .ios-bar,
+  .ios-glass {
+    background: var(--ios-cell);
+  }
 }
 @utility ios-hairline-b {
   box-shadow: inset 0 -0.5px 0 var(--color-line-strong);

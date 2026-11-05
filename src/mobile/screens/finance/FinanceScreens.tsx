@@ -325,7 +325,7 @@ export function SavingsScreen() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-2 px-4 pb-3">
-              <button type="button" onClick={() => setTarget({ goal: g, mode: 'add' })} className="ios-subhead h-11 rounded-[10px] bg-accent font-semibold text-on-accent active:opacity-80" data-testid="savings-add-money">
+              <button type="button" onClick={() => setTarget({ goal: g, mode: 'add' })} className="ios-subhead h-11 rounded-[10px] bg-accent-fill font-semibold text-on-accent active:opacity-80" data-testid="savings-add-money">
                 Add Money
               </button>
               <button type="button" onClick={() => setTarget({ goal: g, mode: 'withdraw' })} className="ios-subhead h-11 rounded-[10px] bg-[var(--ios-fill)] font-semibold text-accent active:opacity-80">
@@ -391,7 +391,7 @@ export function RecurringScreen() {
                   </span>
                 </button>
                 {r.active && (
-                  <button type="button" onClick={() => log(r.id)} className={cn('ios-subhead h-8 shrink-0 rounded-full px-3.5 font-semibold', due ? 'bg-accent text-on-accent' : 'bg-[var(--ios-fill)] text-accent')} data-testid="recurring-log">
+                  <button type="button" onClick={() => log(r.id)} className={cn('ios-subhead h-8 shrink-0 rounded-full px-3.5 font-semibold', due ? 'bg-accent-fill text-on-accent' : 'bg-[var(--ios-fill)] text-accent')} data-testid="recurring-log">
                     Log
                   </button>
                 )}

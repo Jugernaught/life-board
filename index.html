@@ -1,13 +1,29 @@
 <!doctype html>
-<html lang="en-GB" data-theme="dark" data-accent="cyan">
+<html lang="en-GB" data-style="glass" data-theme="dark" data-accent="blue" data-transparency="full" data-effects="on">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#05060a" />
+    <meta name="theme-color" content="#0b0e17" />
     <meta name="description" content="Atlas — a private, local-first personal operating system for your goals, work, money, health and learning." />
     <meta name="color-scheme" content="dark light" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Atlas</title>
+    <script>
+      // Paint the last-used theme before the app loads (no flash of the wrong colours).
+      ;(function () {
+        try {
+          var a = JSON.parse(localStorage.getItem('life-os:appearance') || 'null')
+          if (!a) return
+          var d = document.documentElement
+          var dark = a.pref === 'dark' || (a.pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          d.dataset.style = a.style
+          d.dataset.theme = dark ? 'dark' : 'light'
+          d.dataset.accent = a.accent
+          d.dataset.transparency = a.transparency
+          d.dataset.effects = a.effects
+        } catch (e) {}
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

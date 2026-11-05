@@ -39,13 +39,13 @@ function InstallHint() {
   })
   if (hidden || isStandalone() || !isIOS()) return null
   return (
-    <div className="mx-4 mb-6 flex gap-3 rounded-[12px] bg-[var(--ios-cell)] p-3.5" data-testid="install-hint">
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-accent/15 text-accent">
-        <Share size={20} />
+    <div className="mx-4 mb-5 flex items-center gap-3 rounded-[12px] bg-[var(--ios-cell)] py-2.5 pr-2 pl-3" data-testid="install-hint">
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-[8px] bg-accent/15 text-accent">
+        <Share size={17} />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="ios-subhead font-semibold text-ink">Add Atlas to your Home Screen</p>
-        <p className="ios-footnote mt-0.5 text-ink-subtle">Tap Share, then “Add to Home Screen”. It opens full-screen, works offline, and keeps your data from being cleared by Safari.</p>
+        <p className="ios-subhead font-semibold text-ink">Add to Home Screen</p>
+        <p className="ios-footnote text-ink-subtle">Share › Add to Home Screen — full screen, offline, safer storage.</p>
       </div>
       <button
         type="button"
@@ -68,11 +68,15 @@ function InstallHint() {
 
 function Ring({ label, done, total, tone, onClick }: { label: string; done: number; total: number; tone: 'cyan' | 'lime' | 'magenta'; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} className="flex flex-1 flex-col items-center gap-1.5 py-1 active:opacity-60" aria-label={`${label}: ${done} of ${total}`}>
-      <ProgressRing value={total ? (done / total) * 100 : 0} size={64} stroke={7} tone={tone}>
-        <span className="text-[15px] font-semibold text-ink tabular-nums">{total ? `${done}/${total}` : '—'}</span>
+    // A compact summary "widget": ring + count + label, three across.
+    <button type="button" onClick={onClick} className="flex min-w-0 flex-1 items-center gap-2 px-1.5 py-1 active:opacity-60" aria-label={`${label}: ${done} of ${total}`}>
+      <ProgressRing value={total ? (done / total) * 100 : 0} size={38} stroke={5} tone={tone}>
+        <span className="sr-only">{total ? `${done}/${total}` : '—'}</span>
       </ProgressRing>
-      <span className="ios-footnote text-ink-subtle">{label}</span>
+      <span className="min-w-0 text-left">
+        <span className="block text-[17px] leading-tight font-semibold text-ink tabular-nums">{total ? `${done}/${total}` : '—'}</span>
+        <span className="block truncate text-[12px] leading-tight text-ink-subtle">{label}</span>
+      </span>
     </button>
   )
 }
@@ -123,7 +127,7 @@ export default function TodayScreen() {
     >
       <InstallHint />
 
-      <div className="mx-4 mb-7 flex rounded-[12px] bg-[var(--ios-cell)] px-2 py-3" data-testid="today-rings">
+      <div className="mx-4 mb-7 flex rounded-[12px] bg-[var(--ios-cell)] px-1.5 py-2.5" data-testid="today-rings">
         <Ring label="Priorities" done={priorities.filter((p) => p.status === 'done').length} total={priorities.length} tone="cyan" onClick={() => document.getElementById('today-priorities')?.scrollIntoView({ behavior: 'smooth' })} />
         <Ring label="Habits" done={habits.done} total={habits.total} tone="lime" onClick={() => nav.push('habits')} />
         <Ring label="Due today" done={dueDone} total={dueDone + dueAll.length} tone="magenta" onClick={() => nav.push('plan')} />

@@ -128,7 +128,7 @@ export function Chips<T extends string>({ value, onChange, options, ariaLabel }:
               role="radio"
               aria-checked={active}
               onClick={() => onChange(o.value)}
-              className={cn('ios-subhead flex h-9 items-center gap-1.5 rounded-full px-3.5 font-medium transition-colors', active ? 'bg-accent text-on-accent' : 'bg-[var(--ios-cell)] text-ink')}
+              className={cn('ios-subhead flex h-9 items-center gap-1.5 rounded-full px-3.5 font-medium transition-colors', active ? 'bg-accent-fill text-on-accent' : 'bg-[var(--ios-cell)] text-ink')}
             >
               {o.label}
               {typeof o.count === 'number' && o.count > 0 && <span className={cn('text-[12px] tabular-nums', active ? 'opacity-80' : 'text-ink-subtle')}>{o.count}</span>}

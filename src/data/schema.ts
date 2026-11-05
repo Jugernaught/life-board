@@ -585,8 +585,13 @@ export const settings = z.looseObject({
   theme: z.enum(['dark', 'light', 'system']).default('dark'),
   /** Appearance of the iPhone version (follows iOS by default). */
   mobileTheme: z.enum(['system', 'light', 'dark']).default('system'),
-  accent: z.enum(['cyan', 'violet', 'magenta', 'lime']).default('cyan'),
+  /** Visual style of the whole interface (desktop and iPhone). */
+  uiStyle: z.enum(['glass', 'clean', 'cyber', 'minimal']).default('glass'),
+  accent: z.enum(['blue', 'cyan', 'violet', 'magenta', 'lime']).default('blue'),
+  /** Ambient wallpaper and animated decoration. */
   effects: z.boolean().default(true),
+  /** Like iOS "Reduce Transparency": solid surfaces, no blur. */
+  reduceTransparency: z.boolean().default(false),
   motion: z.enum(['system', 'full', 'reduced']).default('system'),
   currency: z.string().length(3).default('GBP'),
   dateFormat: z.enum(['dd/MM/yyyy', 'MM/dd/yyyy', 'yyyy-MM-dd', 'd MMM yyyy']).default('d MMM yyyy'),
